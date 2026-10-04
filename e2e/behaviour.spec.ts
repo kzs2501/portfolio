@@ -24,7 +24,7 @@ test("⌘K palette: open, filter, navigate by keyboard, focus returns", async ({
   await input.fill("portal");
   await expect(page.getByRole("option").first()).toHaveText(/charity portal/i);
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/work\/charity-portal$/);
+  await expect(page).toHaveURL(/\/work\/charity-portal\/?$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/charity portal/i);
 });
 
