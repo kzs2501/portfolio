@@ -39,7 +39,7 @@ export function TimelineChart({
         {lanes.map((lane) => (
           <div key={lane.id} className="grid grid-cols-[6.5rem_1fr] items-center gap-3 sm:grid-cols-[8rem_1fr]">
             <span className="truncate text-xs text-ink-3">{lane.label}</span>
-            <div className="relative h-7 rounded-md bg-paper">
+            <div className="relative mx-2 h-7 rounded-md bg-paper">
               {segments
                 .filter((s) => s.lane === lane.id && s.start <= t)
                 .map((s, i) => (
@@ -65,7 +65,7 @@ export function TimelineChart({
         ))}
         <div className="grid grid-cols-[6.5rem_1fr] gap-3 sm:grid-cols-[8rem_1fr]">
           <span />
-          <div className="relative h-4">
+          <div className="relative mx-2 h-4">
             <div className="absolute inset-x-0 top-1.5 h-px bg-rule" />
             <div className="absolute top-0 h-4 w-px bg-accent" style={{ left: pct(t) }} />
           </div>

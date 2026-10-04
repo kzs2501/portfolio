@@ -60,7 +60,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <SiteFooter />
         <CommandPalette />
-        <Analytics />
+        {/* Only exists on Vercel; locally it would 404 and cost Lighthouse points. */}
+        {process.env.VERCEL && <Analytics />}
       </body>
     </html>
   );

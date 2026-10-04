@@ -1,0 +1,109 @@
+## The problem
+
+Nonprofits on Benefi needed somewhere to manage themselves: prove who they are, claim
+their organization, keep their public profile current, invite their team, connect a
+bank account, and withdraw the money donors had given them. None of that existed. The
+portal had to be built from an empty repository — and because it handles identity
+verification and moves real money to real bank accounts, it had to be trustworthy from
+the first release.
+
+## Context
+
+A new Next.js product with no existing codebase, design system, or test suite to
+inherit. I started it alone; two teammates contributed later. Over the life of the
+project I wrote about 84% of the commits.
+
+## My role
+
+Founding engineer. I chose the stack, set up the repository and its tooling on day one,
+and built the product from the initial commit to production: authentication, identity
+verification, organization onboarding, profiles, team management and banking.
+
+## Decisions I made on day one
+
+The first commit set up the things that are painful to retrofit: strict TypeScript,
+linting and formatting, pre-commit hooks, and a test runner. Data fetching went through
+TanStack Query, forms through React Hook Form with Zod schemas, styling through Tailwind.
+None of these choices are exotic. The point was choosing them *before* there was code to
+migrate, so the second engineer to join inherited conventions rather than a debate.
+
+## The interesting bug: five 401s, five refreshes
+
+The portal keeps users signed in with short-lived access tokens and a refresh token.
+A dashboard page fires several API requests at once. When the access token has expired,
+*all of them* come back 401 within a few milliseconds — and the obvious implementation
+starts a refresh for each one.
+
+That's wasteful, and with refresh-token rotation it's worse than wasteful. Each refresh
+token can only be used once, so the second refresh presents a token that's already been
+spent. To the auth server that looks exactly like a stolen token being replayed, so it
+revokes the session and the user is logged out for no reason.
+
+The fix is a **single-flight** refresh. The first 401 starts the refresh and stores its
+promise; every 401 that arrives while it's in flight awaits that same promise, then
+retries with the new token. However many requests fail, the refresh endpoint is called
+once.
+
+<Figure caption="Five requests, one expired token. Built from scratch for this page — compare a refresh per 401 with a single shared refresh, and watch what token rotation does to the naive version.">
+  <Demo name="single-flight" title="Single-flight token refresh" minHeight={600} />
+</Figure>
+
+## Other frontend decisions
+
+**Identity verification as a staged flow.** Onboarding runs through Plaid-backed KYC and
+identity checks, with explicit verification statuses — pending, needs action, verified —
+each with its own screen, rather than one form that either works or doesn't.
+
+**Organizations as a scope.** A user can belong to several organizations, claim new ones
+and switch between them. Switching changes which organization every request and every
+cached query belongs to, so stale data from the previous organization can never appear
+under the new one.
+
+**Drafts that only send what changed.** Organization profiles — programs, social links,
+media — are edited as drafts and published deliberately. When a draft is saved, the
+client sends only the fields that actually changed, not the whole profile object. Smaller
+requests, clearer audit trails on the server, and no silently overwriting a teammate's
+edit to a field you never touched.
+
+**Banking with Stripe Connect.** Bank connection, balances, withdrawals and payouts run
+on Stripe Connect, with add, edit and remove flows for bank accounts and clear feedback
+at each step of a withdrawal.
+
+**Security in the client.** Sensitive values are encrypted in the browser with RSA-OAEP
+before they leave it, and the app ships with Content Security Policy headers.
+
+## Tradeoffs
+
+**Stripe Connect's embedded components over a custom banking UI.** Building our own
+would have given us full control of the look and feel. Using Stripe's components put
+compliance and edge cases — account verification, payout schedules — on the people who
+specialize in them. For a small team handling real money, that was the right trade.
+
+**Tests from the start, even when it felt slow.** Early on, writing tests alongside
+features roughly doubled the time for some screens. It paid back the first time someone
+else changed banking code without breaking it.
+
+## Quality
+
+There was no test culture to inherit, so I built one:
+
+- Vitest and React Testing Library from the first weeks, with lint rules for the tests
+  themselves.
+- MSW-backed integration tests for the essential flows — sign-in, verification, banking —
+  so the tests exercise real request and response handling, not mocked functions.
+- Lighthouse CI on every pull request, with budgets for performance, Largest Contentful
+  Paint, layout shift and total page weight.
+- Pull requests blocked on lint, type-check and coverage.
+
+## Result
+
+The portal went from an empty repository to production in under six months, and shipped
+with Lighthouse scores of 90 or above and a coverage gate in CI. By the end it had a
+test file for most of its source files — a codebase where someone new could change
+payments code without fear.
+
+## What I'd do next
+
+Add a handful of end-to-end tests in a real browser for the money-moving paths, and
+build the dashboard's data views to be fully shareable through URL state, so support
+staff could send an organization a link to exactly what they were looking at.

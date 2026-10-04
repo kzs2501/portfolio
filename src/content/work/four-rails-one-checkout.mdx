@@ -1,0 +1,108 @@
+## The problem
+
+Benefi lets people give to charities in more ways than most checkouts ever handle: a card
+or Apple Pay, crypto from an exchange or a self-custody wallet on EVM chains or Solana,
+shares held at a brokerage, or a grant from a donor-advised fund. Each of those **payment
+rails** has a completely different sequence of steps. A card needs card capture and a
+choice between one-off and monthly. A stock gift needs a brokerage, an asset, a share
+count and a signed Letter of Authorization. Crypto needs a source and a network.
+
+Built rail by rail, every new way to give meant a new flow with its own navigation,
+progress, error handling and edge cases — and every shared improvement had to be made
+four times. Adding a rail was a refactor.
+
+## Context
+
+A web team of around five engineers, a production donor app on Next.js and React, and a
+product that kept adding ways to give. I owned the payments surface: the checkout itself,
+guest checkout, recurring giving, and the saved-payment-method screens around it.
+
+## My role
+
+I architected the checkout and led the refactor that turned it from parallel per-rail
+flows into a single config-driven flow, then built most of the stages on top of it.
+
+## The key decision: a registry, not a flow per rail
+
+Instead of encoding each rail's journey as its own sequence, every stage lives in **one
+registry**, and each stage declares *when it applies*. The flow a user sees is simply the
+registry filtered by their context — which rail they chose, whether they're a guest,
+whether the gift recurs. Navigation, progress, back-and-forward, and error handling are
+written once, against the filtered list, and never know which rail they're serving.
+
+<Figure caption="A toy version of the idea, built from scratch with made-up stages. Switch rails or check out as a guest and the flow rebuilds itself from the same registry — while you keep your place.">
+  <Demo name="stage-registry" title="Stage registry" minHeight={560} />
+</Figure>
+
+Three properties fell out of that structure, and each one was a product requirement:
+
+- **Deep links.** The current stage lives in the URL, so a refresh, a shared link or the
+  browser's back button lands exactly where the user was. A checkout that loses your place
+  on refresh loses donations.
+- **Lazy stages with prefetch.** Each stage is its own code-split chunk, and the *next*
+  stage is prefetched while the user is on the current one. The flow has 30-plus stages
+  across all rails; nobody downloads 30 stages to give by card, and nobody waits on a
+  spinner between steps either.
+- **Keeping your place.** When the context changes mid-flow — say a donor switches from
+  card to stock — the flow re-resolves and the user stays on the same stage if it still
+  applies, or lands at the same position if it doesn't. They never lose progress they can
+  keep.
+
+## Other frontend decisions
+
+**Guest checkout first.** Donors can give before they have an account, and an account is
+offered afterwards. I also removed a one-time-passcode step from post-donation signup.
+That friction sat at exactly the moment someone had just given money, which is the worst
+moment to ask for more.
+
+**Shared flow state, decoupled stages.** Flow state lives in a store that stages read
+from and write to, so a stage never imports another stage. That's what makes the
+registry composable: a stage can be added, removed, or reused across rails without
+anything else changing.
+
+**Async rails get defensive states.** Crypto and stock gifts don't settle in a request:
+transfers confirm later, and a Letter of Authorization has a lifecycle of its own. Those
+stages have explicit processing, expired and failed states instead of a single spinner,
+and the rail-specific failure modes have their own branches rather than falling into a
+generic error.
+
+**Third-party SDKs load on first mount.** The payments SDK was being downloaded on every
+page. It now loads only when a payment component actually mounts. (I wrote this one up:
+[Load third-party SDKs when they mount](/notes/load-sdks-on-mount).)
+
+## Tradeoffs
+
+**A plain registry instead of a state-machine library.** A formal statechart would give
+us transition validation for free. But the flow is mostly linear with conditional stages,
+and a registry of predicates is something every engineer on the team could read and
+extend on day one, with no new dependency to learn. The cost is that invalid sequences
+aren't impossible by construction, so tests carry that weight instead.
+
+**Prefetch the next stage, not all of them.** Prefetching everything would make every
+transition instant but would cost a donor on a phone data they'll never use. One stage
+ahead is enough to hide the latency of the next step.
+
+**One generic flow means fewer escape hatches.** When a rail needs something genuinely
+unusual, it has to fit the stage contract. That constraint was the point — but it took
+some negotiation with product about which differences were real.
+
+## Quality
+
+The fiat, crypto and stock flows each have their own test suites, covering the happy
+paths and the defensive branches, written against the registry rather than against the
+screens. Because the stages are data, a test can assert "a stock gift by a guest goes
+through these stages in this order" without rendering a single page.
+
+## Result
+
+Adding a payment rail became a configuration change instead of a refactor. By our
+estimate, integrating a new rail went from about three weeks to under one, and checkout
+completion rose by roughly 18% after the refactor and the guest-checkout changes —
+estimates rather than controlled experiments, but the direction was consistent.
+
+## What I'd do next
+
+Move stage configuration to the server, so product can reorder or gate stages without a
+deploy, and add a small internal "flow inspector" that renders the resolved stage list
+for any context. That would make the registry as legible to product managers as it is to
+engineers.

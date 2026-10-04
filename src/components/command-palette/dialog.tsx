@@ -41,9 +41,6 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
     }
   }, [open]);
 
-  // Whenever results change, start again from the top.
-  useEffect(() => setActive(0), [query]);
-
   // Keep the highlighted option visible while arrowing through a long list.
   useEffect(() => {
     document.getElementById(optionId(active))?.scrollIntoView({ block: "nearest" });
@@ -126,7 +123,12 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
         <input
           ref={inputRef}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            // New query, new results: start again from the top. Done here in the
+            // event rather than in an effect, so there's no extra render.
+            setQuery(e.target.value);
+            setActive(0);
+          }}
           onKeyDown={onKeyDown}
           placeholder="Search pages, case studies, notes…"
           role="combobox"

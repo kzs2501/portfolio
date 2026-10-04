@@ -1,0 +1,88 @@
+## The problem
+
+Tekion builds software for car dealers and the manufacturers behind them. Each brand —
+Honda, Cadillac, Chevrolet, Buick, GMC, Mercedes, BMW — wants an online checkout and
+pre-checkout experience that looks and feels like *its* brand, with its own mix of
+features: trade-in valuations for some, financing estimates for others, protection plans
+for a few.
+
+The default way to serve them is to fork: copy the last brand's checkout and change it.
+That works for the second brand. By the fourth you have four implementations of the same
+trade-in module drifting apart, and every bug is fixed four times — or once, in the brand
+that reported it.
+
+## Context
+
+Across two and a half years, from intern to software engineer, I worked on brand-facing
+checkout and pre-checkout modules: vehicle comparison and lead capture for GM's brands,
+the checkout for two Honda systems, and the shared modules for a multi-brand concierge
+product.
+
+## My role
+
+I built Honda's checkout module from scratch and owned more than twenty features end to
+end, from requirements and architecture to backend contract negotiation and testing.
+Later I designed the multi-brand checkout architecture for a new product from its
+inception, and turned shared modules that had been forked per brand into one configurable
+set.
+
+## The key decision: brands are data
+
+A brand is a configuration object with two halves:
+
+- **Tokens for how it looks** — colours, type, corner radius, button style. Components
+  never reference a brand's actual values; they read semantic tokens like *accent* and
+  *surface*.
+- **Flags and composition for what it offers** — which modules appear, in what order,
+  with which options.
+
+The checkout components never branch on a brand's name. Onboarding a new brand means
+writing a new configuration, not changing component code.
+
+<Figure caption="Three fictional brands, one component — built from scratch for this page. The card on the left is rendered entirely from the config on the right.">
+  <Demo name="brand-tokens" title="One checkout, many brands" minHeight={520} />
+</Figure>
+
+## How the components were built
+
+**Compound components.** A module like trade-in is a family of parts — a valuation
+form, a summary, an edit affordance — that share state through context and can be
+arranged differently per brand without reaching into each other's internals.
+
+**Provider and Builder patterns.** A provider supplies the brand's tokens and
+configuration to everything beneath it, and a builder assembles a page from the
+configured modules. That's what let the GM program's vehicle-compare and lead modules
+serve five brands from one implementation.
+
+**A config-driven page builder.** On the concierge product, pages such as the guest page
+and subscriptions were assembled by a configuration-driven builder rather than
+hand-written per brand. That turned trade-in, header and footer — previously four forked
+implementations — into one configurable set.
+
+**Mobile-first by default.** Most car shoppers start on a phone, so components were
+designed for the small screen first and enhanced upwards.
+
+## Tradeoffs
+
+**Configuration has a cost too.** Every flag doubles the number of combinations that can
+exist, and the temptation is to let configuration grow into its own programming language.
+Configs stayed declarative — *what*, never *how* — and genuinely one-off brand behaviour
+went into explicit extension slots instead of yet another flag.
+
+**Tokens constrain designers.** A brand that wants something the token set can't
+express has to either extend the token set for everyone or accept a slot. That friction
+was deliberate; it's what keeps the system a system.
+
+## Result
+
+The GM program's modules shipped in roughly three months against an original plan of
+around twelve. The Honda checkout took about 40% less development time than the
+estimate, and the multi-brand architecture cut the time to onboard a new client by
+roughly 60%. These are project-level estimates rather than measured A/B results, but
+they're the reason the pattern was adopted for the next product.
+
+## What I'd do next
+
+Generate the token set from the design tool so design and code can't drift, and add
+visual regression tests per brand, so a change to a shared component is checked against
+every brand that uses it before it merges.

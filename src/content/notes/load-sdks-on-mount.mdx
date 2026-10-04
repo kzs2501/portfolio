@@ -1,0 +1,58 @@
+A payments SDK is a large third-party script that, on a typical product, is needed on two
+or three screens. On the product I worked on, it was being loaded on every page — so a
+visitor browsing charities downloaded and parsed a payments library they might never use.
+
+The fix is to load the SDK when the first component that needs it mounts. It's a small
+change with an outsized effect on the pages that don't need it, and it has two traps
+worth knowing about.
+
+## Load it once, from wherever it's first needed
+
+The shape is a module-level promise: the first caller starts the load, every later caller
+gets the same promise.
+
+```ts
+let sdkPromise: Promise<PaymentsSdk> | null = null;
+
+export function loadPaymentsSdk() {
+  sdkPromise ??= import("payments-sdk").then((m) => m.init(PUBLIC_KEY));
+  return sdkPromise;
+}
+```
+
+Components that need the SDK call `loadPaymentsSdk()` inside an effect, or pass the
+promise to the provider that wraps a payment form. Pages without payments never import it,
+and the bundler puts it in its own chunk.
+
+## Trap 1: loading it twice
+
+Two payment components mounting at the same time — say, a saved-cards list and an
+add-card form — can each kick off a load if the guard is a boolean set *after* the load
+finishes. Storing the **promise**, not the result, closes that window: the second caller
+arrives while the first load is in flight and simply awaits it. It's the same
+single-flight idea that makes token refresh safe.
+
+If the load fails, clear the stored promise so the next attempt can retry instead of
+awaiting a rejection forever.
+
+## Trap 2: the layout jumps when it arrives
+
+An embedded payment field renders nothing until the SDK is ready, then pops into
+existence and pushes everything below it down. That's layout shift the user feels as the
+"Pay" button moves under their thumb, and it shows up in Cumulative Layout Shift.
+
+Reserve the space. Render the form's frame with the field's final height and a quiet
+skeleton inside it, so the SDK's arrival changes what's *inside* the box and never the box
+itself.
+
+## Make the wait shorter, too
+
+Deferring the load means the user may wait for it on the payment screen itself. Two cheap
+mitigations: add a `preconnect` hint for the SDK's origin so the connection is warm, and
+start the load one step early — when the user reaches the step *before* payment — rather
+than on the payment step itself.
+
+## The rule
+
+> Third-party code should cost nothing on the pages that don't use it, load once on the
+> pages that do, and never move the layout when it arrives.

@@ -1,0 +1,75 @@
+Infinite scroll, lazy images, "load the demo when it's nearly on screen" — modern UI leans
+on `IntersectionObserver`. Then you try to test it, and jsdom throws:
+`IntersectionObserver is not defined`.
+
+That's not an oversight. jsdom implements the DOM, not a layout engine. There are no
+boxes, no scroll positions and no paint, so there's nothing an intersection ratio could
+be computed from. You have to supply a fake — and the way you fake it decides whether
+your tests mean anything.
+
+## The tempting fake
+
+The quickest mock records observed elements and exposes a helper that calls the callback
+straight away:
+
+```ts
+export function triggerIntersect(el: Element) {
+  for (const o of observers) {
+    if (o.observed.has(el)) o.callback([{ target: el, isIntersecting: true }], o);
+  }
+}
+```
+
+It works, and that's the problem. A real browser **never** calls the observer's callback
+synchronously. Entries are queued and delivered later, after the current task. A
+synchronous fake lets code pass that depends on the callback running *inside* the same
+tick — for example, code that reads state it expects the callback to have already set.
+Your test suite is then green against timing that production never produces.
+
+## Deliver asynchronously
+
+Queue the delivery, and re-check the observer when it actually fires:
+
+```ts
+export function triggerIntersect(el: Element, isIntersecting = true) {
+  for (const o of observers) {
+    if (o.disconnected || !o.observed.has(el)) continue;
+    const entry = { target: el, isIntersecting, intersectionRatio: isIntersecting ? 1 : 0 };
+    queueMicrotask(() => {
+      if (o.disconnected) return; // it may have been disconnected in between
+      o.callback([entry as IntersectionObserverEntry], o as unknown as IntersectionObserver);
+    });
+  }
+}
+```
+
+Then flush in the test, the same way you'd wait for any other async update:
+
+```ts
+await act(async () => {
+  triggerIntersect(sentinel);
+  await Promise.resolve();
+});
+```
+
+That re-check matters. Components disconnect their observers in effect cleanups, and a
+real browser won't deliver to an observer that's gone. The fake shouldn't either —
+otherwise a test can pass while the component leaks an observer that keeps firing after
+unmount.
+
+## Make the fake inspectable
+
+Expose the fake's instances, so tests can assert what the component *did*, not just what
+it rendered:
+
+- an observer was created and is observing the sentinel element;
+- after unmount, no observer is left connected;
+- re-triggering while a load is in flight doesn't start a second load.
+
+That last one is where infinite-scroll implementations most often break, and it's only
+testable if your fake behaves like the real thing.
+
+## The rule
+
+> A test double should be as asynchronous as the thing it replaces. If the real API never
+> calls you back synchronously, neither should the fake.

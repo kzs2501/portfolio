@@ -5,27 +5,40 @@ import { DemoShell, Segmented } from "../shared/controls";
 import { deepLink, rails, reconcileCurrent, registry, resolveStages, type Ctx, type Rail } from "./registry";
 
 export default function StageRegistryDemo() {
-  const [ctx, setCtx] = useState<Ctx>({ rail: "card", guest: false });
-  const [currentId, setCurrentId] = useState("amount");
+  // Context and position live in ONE state object and change only through
+  // functional updates. Updates run inside transitions, so a second quick click
+  // can arrive before React re-renders; reading `index` from this render's
+  // closure would then compute the same target twice and swallow a click.
+  const [flow, setFlow] = useState<{ ctx: Ctx; currentId: string }>({
+    ctx: { rail: "card", guest: false },
+    currentId: "amount",
+  });
+  const { ctx, currentId } = flow;
 
   const stages = resolveStages(ctx);
   const index = Math.max(0, stages.findIndex((s) => s.id === currentId));
   const current = stages[index];
   const next = stages[index + 1];
 
-  // Context changes go through a transition, which is what lets React's
-  // <ViewTransition> animate stages entering, leaving and sliding into place.
   const changeCtx = (patch: Partial<Ctx>) =>
-    startTransition(() => {
-      const nextCtx = { ...ctx, ...patch };
-      setCtx(nextCtx);
-      setCurrentId(reconcileCurrent(currentId, index, resolveStages(nextCtx)));
-    });
+    startTransition(() =>
+      setFlow((prev) => {
+        const prevStages = resolveStages(prev.ctx);
+        const prevIndex = Math.max(0, prevStages.findIndex((s) => s.id === prev.currentId));
+        const nextCtx = { ...prev.ctx, ...patch };
+        return { ctx: nextCtx, currentId: reconcileCurrent(prev.currentId, prevIndex, resolveStages(nextCtx)) };
+      }),
+    );
 
-  const go = (delta: number) => {
-    const target = stages[index + delta];
-    if (target) startTransition(() => setCurrentId(target.id));
-  };
+  const go = (delta: number) =>
+    startTransition(() =>
+      setFlow((prev) => {
+        const list = resolveStages(prev.ctx);
+        const i = list.findIndex((s) => s.id === prev.currentId);
+        const target = list[i + delta];
+        return target ? { ...prev, currentId: target.id } : prev;
+      }),
+    );
 
   return (
     <DemoShell
@@ -61,7 +74,7 @@ export default function StageRegistryDemo() {
                         : "border-rule bg-paper text-ink-2"
                   }`}
                 >
-                  <span className="num w-5 shrink-0 text-xs text-ink-3">{String(i + 1).padStart(2, "0")}</span>
+                  <span className={`num w-5 shrink-0 text-xs ${state === "current" ? "text-ink-2" : "text-ink-3"}`}>{String(i + 1).padStart(2, "0")}</span>
                   <span className="flex-1">{s.label}</span>
                   {state === "done" && <span className="text-xs text-ok">done</span>}
                   {state === "prefetched" && (

@@ -1,0 +1,80 @@
+Every typeahead tutorial adds a debounce, and most stop there. Debounce is a good idea:
+instead of firing a request on every keystroke, you wait until the user pauses, so typing
+"BTC" costs one request instead of three.
+
+But debounce answers *how many* requests you send. It says nothing about *the order they
+come back in* — and network latency is not first-in, first-out.
+
+## The race
+
+Type "BT" and pause long enough for the debounce to fire. That request happens to be
+slow. Then type "C": a second request goes out for "BTC", and it happens to be fast. The
+"BTC" results arrive first and render correctly. A moment later the slow "BT" response
+lands — and if nothing stops it, it overwrites the screen. The input says "BTC". The
+results are for "BT".
+
+<Figure caption="Debounce is on the whole time. Toggle the guard and replay — the only difference is whether a superseded response is allowed to render.">
+  <Demo name="race-timeline" title="Debounce vs. the race" minHeight={600} />
+</Figure>
+
+The bug survives manual testing because on a fast connection the requests usually come
+back in order. It shows up on a train, on hotel Wi-Fi, or when one query happens to be
+expensive on the server.
+
+## Why the obvious check doesn't work
+
+The tempting fix is to compare the response's query with the current input:
+
+```tsx
+const handleFetch = async (query: string) => {
+  const data = await search(query);
+  if (query === input) setResults(data); // always true
+};
+```
+
+Inside that function, `input` is whatever it was *when this render's function was
+created*, which is exactly the value that was passed in as `query`. Both come from the
+same snapshot, so the comparison is always true. A render is a snapshot; a closure keeps
+its snapshot even after the component has moved on.
+
+The setter, on the other hand, is stable across renders. So an old closure holds **stale
+data but a live setter**. That asymmetry is the whole bug.
+
+## The fix: give the old closure a live channel
+
+The stale response needs some way to learn that the world has moved on — a value that
+isn't frozen. React's effect cleanup is made for this:
+
+```tsx
+useEffect(() => {
+  if (!debouncedQuery) return;
+  let ignore = false;
+
+  search(debouncedQuery).then((data) => {
+    if (!ignore) setResults(data);
+  });
+
+  return () => {
+    ignore = true; // runs before the next effect, and on unmount
+  };
+}, [debouncedQuery]);
+```
+
+Each effect run gets its own `ignore`. When the query changes, React runs the previous
+run's cleanup first, flipping *that* run's flag. When the slow response finally lands, it
+reads its own flag — now `true` — and drops itself. As a bonus, the cleanup also runs on
+unmount, so the same flag prevents setting state on an unmounted component.
+
+## Then add AbortController — as well, not instead
+
+The flag stops the stale *render*, but the request still runs to completion and spends
+the user's bandwidth. Passing an `AbortController` signal and aborting in the cleanup
+cancels it on the wire. Keep the flag anyway: aborting only works if every layer between
+you and the network honours the signal, and an `AbortError` must be treated as a
+non-event rather than an error state. **Abort is the optimisation; the flag is the
+guarantee.**
+
+## The one-line version
+
+> Debounce reduces how many requests you send. A guard decides which response you're
+> allowed to show. You need both.
