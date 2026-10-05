@@ -28,17 +28,28 @@ Tailwind CSS 4 · MDX · Vitest · Playwright + axe · Lighthouse CI.
   paint; components read it with `useSyncExternalStore`, so there's no hydration
   mismatch.
 - **Integer cents.** The checkout demo never touches floating-point money.
+- **Feel, from published guidelines.** Motion follows Emil Kowalski's and Vercel's
+  interface rules: ease-out, under 300ms, transform and opacity only, and none at all
+  on things used constantly (the palette opens instantly). Details include:
+  - case-study titles that morph into their headline;
+  - a reading-progress rule and a header that firms up on scroll, both pure CSS
+    scroll-driven animations behind `@supports`;
+  - a contents sidebar whose active section is computed from geometry, not event
+    order;
+  - copyable heading anchors;
+  - curly typography enforced by a test;
+  - a live Bengaluru clock that tells remote visitors the time difference.
 
 ## Quality gates
 
 | Check | What it enforces |
 |---|---|
-| `npm test` | 37 unit tests over the demo logic and palette ranking |
-| `npm run test:e2e` | axe (WCAG 2.2 AA) on every route in light and dark; keyboard paths; no horizontal scroll at 375px; demo behaviour; reduced motion |
+| `npm test` | 51 unit tests: demo logic, palette ranking, contents extraction, local time, content typography |
+| `npm run test:e2e` | 40 browser tests: axe (WCAG 2.2 AA) on every route in light and dark, keyboard paths, 375px layout, reduced motion, demo behaviour, navigation scroll, contents, anchors, clipboard, timezone |
 | `npm run lhci` | Lighthouse ≥ 95 in every category, CLS ≤ 0.05 |
 | CI | All of the above on every push and pull request |
 
-Desktop Lighthouse: 100 / 100 / 100 / 100 on every audited page.
+Desktop Lighthouse: 100 / 100 / 100 / 100 on every audited page. Mobile (simulated slow 4G, 5 runs): median LCP 2.1s.
 
 ## Running it
 

@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
 };
 
-const withMDX = createMDX({});
+const withMDX = createMDX({
+  options: {
+    // Curly quotes, real dashes and ellipses in every case study and note.
+    remarkPlugins: ["remark-smartypants"],
+    // Stable ids on headings, for anchors and the table of contents.
+    rehypePlugins: ["rehype-slug"],
+  },
+});
 
 export default withMDX(nextConfig);

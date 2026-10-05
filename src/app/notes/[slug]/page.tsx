@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { notes, getNote, formatDate } from "@/content/notes";
 import { PageTransition } from "@/components/page-transition";
+import { ReadingProgress } from "@/components/reading-progress";
 
 export const dynamicParams = false;
 
@@ -28,8 +29,9 @@ export default async function Note({ params }: PageProps<"/notes/[slug]">) {
 
   return (
     <PageTransition>
+      <ReadingProgress />
       <article className="mx-auto max-w-2xl px-5 pt-14 sm:px-8">
-        <Link href="/notes" transitionTypes={["nav-back"]} className="text-sm text-ink-3 hover:text-ink">
+        <Link href="/notes" transitionTypes={["nav-back"]} className="-mx-1 inline-flex min-h-8 items-center px-1 text-sm text-ink-3 hover:text-ink">
           ← All notes
         </Link>
         <header className="mt-10">
@@ -39,7 +41,7 @@ export default async function Note({ params }: PageProps<"/notes/[slug]">) {
           <h1 className="mt-4 font-serif text-[2.4rem] leading-[1.05] tracking-tight text-balance sm:text-5xl">
             {meta.title}
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-ink-2">{meta.summary}</p>
+          <p className="mt-5 text-lg leading-relaxed text-pretty text-ink-2">{meta.summary}</p>
         </header>
         <div className="prose-ledger mt-12">
           <Body />

@@ -30,7 +30,7 @@ export const work: WorkMeta[] = [
     org: "Benefi",
     period: "2026",
     summary:
-      "A portal for nonprofits, from an empty repo to production in under six months: identity verification, Plaid and Stripe Connect payouts, and a test suite the company didn't have before.",
+      "A portal for nonprofits, from an empty repo to production in under six months: identity verification, Plaid and Stripe Connect payouts, and a test suite the company didn’t have before.",
     role: "Founding engineer, ~84% of commits",
     team: "Me, plus two contributors",
     stack: ["Next.js 16", "React 19", "TypeScript", "Tailwind 4", "TanStack Query", "Zod", "Vitest", "MSW"],
@@ -42,7 +42,7 @@ export const work: WorkMeta[] = [
     org: "Tekion",
     period: "2023–25",
     summary:
-      "A token-driven, config-built checkout that served Honda, GM's brands and others from one codebase — and turned onboarding a new brand from a project into configuration.",
+      "A token-driven, config-built checkout that served Honda, GM’s brands and others from one codebase — and turned onboarding a new brand from a project into configuration.",
     role: "Built the checkout; designed the multi-brand architecture",
     team: "Product engineering team",
     stack: ["React", "Redux", "GraphQL", "Design tokens", "Compound components"],

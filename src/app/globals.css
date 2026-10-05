@@ -66,6 +66,14 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, Menlo, monospace;
+
+  /* Motion: ease-out for anything entering or leaving, ease-in-out for things
+     moving on screen, never ease-in on UI. Everything stays under 300ms. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-press: 160ms;
+  --dur-ui: 200ms;
+  --dur-move: 280ms;
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────── */
@@ -74,6 +82,24 @@ html {
   color: var(--ink);
   -webkit-text-size-adjust: 100%;
   scroll-padding-top: 5rem;
+  scrollbar-color: var(--rule) transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Touch: no double-tap zoom delay, no grey flash — real :active states instead. */
+a,
+button,
+summary,
+[role="radio"],
+[role="option"],
+label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -94,6 +120,17 @@ body {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 3px;
+}
+
+/* Press feedback: a small, fast scale on :active so every button answers the
+   finger or click immediately. Transition (not keyframes), so it's interruptible. */
+@utility press {
+  transition-property: transform, color, background-color, border-color, opacity;
+  transition-duration: var(--dur-press);
+  transition-timing-function: var(--ease-out);
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
 }
 
 /* ── Ledger primitives ───────────────────────────────────────────────── */
@@ -125,12 +162,23 @@ body {
 .prose-ledger > * + * {
   margin-top: 1.1em;
 }
+.prose-ledger p:not(.not-prose *),
+.prose-ledger li:not(.not-prose *) {
+  text-wrap: pretty;
+}
 .prose-ledger h2:not(.not-prose *) {
   font-family: var(--font-serif);
   font-size: 1.85rem;
   line-height: 1.15;
   margin-top: 2.6em;
   letter-spacing: -0.01em;
+}
+/* The anchor wrapper takes the heading's top margin, so spacing is unchanged. */
+.prose-ledger .anchored-heading:not(.not-prose *) {
+  margin-top: 2.6em;
+}
+.prose-ledger .anchored-heading > h2 {
+  margin-top: 0;
 }
 .prose-ledger h3:not(.not-prose *) {
   font-weight: 600;
@@ -189,17 +237,131 @@ body {
   overflow-x: auto;
 }
 .prose-ledger blockquote:not(.not-prose *) {
+  hanging-punctuation: first;
   border-left: 2px solid var(--accent);
   padding-left: 1rem;
   color: var(--ink-2);
   font-style: italic;
 }
 
+/* ── Scroll-driven details (pure CSS, no JS, progressive) ─────────────────── */
+
+/* Reading progress: a 2px ledger-red rule under the header that fills as you
+   read. Scroll-linked feedback rather than autonomous motion, so it stays on
+   under reduced motion. Hidden where scroll timelines aren't supported. */
+.reading-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    display: block;
+    position: fixed;
+    inset-inline: 0;
+    top: 4rem;
+    z-index: 29;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: left center;
+    transform: scaleX(0);
+    animation: reading-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+  @keyframes reading-progress {
+    to {
+      transform: scaleX(1);
+    }
+  }
+}
+
+/* Header: transparent at the top of the page, then the background and hairline
+   fade in over the first 48px of scroll. Opacity only, on two pseudo-layers, so
+   it stays on the compositor. Without support it renders solid, as before. */
+.site-header {
+  position: sticky;
+  top: 0;
+  isolation: isolate;
+}
+.site-header::before,
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.site-header::before {
+  background: color-mix(in oklch, var(--paper) 80%, transparent);
+  backdrop-filter: blur(12px) saturate(1.4);
+}
+.site-header::after {
+  top: auto;
+  height: 1px;
+  background: color-mix(in oklch, var(--rule) 70%, transparent);
+}
+@supports (animation-timeline: scroll()) {
+  .site-header::before,
+  .site-header::after {
+    opacity: 0;
+    animation: header-firm linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 48px;
+  }
+  @keyframes header-firm {
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* ── Wayfinding ──────────────────────────────────────────────────────────── */
+.nav-link[aria-current="page"] {
+  color: var(--ink);
+}
+.nav-link[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.75rem;
+  bottom: 0.3rem;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+}
+
+/* Table of contents: the section in view gets accent text and a left rule. */
+.toc-link {
+  border-left: 2px solid transparent;
+  transition-property: color, border-color;
+  transition-duration: var(--dur-ui);
+  transition-timing-function: var(--ease-out);
+}
+.toc-link[aria-current="location"] {
+  color: var(--ink);
+  border-left-color: var(--accent);
+}
+
+/* Heading anchors: present for keyboard and screen readers always, visible to
+   the eye on hover or focus. */
+.heading-anchor {
+  opacity: 0;
+  transition: opacity var(--dur-ui) var(--ease-out);
+}
+.anchored-heading:hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .heading-anchor {
+    opacity: 0.45;
+  }
+}
+
 /* ── View transitions ─────────────────────────────────────────────────── */
 :root {
-  --vt-exit: 150ms;
-  --vt-enter: 210ms;
-  --vt-move: 380ms;
+  --vt-exit: 140ms;
+  --vt-enter: 200ms;
+  /* Enter overlaps the exit, so there's never a frame with no content at all. */
+  --vt-enter-delay: 80ms;
+  --vt-move: 280ms;
 }
 
 @keyframes vt-fade {
@@ -231,50 +393,75 @@ body {
 ::view-transition-old(.nav-forward) {
   --vt-offset: -24px;
   animation:
-    var(--vt-exit) ease-in both vt-fade reverse,
-    var(--vt-move) ease-in-out both vt-slide-x reverse;
+    var(--vt-exit) var(--ease-out) both vt-fade reverse,
+    var(--vt-move) var(--ease-out) both vt-slide-x reverse;
 }
 ::view-transition-new(.nav-forward) {
   --vt-offset: 24px;
   animation:
-    var(--vt-enter) ease-out var(--vt-exit) both vt-fade,
-    var(--vt-move) ease-in-out both vt-slide-x;
+    var(--vt-enter) var(--ease-out) var(--vt-enter-delay) both vt-fade,
+    var(--vt-move) var(--ease-out) both vt-slide-x;
 }
 ::view-transition-old(.nav-back) {
   --vt-offset: 24px;
   animation:
-    var(--vt-exit) ease-in both vt-fade reverse,
-    var(--vt-move) ease-in-out both vt-slide-x reverse;
+    var(--vt-exit) var(--ease-out) both vt-fade reverse,
+    var(--vt-move) var(--ease-out) both vt-slide-x reverse;
 }
 ::view-transition-new(.nav-back) {
   --vt-offset: -24px;
   animation:
-    var(--vt-enter) ease-out var(--vt-exit) both vt-fade,
-    var(--vt-move) ease-in-out both vt-slide-x;
+    var(--vt-enter) var(--ease-out) var(--vt-enter-delay) both vt-fade,
+    var(--vt-move) var(--ease-out) both vt-slide-x;
 }
 
 /* Demo items entering and leaving (stage registry, palette results). */
 ::view-transition-old(.item-exit) {
-  animation: var(--vt-exit) ease-in both vt-fade reverse;
+  animation: var(--vt-exit) var(--ease-out) both vt-fade reverse;
 }
 ::view-transition-new(.item-enter) {
   animation:
-    var(--vt-enter) ease-out var(--vt-exit) both vt-fade,
-    var(--vt-move) ease-out both vt-slide-y;
+    var(--vt-enter) var(--ease-out) var(--vt-enter-delay) both vt-fade,
+    var(--vt-move) var(--ease-out) both vt-slide-y;
 }
 ::view-transition-group(.item-move) {
   animation-duration: var(--vt-move);
-  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-timing-function: var(--ease-in-out);
 }
 
-/* Theme toggle: the new theme grows out of the toggle button as a circle. */
-::view-transition-old(root),
-::view-transition-new(root) {
+/* Title morph, home list ⇄ case-study headline. The snapshots are pinned to the
+   top-left and never stretched, so text crossfades between line-wraps instead of
+   distorting while the group glides to its new box. */
+::view-transition-group(.morph) {
+  animation-duration: var(--dur-move);
+  animation-timing-function: var(--ease-in-out);
+}
+::view-transition-old(.morph),
+::view-transition-new(.morph) {
+  height: 100%;
+  width: auto;
+  object-fit: none;
+  object-position: left top;
+  overflow: clip;
+}
+::view-transition-old(.morph) {
+  animation: var(--vt-exit) var(--ease-out) both vt-fade reverse;
+}
+::view-transition-new(.morph) {
+  animation: var(--dur-move) var(--ease-out) both vt-fade;
+}
+
+
+/* Theme toggle: the new theme grows out of the toggle button as a circle. Scoped
+   to theme switches by a class on <html>; route changes must never get this, or
+   the new page would be clipped to a small circle mid-navigation. */
+html.theme-transition::view-transition-old(root),
+html.theme-transition::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
-::view-transition-new(root) {
-  animation: vt-reveal 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+html.theme-transition::view-transition-new(root) {
+  animation: vt-reveal 480ms var(--ease-out);
 }
 @keyframes vt-reveal {
   from {

@@ -1,12 +1,13 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { readTheme, subscribeTheme, toggleTheme } from "@/lib/theme";
+import { useEffect, useSyncExternalStore } from "react";
+import { followSystemTheme, readTheme, subscribeTheme, toggleTheme } from "@/lib/theme";
 
 export function ThemeToggle() {
   // The server knows nothing about the theme; the head script resolves it
   // before paint, and this reads it after hydration without a mismatch.
   const theme = useSyncExternalStore(subscribeTheme, readTheme, () => null);
+  useEffect(followSystemTheme, []);
 
   return (
     <button
@@ -17,7 +18,7 @@ export function ThemeToggle() {
       }}
       aria-label="Dark theme"
       aria-pressed={theme === null ? undefined : theme === "dark"}
-      className="grid size-9 place-items-center rounded-full text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
+      className="press grid size-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink"
     >
       {/* Both icons render; CSS shows the right one, so nothing flashes. */}
       <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[18px] dark:hidden" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">

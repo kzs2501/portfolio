@@ -113,7 +113,7 @@ export default function StageRegistryDemo() {
           type="button"
           onClick={() => go(-1)}
           disabled={index === 0}
-          className="rounded-md border border-rule bg-paper px-3.5 py-1.5 text-sm text-ink transition-colors hover:bg-surface-2 disabled:opacity-40"
+          className="press rounded-md border border-rule bg-paper px-3.5 py-1.5 text-sm text-ink hover:bg-surface-2 disabled:opacity-40"
         >
           ← Back
         </button>
@@ -121,7 +121,7 @@ export default function StageRegistryDemo() {
           type="button"
           onClick={() => go(1)}
           disabled={!next}
-          className="rounded-md bg-ink px-3.5 py-1.5 text-sm text-paper transition-opacity hover:opacity-85 disabled:opacity-40"
+          className="press rounded-md bg-ink px-3.5 py-1.5 text-sm text-paper hover:opacity-85 disabled:opacity-40"
         >
           Continue →
         </button>

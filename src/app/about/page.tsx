@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { site } from "@/content/site";
+import { CopyEmail } from "@/components/copy-email";
 import { experience, education } from "@/content/experience";
 import { SectionLabel } from "@/components/ledger";
 import { PageTransition } from "@/components/page-transition";
@@ -98,11 +99,8 @@ export default function About() {
         </section>
 
         <p className="mt-16 text-ink-2">
-          The fastest way to reach me is{" "}
-          <a href={`mailto:${site.email}`} className="text-accent underline underline-offset-4">
-            {site.email}
-          </a>
-          , or grab the{" "}
+          The fastest way to reach me is <CopyEmail email={site.email} className="text-accent" />,
+          or grab the{" "}
           <a href={site.links.resume} className="text-accent underline underline-offset-4">
             résumé
           </a>

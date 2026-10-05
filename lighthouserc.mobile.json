@@ -8,7 +8,7 @@
         "http://localhost/notes/debounce-is-not-a-race-guard/",
         "http://localhost/about/"
       ],
-      "numberOfRuns": 3,
+      "numberOfRuns": 5,
       "settings": {}
     },
     "assert": {

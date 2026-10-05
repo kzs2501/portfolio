@@ -24,13 +24,13 @@ export default function NotesIndex() {
                 <span className="mt-1 block font-serif text-2xl tracking-tight transition-colors group-hover:text-accent">
                   {n.title}
                 </span>
-                <span className="mt-2 block text-ink-2">{n.summary}</span>
+                <span className="mt-2 block text-pretty text-ink-2">{n.summary}</span>
               </Link>
             </li>
           ))}
         </ul>
         <p className="mt-8 text-sm text-ink-3">
-          <a href="/notes/rss.xml" className="underline underline-offset-4 hover:text-ink">RSS feed</a>
+          <a href="/notes/rss.xml" className="inline-flex min-h-8 items-center underline underline-offset-4 hover:text-ink">RSS feed</a>
         </p>
       </div>
     </PageTransition>

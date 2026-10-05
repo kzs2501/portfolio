@@ -15,7 +15,14 @@ const serif = Instrument_Serif({
   variable: "--font-instrument-serif",
   display: "swap",
 });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono", display: "swap" });
+// Not preloaded: only small labels use it, and preloading it competed with the
+// hero's serif for bandwidth on slow mobile connections (LCP).
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+  preload: false,
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -29,18 +36,26 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbf9f5" },
-    { media: "(prefers-color-scheme: dark)", color: "#191613" },
+    { media: "(prefers-color-scheme: light)", color: "#fcfaf6" },
+    { media: "(prefers-color-scheme: dark)", color: "#120f0c" },
   ],
 };
 
-/** Runs before first paint, so a dark-mode visitor never sees a white flash. */
-const themeScript = `(function(){try{var s=localStorage.getItem("theme");var d=s?s==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light"}catch(e){}})()`;
+/**
+ * Runs before first paint, so a dark-mode visitor never sees a white flash. With a
+ * saved preference it also points both theme-color metas at that theme, so the
+ * phone's browser chrome matches the page rather than the OS setting.
+ */
+const themeScript = `(function(){try{var s=localStorage.getItem("theme");var d=s?s==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light";if(s){document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",d?"#120f0c":"#fcfaf6")})})}}catch(e){}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      // We set scroll-behavior: smooth for in-page links (contents, anchors).
+      // This tells Next 16 to switch it off during route changes, so a new page
+      // opens at the top instead of smooth-scrolling up from the old position.
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       className={`${inter.variable} ${serif.variable} ${mono.variable} antialiased`}
     >

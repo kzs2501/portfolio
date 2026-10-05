@@ -2,6 +2,9 @@ import { flushSync } from "react-dom";
 
 export type Theme = "light" | "dark";
 
+/** The paper colour of each theme, for the browser chrome (theme-color). */
+export const THEME_COLORS: Record<Theme, string> = { light: "#fcfaf6", dark: "#120f0c" };
+
 export const readTheme = (): Theme =>
   document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 
@@ -14,6 +17,40 @@ export const subscribeTheme = (onChange: () => void) => {
   return () => observer.disconnect();
 };
 
+const storedTheme = (): Theme | null => {
+  try {
+    const t = localStorage.getItem("theme");
+    return t === "light" || t === "dark" ? t : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Point every theme-color meta at one theme. Next renders two (one per OS scheme);
+ * once the user picks a theme explicitly, both must follow that choice, or the
+ * phone's status bar keeps showing the OS colour against the chosen page colour.
+ */
+export function syncThemeColor(theme: Theme) {
+  document
+    .querySelectorAll('meta[name="theme-color"]')
+    .forEach((m) => m.setAttribute("content", THEME_COLORS[theme]));
+}
+
+/**
+ * While the visitor hasn't picked a theme, follow the OS live — someone whose
+ * laptop switches to dark at sunset shouldn't need to reload.
+ */
+export function followSystemTheme() {
+  const mql = window.matchMedia("(prefers-color-scheme: dark)");
+  const onChange = (e: MediaQueryListEvent) => {
+    if (storedTheme()) return;
+    document.documentElement.dataset.theme = e.matches ? "dark" : "light";
+  };
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+}
+
 /**
  * Switch theme, growing the new one out of `origin` as a circle when the
  * browser supports view transitions and the user hasn't asked for less motion.
@@ -21,6 +58,7 @@ export const subscribeTheme = (onChange: () => void) => {
 export function setTheme(next: Theme, origin?: { x: number; y: number }) {
   const apply = () => {
     document.documentElement.dataset.theme = next;
+    syncThemeColor(next);
     try {
       localStorage.setItem("theme", next);
     } catch {
@@ -43,7 +81,11 @@ export function setTheme(next: Theme, origin?: { x: number; y: number }) {
   style.setProperty("--vt-y", `${y}px`);
   style.setProperty("--vt-r", `${r}px`);
 
-  document.startViewTransition(() => flushSync(apply));
+  // Mark this as a theme transition so only it gets the circular reveal.
+  const root = document.documentElement;
+  root.classList.add("theme-transition");
+  const transition = document.startViewTransition(() => flushSync(apply));
+  transition.finished.finally(() => root.classList.remove("theme-transition"));
 }
 
 export const toggleTheme = (origin?: { x: number; y: number }) =>

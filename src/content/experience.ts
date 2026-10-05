@@ -22,7 +22,7 @@ export const experience = [
     period: "Jul 2023 – Mar 2025",
     place: "Bengaluru",
     summary:
-      "Built Honda's CPO and ZDX checkout modules from scratch, and vehicle-compare and lead modules across GM's brands, on a token-driven component system.",
+      "Built Honda’s CPO and ZDX checkout modules from scratch, and vehicle-compare and lead modules across GM’s brands, on a token-driven component system.",
   },
   {
     org: "Tekion",

@@ -73,7 +73,7 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
           await navigator.clipboard.writeText(site.email);
           setStatus("Email address copied");
         } catch {
-          setStatus(`Couldn't copy — it's ${site.email}`);
+          setStatus(`Couldn’t copy — it’s ${site.email}`);
         }
         return;
     }
@@ -142,7 +142,7 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
         <kbd className="num rounded border border-rule px-1.5 py-0.5 text-[10px] text-ink-3">esc</kbd>
       </div>
 
-      <div id={listId} role="listbox" aria-label="Commands" className="max-h-[min(60vh,26rem)] overflow-y-auto p-2">
+      <div id={listId} role="listbox" aria-label="Commands" className="max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain p-2">
         {groups.map(([group, items]) => (
           <div key={group} role="group" aria-labelledby={`${listId}-${group}`} className="pb-1">
             <div id={`${listId}-${group}`} className="num px-2 pt-2 pb-1 text-[10px] tracking-[0.16em] text-ink-3 uppercase">
@@ -156,7 +156,7 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
                 aria-selected={index === active}
                 onPointerMove={() => setActive(index)}
                 onClick={() => void run(command)}
-                className={`flex cursor-pointer items-center justify-between gap-4 rounded-md px-3 py-2.5 text-sm ${
+                className={`press flex cursor-pointer items-center justify-between gap-4 rounded-md px-3 py-2.5 text-sm ${
                   index === active ? "bg-surface-2 text-ink" : "text-ink-2"
                 }`}
               >

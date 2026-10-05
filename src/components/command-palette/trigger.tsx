@@ -16,7 +16,7 @@ export function PaletteTrigger() {
       onFocus={preloadPalette}
       aria-keyshortcuts={mac ? "Meta+K" : "Control+K"}
       aria-label="Open command palette"
-      className="num flex h-9 items-center gap-1.5 rounded-md border border-rule px-2.5 text-xs text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
+      className="num press flex h-9 items-center gap-1.5 rounded-md border border-rule px-2.5 text-xs text-ink-2 hover:bg-surface-2 hover:text-ink"
     >
       <kbd className="font-mono">{mac ? "⌘" : "Ctrl"}</kbd>
       <kbd className="font-mono">K</kbd>

@@ -71,7 +71,7 @@ export function Demo({
         <Loaded />
       ) : (
         <div className="grid h-full place-items-center p-8 text-sm text-ink-3" style={{ minHeight }}>
-          {failed ? "This demo couldn't load. Refresh to try again." : "Loading interactive demo…"}
+          {failed ? "This demo couldn’t load. Refresh to try again." : "Loading interactive demo…"}
         </div>
       )}
     </div>

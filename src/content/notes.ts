@@ -9,9 +9,9 @@ export type NoteMeta = {
 export const notes: NoteMeta[] = [
   {
     slug: "debounce-is-not-a-race-guard",
-    title: "Debounce doesn't fix race conditions",
+    title: "Debounce doesn’t fix race conditions",
     summary:
-      "Debouncing cuts how many requests you send. It does nothing about the order they come back in — and the stale one wins more often than you'd think.",
+      "Debouncing cuts how many requests you send. It does nothing about the order they come back in — and the stale one wins more often than you’d think.",
     date: "2026-10-04",
   },
   {

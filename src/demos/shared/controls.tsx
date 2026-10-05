@@ -34,7 +34,7 @@ export function Segmented<T extends string>({
               const group = e.currentTarget.parentElement;
               requestAnimationFrame(() => group?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus());
             }}
-            className={`rounded-md px-3 py-1.5 transition-colors ${selected ? "bg-ink text-paper" : "text-ink-2 hover:text-ink"}`}
+            className={`press rounded-md px-3 py-1.5 ${selected ? "bg-ink text-paper" : "text-ink-2 hover:text-ink"}`}
           >
             {o.label}
           </button>
@@ -59,7 +59,7 @@ export function PlayerControls({
   onStep: () => void;
   onReset: () => void;
 }) {
-  const btn = "rounded-md border border-rule bg-paper px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface-2 disabled:opacity-40";
+  const btn = "press rounded-md border border-rule bg-paper px-3 py-1.5 text-sm text-ink hover:bg-surface-2 disabled:opacity-40";
   return (
     <div className="flex flex-wrap gap-2">
       {playing ? (
