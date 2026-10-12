@@ -42,9 +42,10 @@ test("no horizontal scroll at 375px on any route", async ({ page }) => {
   }
 });
 
-test("skip link moves focus to the main content", async ({ page }) => {
+test("skip link moves focus to the main content", async ({ page, browserName }) => {
   await page.goto("/");
-  await page.keyboard.press("Tab");
+  // Safari doesn't Tab to links by default; its users press Option-Tab.
+  await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#main$/);

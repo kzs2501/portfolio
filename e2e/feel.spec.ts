@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { clipboardReader } from "./clipboard";
 
 const CASE = "/work/four-rails-one-checkout/";
 
@@ -15,10 +16,14 @@ test.describe("identity & chrome", () => {
   test("theme-color follows an explicit theme choice", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("/");
-    await page.getByRole("button", { name: "Dark theme" }).click();
-    const colors = await page.locator('meta[name="theme-color"]').evaluateAll((ms) => ms.map((m) => m.getAttribute("content")));
-    expect(colors.length).toBeGreaterThan(0);
-    expect(new Set(colors)).toEqual(new Set(["#120f0c"]));
+    const toggle = page.getByRole("button", { name: "Dark theme" });
+    // aria-pressed only appears once hydrated, i.e. once the click handler exists.
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await toggle.click();
+    // The theme applies inside a view transition's update callback, a frame later.
+    const colors = () =>
+      page.locator('meta[name="theme-color"]').evaluateAll((ms) => [...new Set(ms.map((m) => m.getAttribute("content")))]);
+    await expect.poll(colors).toEqual(["#120f0c"]);
   });
 
   test("nav marks the current section", async ({ page }) => {
@@ -46,8 +51,14 @@ test.describe("navigation & flow", () => {
     expect(errors).toEqual([]);
   });
 
-  test("reading progress fills as you scroll", async ({ page }) => {
+  test("reading progress fills as you scroll (or stays hidden where unsupported)", async ({ page }) => {
     await page.goto(CASE);
+    const supported = await page.evaluate(() => CSS.supports("animation-timeline: scroll()"));
+    if (!supported) {
+      // Graceful fallback: no scroll timelines, no bar — never a frozen or full one.
+      await expect(page.locator(".reading-progress")).toBeHidden();
+      return;
+    }
     const scale = () =>
       page.locator(".reading-progress").evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).a);
     const before = await scale();
@@ -76,12 +87,12 @@ test.describe("skimmability", () => {
     await expect(active).toHaveCount(1);
   });
 
-  test("a heading anchor copies a link to its section", async ({ page, context }) => {
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  test("a heading anchor copies a link to its section", async ({ page, context, browserName }) => {
+    const readClipboard = await clipboardReader(page, context, browserName);
     await page.goto(CASE);
     await page.getByRole("link", { name: "Link to section: Tradeoffs" }).click();
     await expect(page).toHaveURL(/#tradeoffs$/);
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/\/work\/four-rails-one-checkout\/#tradeoffs$/);
+    await expect.poll(readClipboard).toMatch(/\/work\/four-rails-one-checkout\/#tradeoffs$/);
   });
 
   test("headings read cleanly to screen readers (anchor sits beside, not inside)", async ({ page }) => {
@@ -91,13 +102,13 @@ test.describe("skimmability", () => {
 });
 
 test.describe("personal touches", () => {
-  test("copy email shows feedback and copies the address", async ({ page, context }) => {
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  test("copy email shows feedback and copies the address", async ({ page, context, browserName }) => {
+    const readClipboard = await clipboardReader(page, context, browserName);
     await page.goto("/");
     const footer = page.getByRole("contentinfo");
     await footer.getByRole("button", { name: "Copy email address" }).click();
     await expect(footer.getByRole("button", { name: "Email address copied" })).toHaveText("Copied");
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("kshitizsonakiya2001@gmail.com");
+    await expect.poll(readClipboard).toBe("kshitizsonakiya2001@gmail.com");
   });
 
   test.describe("from New York", () => {

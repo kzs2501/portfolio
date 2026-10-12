@@ -93,7 +93,7 @@ export default function BrandTokensDemo() {
         </div>
         <div>
           <p className="num mb-2 text-[10px] tracking-[0.16em] text-ink-3 uppercase">The entire brand definition</p>
-          <pre className="max-h-[22rem] overflow-auto rounded-lg border border-rule bg-paper p-3.5 font-mono text-[11px] leading-relaxed text-ink">
+          <pre tabIndex={0} aria-label="Brand definition" className="max-h-[22rem] overflow-auto rounded-lg border border-rule bg-paper p-3.5 font-mono text-[11px] leading-relaxed text-ink">
             {config}
           </pre>
         </div>

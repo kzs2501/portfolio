@@ -47,7 +47,8 @@ Tailwind CSS 4 · MDX · Vitest · Playwright + axe · Lighthouse CI.
 | `npm test` | 51 unit tests: demo logic, palette ranking, contents extraction, local time, content typography |
 | `npm run test:e2e` | 40 browser tests: axe (WCAG 2.2 AA) on every route in light and dark, keyboard paths, 375px layout, reduced motion, demo behaviour, navigation scroll, contents, anchors, clipboard, timezone |
 | `npm run lhci` | Lighthouse ≥ 95 in every category, CLS ≤ 0.05 |
-| CI | All of the above on every push and pull request |
+| `npm run test:e2e:all` | The same browser suite on Chromium, WebKit (Safari's engine) and Firefox — 120 tests |
+| CI | All of the above on every push and pull request (browser tests on Chromium) |
 
 Desktop Lighthouse: 100 / 100 / 100 / 100 on every audited page. Mobile (simulated slow 4G, 5 runs): median LCP 2.1s.
 

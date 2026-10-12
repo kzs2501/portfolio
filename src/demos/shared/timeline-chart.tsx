@@ -83,7 +83,7 @@ export function TimelineChart({
 
       <div className="mt-4 rounded-lg border border-rule bg-paper px-3.5 py-3">
         <p className="num text-[10px] tracking-[0.16em] text-ink-3 uppercase">Event log</p>
-        <ol className="mt-1.5 max-h-28 space-y-0.5 overflow-y-auto font-mono text-xs text-ink-2">
+        <ol tabIndex={0} aria-label="Event log" className="mt-1.5 max-h-28 space-y-0.5 overflow-y-auto font-mono text-xs text-ink-2">
           {visible.length === 0 && <li className="text-ink-3">Press Play or Step to start.</li>}
           {visible.map((e, i) => (
             <li key={i} className={i === visible.length - 1 ? "text-ink" : undefined}>
