@@ -8,6 +8,13 @@ export type NoteMeta = {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "redirect-races-the-webhook",
+    title: "The redirect races the webhook",
+    summary:
+      "After a payment, the browser’s redirect and the provider’s webhook race back to your app. Only one of them should be allowed to issue tickets.",
+    date: "2026-10-12",
+  },
+  {
     slug: "debounce-is-not-a-race-guard",
     title: "Debounce doesn’t fix race conditions",
     summary:

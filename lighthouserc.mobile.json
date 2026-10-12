@@ -6,6 +6,7 @@
         "http://localhost/",
         "http://localhost/work/charity-portal/",
         "http://localhost/notes/debounce-is-not-a-race-guard/",
+        "http://localhost/projects/admit-one/",
         "http://localhost/about/"
       ],
       "numberOfRuns": 5,

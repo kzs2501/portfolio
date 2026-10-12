@@ -11,6 +11,8 @@ const routes = [
   "/notes/debounce-is-not-a-race-guard",
   "/notes/load-sdks-on-mount",
   "/notes/async-intersection-observer-mock",
+  "/notes/redirect-races-the-webhook",
+  "/projects/admit-one",
 ];
 
 for (const scheme of ["light", "dark"] as const) {

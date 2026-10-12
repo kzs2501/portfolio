@@ -1,0 +1,81 @@
+After a buyer pays, two things travel back to your app. The **redirect**: the browser
+returns from the payment step to your "thank you" page. And the **webhook**: the payment
+provider calls your server to say the payment succeeded. They're independent, and they
+race.
+
+The tempting design is to treat the redirect as the success signal: the browser came
+back, so the payment worked, so issue the tickets. That design ships two bugs.
+
+## Bug 1: paid, but no tickets
+
+Redirects get lost. The buyer closes the tab during the bank's authentication step. The
+phone drops off Wi-Fi on the way back. A browser extension blocks the return URL. The
+money moved, but the code that issues tickets lived on a page that never loaded.
+
+## Bug 2: tickets, but not paid
+
+Redirects can be replayed or forged. If arriving on `/success?order=123` is what marks
+an order paid, then arriving there is all it takes — refreshing an old tab, or typing
+the URL.
+
+## The fix: the webhook decides, the page waits
+
+The provider guarantees one thing: it will deliver the webhook *at least once*. So make
+the webhook the only thing that can mark an order paid, and make the page honest about
+waiting:
+
+1. **Paying returns "processing", never "paid".** The response tells the browser where
+   to go next, not what happened.
+2. **The order page polls until the order is settled.** It shows "Confirming your
+   payment…" and asks the server, with backoff — half a second, a second, two seconds,
+   then every four — and stops the moment the order is settled.
+3. **If it's slow, say so.** After a few seconds: *this is taking longer than usual,
+   your payment is safe, you don't need to do anything.* That one sentence prevents the
+   most expensive thing a nervous buyer can do, which is pay again.
+
+The race stops mattering. If the webhook wins, the order page opens already confirmed.
+If the redirect wins, the page waits a moment. Either way the server is the one that
+decides.
+
+## "At least once" means duplicates are normal
+
+A provider that guarantees delivery will sometimes deliver twice: it retried because
+your server was slow to reply, or a network blip ate the acknowledgement. If processing
+a webhook issues tickets, a duplicate issues them twice.
+
+Every webhook event has an id. Record it *before* acting, and skip any id you've already
+seen:
+
+```ts
+function processWebhook(event: WebhookEvent) {
+  // A redelivery: already handled.
+  if (processedEvents.has(event.id)) return;
+  processedEvents.add(event.id);
+  markPaidAndIssueTickets(event.paymentId);
+}
+```
+
+Add a second guard for good measure: ignore a "payment succeeded" event for an order
+that's already settled. Belt and braces, because this is the code path that touches
+money.
+
+## The same idea on the way in: idempotency keys
+
+The browser has its own version of the duplicate problem. A buyer double-clicks *Pay*,
+or the request times out and the app retries. Did the first one go through?
+
+Send an **idempotency key** with the payment request: a random id per payment
+*attempt*. The server stores the response against the key and replays it for any
+repeat, so a retry can never charge twice. The subtle part is when to mint a new key.
+Keep the same one after a network error, because you don't know what happened and a
+retry must be safe. Make a new one only after a definitive answer, such as "card
+declined", where the buyer is genuinely starting a new attempt.
+
+## See it break
+
+I built [admit-one](/projects/admit-one/) to make all of this visible. Its chaos panel
+can deliver the webhook twice, deliver it before the browser hears back, or delay it
+twelve seconds, and a live server log shows exactly what happens each time.
+
+> The redirect tells you where the buyer is. The webhook tells you what happened. Only
+> one of them is allowed to issue tickets.

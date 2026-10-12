@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { site } from "./site";
 import { work } from "./work";
 import { notes } from "./notes";
+import { projects } from "./projects";
 import { experience, education } from "./experience";
 
 /** Every string a visitor can read, from the typed content index. */
@@ -19,7 +20,7 @@ function visibleStrings(value: unknown, path = "content"): [string, string][] {
 }
 
 describe("content typography", () => {
-  const strings = visibleStrings({ site, work, notes, experience, education });
+  const strings = visibleStrings({ site, work, projects, notes, experience, education });
 
   it("finds the content to check", () => {
     expect(strings.length).toBeGreaterThan(30);

@@ -1,0 +1,72 @@
+## Why I built it
+
+My case studies describe checkout work I can't show: the code belongs to the companies I
+built it for. admit-one is the same kind of problem, solved from scratch in public, so
+you can read every line, run it, and try to break it.
+
+It's an event-ticketing checkout. Pick tickets, they're held for you while you check
+out, you pay, and you get your tickets. The interesting part is everything that can go
+wrong in between — and a **chaos panel** that makes those things go wrong on purpose.
+
+<Figure caption="A finished order, with the chaos panel open. The server log shows the payment provider delivering the same webhook twice — and the second delivery being ignored.">
+  <img
+    src="/projects/admit-one-chaos.webp"
+    width={1280}
+    height={900}
+    loading="lazy"
+    decoding="async"
+    alt="The admit-one order page beside the chaos panel, whose server log shows a duplicate webhook being ignored."
+    className="w-full rounded-xl border border-rule"
+  />
+</Figure>
+
+## The hard parts
+
+**Holds that can't oversell.** Choosing tickets creates a hold with an expiry time.
+Availability counts only *live* holds, so an expired hold simply stops counting. There's
+no background job to release it — which means no window where a dead hold still blocks
+the next buyer.
+
+**A step registry driven by the URL.** Each checkout step declares when it applies and
+when it's complete; the flow is whatever applies to your order. The URL is the source of
+truth, so refreshing resumes in place and a deep link can't skip ahead. It's a smaller,
+open version of [the architecture behind my four-rail checkout](/work/four-rails-one-checkout/).
+
+**The webhook decides, not the redirect.** Paying never returns "paid". The browser goes
+to the order page, which waits for the payment provider's webhook. Payments carry an
+idempotency key, so a retried request can't charge twice, and duplicate webhooks are
+recognised and ignored. I wrote up the reasoning in
+[The redirect races the webhook](/notes/redirect-races-the-webhook/).
+
+**Payment after the hold expired.** If the money arrives after the tickets have gone,
+the order is refunded in full and the page explains why — rather than overselling or
+keeping the money.
+
+## Nine ways to break it
+
+The chaos panel has nine scenarios: a declined card, 3-D Secure, a slow network, a
+webhook that arrives twice, a webhook that beats the browser, a webhook twelve seconds
+late, a hold that expires mid-payment, and a crowd that buys the last ticket a moment
+before you. Each one is also an end-to-end test that checks both what you see and what
+the server recorded.
+
+## How it runs with no backend
+
+The API is real HTTP — `fetch`, status codes, headers — served by a service worker in
+your browser. That means there's nothing to deploy or configure, every visitor gets
+their own sandbox, and the chaos panel can genuinely control the server. Because the
+server lives in the page, its state is saved as it changes, including webhooks still
+waiting to be delivered, so reloading mid-payment resumes exactly where you were.
+
+The honest limit: one browser tab can't exercise true multi-client concurrency. The
+README says exactly what a real database would do instead, and swapping one in means
+replacing a single folder, not the app.
+
+## Quality
+
+- **71 unit, component and HTTP tests**, including every legal and illegal order
+  transition, idempotency replays and webhook deduplication.
+- **22 browser tests** covering every chaos scenario, refresh mid-payment, step guards,
+  expiry, and accessibility checks in light and dark mode.
+- **Lighthouse 100** across the board on desktop.
+- Each design decision has a short write-up in the repository.

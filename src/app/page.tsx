@@ -3,6 +3,7 @@ import { ViewTransition } from "react";
 import { site } from "@/content/site";
 import { work } from "@/content/work";
 import { notes, formatDate } from "@/content/notes";
+import { projects } from "@/content/projects";
 import { SectionLabel } from "@/components/ledger";
 import { PageTransition } from "@/components/page-transition";
 
@@ -85,6 +86,40 @@ export default function Home() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section aria-labelledby="projects" className="mt-24 scroll-mt-24">
+          <SectionLabel id="projects">Projects</SectionLabel>
+          <ul className="mt-2">
+            {projects.map((p) => (
+              <li key={p.slug} className="border-b border-rule">
+                <Link
+                  href={`/projects/${p.slug}`}
+                  transitionTypes={["nav-forward"]}
+                  className="group grid gap-x-8 gap-y-2 py-8 sm:grid-cols-[3rem_1fr_auto]"
+                >
+                  <span aria-hidden="true" className="num text-sm text-ink-3">
+                    ↗
+                  </span>
+                  <span>
+                    <span className="block font-serif text-2xl leading-tight tracking-tight transition-colors group-hover:text-accent sm:text-3xl">
+                      {p.title}
+                    </span>
+                    <span className="mt-2 block max-w-2xl text-pretty text-ink-2">{p.summary}</span>
+                    <span className="mt-3 block text-sm text-ink-3">
+                      Live demo and source · {p.highlight}
+                    </span>
+                  </span>
+                  <span className="num text-sm text-ink-3 sm:text-right">
+                    Personal
+                    <br className="hidden sm:block" />
+                    <span className="sm:hidden"> · </span>
+                    {p.period}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section aria-labelledby="notes" className="mt-24">

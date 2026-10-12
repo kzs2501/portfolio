@@ -13,5 +13,8 @@ export const site = {
     linkedin: "https://www.linkedin.com/in/kshitiz-sonakiya/",
     resume: "/resume.pdf",
     source: "https://github.com/Punisher666/portfolio",
+    // Deploy day: replace with the real Vercel URL for admit-one.
+    admitOneDemo: "https://admit-one.vercel.app",
+    admitOneSource: "https://github.com/Punisher666/admit-one",
   },
 } as const;

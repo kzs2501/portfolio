@@ -1,6 +1,7 @@
 import { site } from "@/content/site";
 import { work } from "@/content/work";
 import { notes } from "@/content/notes";
+import { projects } from "@/content/projects";
 
 export type CommandAction =
   | { type: "navigate"; href: string }
@@ -10,7 +11,7 @@ export type CommandAction =
 
 export type Command = {
   id: string;
-  group: "Pages" | "Case studies" | "Notes" | "Actions";
+  group: "Pages" | "Case studies" | "Projects" | "Notes" | "Actions";
   label: string;
   hint?: string;
   keywords?: string;
@@ -28,6 +29,14 @@ export const commands: Command[] = [
     hint: w.org,
     keywords: w.stack.join(" "),
     action: { type: "navigate", href: `/work/${w.slug}` },
+  })),
+  ...projects.map<Command>((p) => ({
+    id: `project-${p.slug}`,
+    group: "Projects",
+    label: p.title,
+    hint: "Project",
+    keywords: `${p.stack.join(" ")} ticketing checkout demo`,
+    action: { type: "navigate", href: `/projects/${p.slug}` },
   })),
   ...notes.map<Command>((n) => ({
     id: `note-${n.slug}`,
