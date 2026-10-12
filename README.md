@@ -68,15 +68,15 @@ src/
   content/          the typed content index + case-study and note MDX
   components/       layout, ledger primitives, demo loader, ⌘K palette
   demos/            each demo: logic.ts + logic.test.ts + demo.tsx
-content-review/     every factual claim on the site, as a checklist (never published)
 e2e/                Playwright + axe
 ```
 
 ## Content review
 
-Every factual claim in the case studies is listed in [`content-review/`](content-review).
-`npm run check:claims` fails until each is confirmed, and `npm run prelaunch` runs it
-together with lint, type-check, tests and the build.
+Before launch, every factual claim in the case studies is checked against a private,
+gitignored checklist (`content-review/`, kept only on my machine). `npm run check:claims`
+fails until each one is confirmed, and `npm run prelaunch` runs it together with lint,
+type-check, tests and the build. On a fresh clone the check is skipped.
 
 ## Deploying
 

@@ -10,3 +10,6 @@ next-env.d.ts
 .DS_Store
 .vercel
 .lighthouseci-mobile
+
+# Private pre-launch checklist of every factual claim. Lives only on the author's machine.
+content-review/
