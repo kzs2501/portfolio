@@ -1,7 +1,7 @@
-/** Where Kshitiz is. Everything below is pure, so it's unit-testable. */
+/** Where Kshitiz works from (IST). Everything below is pure, so it's unit-testable. */
 // India has no daylight saving, so the offset is a constant and safe to render on
 // the server; the live clock itself only renders after hydration.
-export const HOME = { city: "Bengaluru", timeZone: "Asia/Kolkata", abbr: "IST", offsetMinutes: 330 } as const;
+export const HOME = { city: "India", timeZone: "Asia/Kolkata", abbr: "IST", offsetMinutes: 330 } as const;
 
 /** "9:41 pm" in the given time zone. */
 export function formatClock(date: Date, timeZone: string = HOME.timeZone): string {

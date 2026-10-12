@@ -40,7 +40,7 @@ export default function About() {
         <h1 className="font-serif text-5xl tracking-tight">About</h1>
         <div className="prose-ledger mt-8 text-ink-2">
           <p>
-            I&rsquo;m a frontend engineer in Bengaluru with three years of shipping React into
+            I&rsquo;m a frontend engineer based in India, with three years of shipping React into
             products that move money: automotive checkouts at Tekion, then a multi-rail giving
             platform and a nonprofit portal at Benefi.
           </p>

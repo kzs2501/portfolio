@@ -38,7 +38,7 @@ Tailwind CSS 4 · MDX · Vitest · Playwright + axe · Lighthouse CI.
     order;
   - copyable heading anchors;
   - curly typography enforced by a test;
-  - a live Bengaluru clock that tells remote visitors the time difference.
+  - a live IST clock that tells remote visitors the time difference.
 
 ## Quality gates
 

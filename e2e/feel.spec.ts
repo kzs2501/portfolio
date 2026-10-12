@@ -102,10 +102,10 @@ test.describe("personal touches", () => {
 
   test.describe("from New York", () => {
     test.use({ timezoneId: "America/New_York" });
-    test("local time shows Bengaluru time and the gap to the visitor", async ({ page }) => {
+    test("local time shows IST and the gap to the visitor", async ({ page }) => {
       await page.goto("/");
       const footer = page.getByRole("contentinfo");
-      await expect(footer).toContainText(/Bengaluru · \d{1,2}:\d{2}\s(am|pm)/);
+      await expect(footer).toContainText(/India · \d{1,2}:\d{2}\s(am|pm)/);
       await expect(footer).toContainText("UTC+5:30");
       await expect(footer).toContainText(/\d+h 30m ahead of you/);
     });

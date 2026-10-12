@@ -19,7 +19,7 @@ const subscribe = (onChange: () => void) => {
 const currentMinute = () => Math.floor(Date.now() / 60_000);
 
 /**
- * "Bengaluru · 9:41 pm IST (UTC+5:30)" and, for visitors elsewhere, how far ahead
+ * "India · 9:41 pm IST (UTC+5:30)" and, for visitors elsewhere, how far ahead
  * or behind that is — the timezone question a remote team always asks. Rendered
  * after hydration (null server snapshot) in a fixed-width slot: no mismatch, no shift.
  */

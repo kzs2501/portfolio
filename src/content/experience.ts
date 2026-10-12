@@ -3,7 +3,7 @@ export const experience = [
   {
     org: "Benefi",
     title: "Senior Software Engineer, Frontend",
-    period: "Aug 2025 – Present",
+    period: "Aug 2025 – Jul 2026",
     place: "Remote",
     summary:
       "Architected the four-rail giving checkout, built the Discover and search surfaces and the donor hub, founded the charity portal, and introduced automated testing and CI quality gates.",
