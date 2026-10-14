@@ -2,3 +2,8 @@ out
 .next
 node_modules
 package-lock.json
+.lighthouseci
+.lighthouseci-mobile
+playwright-report
+test-results
+content-review
