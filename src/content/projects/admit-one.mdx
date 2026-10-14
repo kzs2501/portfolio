@@ -60,13 +60,27 @@ waiting to be delivered, so reloading mid-payment resumes exactly where you were
 
 The honest limit: one browser tab can't exercise true multi-client concurrency. The
 README says exactly what a real database would do instead, and swapping one in means
-replacing a single folder, not the app.
+deleting the `backend/` folder and the one line that starts it — a lint rule
+guarantees nothing else depends on it.
+
+## How it's built
+
+The code is layered the way a larger team would need it: a shared kernel, a typed
+HTTP contract, the simulated backend behind that contract, then features and routes.
+Who may import whom is written down as a lint rule, so the architecture can't quietly
+erode. Errors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details
+with a typed code; every response is validated against the contract at the client;
+and each screen's state is a single union, derived by a pure function, rather than a
+pile of booleans. The repository documents all of it — architecture, conventions, API
+and eight decision records.
 
 ## Quality
 
-- **71 unit, component and HTTP tests**, including every legal and illegal order
-  transition, idempotency replays and webhook deduplication.
-- **22 browser tests** covering every chaos scenario, refresh mid-payment, step guards,
+- **103 unit, component and HTTP tests**, including every legal and illegal order
+  transition, idempotency replays, webhook deduplication, the API client's error
+  handling and the checkout's state machine.
+- **25 browser tests** covering every chaos scenario, refresh mid-payment, step guards,
   expiry, and accessibility checks in light and dark mode.
 - **Lighthouse 100** across the board on desktop.
-- Each design decision has a short write-up in the repository.
+- Strict TypeScript and type-aware lint, including naming conventions and the layer
+  boundaries.
