@@ -10,22 +10,15 @@
  * - single-flight: the first 401 starts the refresh and stores its promise;
  *   every later 401 awaits that same promise, then retries. One refresh, total.
  */
+import type { TimelineMarker, TimelineSegment } from "../shared/timeline-types";
+
 export type Mode = "naive" | "single-flight";
 
 export type SegmentKind = "send" | "wait" | "refresh" | "refresh-rejected" | "retry";
 export type MarkerKind = "401" | "ok" | "fail";
 
-export interface Segment {
-  lane: string;
-  kind: SegmentKind;
-  start: number;
-  end: number;
-}
-export interface Marker {
-  lane: string;
-  kind: MarkerKind;
-  at: number;
-}
+export type Segment = TimelineSegment<SegmentKind>;
+export type Marker = TimelineMarker<MarkerKind>;
 
 export interface Timeline {
   lanes: { id: string; label: string }[];

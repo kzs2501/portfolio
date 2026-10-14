@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { PAPER } from "../src/lib/design-tokens";
 import { clipboardReader } from "./clipboard";
 
 const CASE = "/work/four-rails-one-checkout/";
@@ -24,8 +25,8 @@ test.describe("identity & chrome", () => {
     const colors = () =>
       page
         .locator('meta[name="theme-color"]')
-        .evaluateAll((ms) => [...new Set(ms.map((m) => m.getAttribute("content")))]);
-    await expect.poll(colors).toEqual(["#120f0c"]);
+        .evaluateAll((metas) => [...new Set(metas.map((meta) => meta.getAttribute("content")))]);
+    await expect.poll(colors).toEqual([PAPER.dark]);
   });
 
   test("nav marks the current section", async ({ page }) => {

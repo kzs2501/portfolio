@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   images: { unoptimized: true },
+  // Check every literal href against the real routes at build time.
+  typedRoutes: true,
 };
 
 const withMDX = createMDX({

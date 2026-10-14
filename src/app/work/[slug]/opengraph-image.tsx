@@ -1,4 +1,5 @@
 import { renderOg, ogSize } from "@/lib/og";
+import { toSlugParams } from "@/app/_lib/content-page";
 import { work, getWork } from "@/content/work";
 
 export const dynamic = "force-static";
@@ -6,9 +7,7 @@ export const size = ogSize;
 export const contentType = "image/png";
 export const alt = "Case study";
 
-export function generateStaticParams() {
-  return work.map((w) => ({ slug: w.slug }));
-}
+export const generateStaticParams = () => toSlugParams(work);
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const meta = getWork((await params).slug);

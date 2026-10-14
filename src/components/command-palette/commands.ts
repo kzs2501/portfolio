@@ -2,9 +2,11 @@ import { site } from "@/content/site";
 import { work } from "@/content/work";
 import { notes } from "@/content/notes";
 import { projects } from "@/content/projects";
+import type { Route } from "next";
+import { routes } from "@/lib/routes";
 
 export type CommandAction =
-  { type: "navigate"; href: string } | { type: "external"; href: string } | { type: "theme" } | { type: "copy-email" };
+  { type: "navigate"; href: Route } | { type: "external"; href: string } | { type: "theme" } | { type: "copy-email" };
 
 export interface Command {
   id: string;
@@ -16,14 +18,14 @@ export interface Command {
 }
 
 export const COMMANDS: readonly Command[] = [
-  { id: "home", group: "Pages", label: "Home", action: { type: "navigate", href: "/" } },
-  { id: "notes", group: "Pages", label: "Notes", action: { type: "navigate", href: "/notes" } },
+  { id: "home", group: "Pages", label: "Home", action: { type: "navigate", href: routes.home() } },
+  { id: "notes", group: "Pages", label: "Notes", action: { type: "navigate", href: routes.notes() } },
   {
     id: "about",
     group: "Pages",
     label: "About",
     keywords: "experience cv history",
-    action: { type: "navigate", href: "/about" },
+    action: { type: "navigate", href: routes.about() },
   },
   ...work.map<Command>((w) => ({
     id: `work-${w.slug}`,
@@ -31,7 +33,7 @@ export const COMMANDS: readonly Command[] = [
     label: w.title,
     hint: w.org,
     keywords: w.stack.join(" "),
-    action: { type: "navigate", href: `/work/${w.slug}` },
+    action: { type: "navigate", href: routes.work(w.slug) },
   })),
   ...projects.map<Command>((p) => ({
     id: `project-${p.slug}`,
@@ -39,13 +41,13 @@ export const COMMANDS: readonly Command[] = [
     label: p.title,
     hint: "Project",
     keywords: `${p.stack.join(" ")} ticketing checkout demo`,
-    action: { type: "navigate", href: `/projects/${p.slug}` },
+    action: { type: "navigate", href: routes.project(p.slug) },
   })),
   ...notes.map<Command>((n) => ({
     id: `note-${n.slug}`,
     group: "Notes",
     label: n.title,
-    action: { type: "navigate", href: `/notes/${n.slug}` },
+    action: { type: "navigate", href: routes.note(n.slug) },
   })),
   { id: "theme", group: "Actions", label: "Switch theme", keywords: "dark light mode", action: { type: "theme" } },
   {

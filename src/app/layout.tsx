@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { CommandPalette } from "@/components/command-palette/palette";
 import "./globals.css";
+import { PAPER, THEME_STORAGE_KEY } from "@/lib/design-tokens";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const serif = Instrument_Serif({
@@ -36,8 +37,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fcfaf6" },
-    { media: "(prefers-color-scheme: dark)", color: "#120f0c" },
+    { media: "(prefers-color-scheme: light)", color: PAPER.light },
+    { media: "(prefers-color-scheme: dark)", color: PAPER.dark },
   ],
 };
 
@@ -46,7 +47,7 @@ export const viewport: Viewport = {
  * saved preference it also points both theme-color metas at that theme, so the
  * phone's browser chrome matches the page rather than the OS setting.
  */
-const themeScript = `(function(){try{var s=localStorage.getItem("theme");var d=s?s==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light";if(s){document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",d?"#120f0c":"#fcfaf6")})})}}catch(e){}})()`;
+const themeScript = `(function(){try{var s=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});var d=s?s==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light";if(s){document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",d?${JSON.stringify(PAPER.dark)}:${JSON.stringify(PAPER.light)})})})}}catch(e){}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

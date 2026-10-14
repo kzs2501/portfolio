@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notes, formatDate } from "@/content/notes";
 import { PageTransition } from "@/components/page-transition";
+import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Notes",
@@ -19,7 +20,7 @@ export default function NotesIndex() {
         <ul className="mt-12 border-t border-rule">
           {notes.map((n) => (
             <li key={n.slug} className="border-b border-rule">
-              <Link href={`/notes/${n.slug}`} transitionTypes={["nav-forward"]} className="group block py-7">
+              <Link href={routes.note(n.slug)} transitionTypes={["nav-forward"]} className="group block py-7">
                 <span className="num text-xs text-ink-3">{formatDate(n.date)}</span>
                 <span className="mt-1 block font-serif text-2xl tracking-tight transition-colors group-hover:text-accent">
                   {n.title}

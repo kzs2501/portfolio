@@ -1,14 +1,5 @@
-export interface ChartSegment {
-  lane: string;
-  kind: string;
-  start: number;
-  end: number;
-}
-export interface ChartMarker {
-  lane: string;
-  kind: string;
-  at: number;
-}
+import type { TimelineMarker, TimelineSegment } from "./timeline-types";
+
 export interface ChartEvent {
   at: number;
   text: string;
@@ -36,8 +27,8 @@ export function TimelineChart({
   events,
 }: {
   lanes: { id: string; label: string }[];
-  segments: ChartSegment[];
-  markers: ChartMarker[];
+  segments: readonly TimelineSegment[];
+  markers: readonly TimelineMarker[];
   duration: number;
   t: number;
   styles: Record<string, KindStyle>;

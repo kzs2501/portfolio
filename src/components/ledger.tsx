@@ -26,3 +26,12 @@ export function SectionLabel({ children, id }: { children: ReactNode; id?: strin
     </div>
   );
 }
+
+/** The boxed facts under an article's title: role, stack, highlight. */
+export function FactsPanel({ rows }: { rows: { label: string; value: string }[] }) {
+  return (
+    <div className="mt-8 rounded-lg border border-rule bg-surface px-5 py-4">
+      <Ledger caption="Project facts" rows={rows} />
+    </div>
+  );
+}

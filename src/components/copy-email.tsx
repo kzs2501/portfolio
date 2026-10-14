@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
+import { useCopyFeedback } from "./use-copy-feedback";
 
 /**
  * The email as a real mailto link, plus a copy button — recruiters copy far more
@@ -8,32 +9,19 @@ import { useEffect, useRef, useState } from "react";
  * selected instead so ⌘C still works.
  */
 export function CopyEmail({ email, className = "" }: { email: string; className?: string }) {
-  const [hasCopied, setHasCopied] = useState(false);
   const linkRef = useRef<HTMLAnchorElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { hasCopied, copy } = useCopyFeedback();
 
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(email);
-      setHasCopied(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setHasCopied(false), 1500);
-    } catch {
-      const el = linkRef.current;
-      if (!el) return;
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    }
+  const copyEmail = async () => {
+    if (await copy(email)) return;
+    // No clipboard: select the address so ⌘C still works.
+    const link = linkRef.current;
+    if (!link) return;
+    const range = document.createRange();
+    range.selectNodeContents(link);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
   };
 
   return (
@@ -43,7 +31,7 @@ export function CopyEmail({ email, className = "" }: { email: string; className?
       </a>
       <button
         type="button"
-        onClick={copy}
+        onClick={copyEmail}
         aria-label={hasCopied ? "Email address copied" : "Copy email address"}
         className="num inline-flex min-h-6 press items-center rounded border border-rule px-1.5 text-[11px] text-ink-3 hover:border-ink-3 hover:text-ink"
       >

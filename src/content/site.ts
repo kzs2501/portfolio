@@ -1,7 +1,12 @@
+const NAME = "Kshitiz Sonakiya";
+const ROLE = "Senior Frontend Engineer";
+
 export const site = {
-  name: "Kshitiz Sonakiya",
-  title: "Kshitiz Sonakiya — Senior Frontend Engineer",
-  tagline: "Senior frontend engineer — payments, multi-step checkout, and the tests that keep them safe.",
+  name: NAME,
+  role: ROLE,
+  title: `${NAME} — ${ROLE}`,
+  /** What the work is about, in one line — the homepage subtitle and the link-preview title. */
+  focus: "Payments, multi-step checkout, and the tests that keep them safe.",
   description:
     "Case studies and notes from a senior frontend engineer who builds payment flows, config-driven checkouts and the test suites behind them. React, Next.js, TypeScript.",
   location: "India · open to remote",

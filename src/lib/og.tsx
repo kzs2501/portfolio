@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { site } from "@/content/site";
+import { ACCENT, INK, INK_MUTED, INK_SOFT, PAPER, RULE } from "./design-tokens";
 
 export const ogSize = { width: 1200, height: 630 };
 
@@ -14,12 +15,12 @@ export function renderOg({ kicker, title }: { kicker: string; title: string }) {
         flexDirection: "column",
         justifyContent: "space-between",
         padding: "72px 80px",
-        background: "#fbf9f5",
-        color: "#2a2520",
-        borderLeft: "14px solid #b8402c",
+        background: PAPER.light,
+        color: INK,
+        borderLeft: `14px solid ${ACCENT}`,
       }}
     >
-      <div style={{ display: "flex", fontSize: 26, letterSpacing: 4, textTransform: "uppercase", color: "#7d746b" }}>
+      <div style={{ display: "flex", fontSize: 26, letterSpacing: 4, textTransform: "uppercase", color: INK_MUTED }}>
         {kicker}
       </div>
       <div
@@ -38,13 +39,13 @@ export function renderOg({ kicker, title }: { kicker: string; title: string }) {
           display: "flex",
           justifyContent: "space-between",
           fontSize: 28,
-          color: "#5a524a",
-          borderTop: "2px dashed #b9b0a6",
+          color: INK_SOFT,
+          borderTop: `2px dashed ${RULE}`,
           paddingTop: 28,
         }}
       >
         <span>{site.name}</span>
-        <span>Senior Frontend Engineer</span>
+        <span>{site.role}</span>
       </div>
     </div>,
     ogSize,

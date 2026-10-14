@@ -10,6 +10,8 @@ export interface ProjectMeta {
   sourceUrl: string;
   /** One line on why it's worth a look. */
   highlight: string;
+  /** What it is, in a few words — the subtitle on its link-preview card. */
+  tagline: string;
 }
 
 /** Public, runnable work — the code is the evidence. */
@@ -34,6 +36,7 @@ export const projects: ProjectMeta[] = [
     demoUrl: site.links.admitOneDemo,
     sourceUrl: site.links.admitOneSource,
     highlight: "Nine failure scenarios, each one an end-to-end test",
+    tagline: "a ticketing checkout, done properly",
   },
 ];
 

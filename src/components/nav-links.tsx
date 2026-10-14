@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { routes } from "@/lib/routes";
 
 const nav = [
-  { href: "/#work", label: "Work", match: (p: string) => p === "/" || p.startsWith("/work") },
-  { href: "/notes", label: "Notes", match: (p: string) => p.startsWith("/notes") },
-  { href: "/about", label: "About", match: (p: string) => p.startsWith("/about") },
+  { href: routes.homeSection("work"), label: "Work", match: (p: string) => p === "/" || p.startsWith("/work") },
+  { href: routes.notes(), label: "Notes", match: (p: string) => p.startsWith("/notes") },
+  { href: routes.about(), label: "About", match: (p: string) => p.startsWith("/about") },
 ];
 
 /** Primary nav with a "you are here" underline (aria-current="page"). */

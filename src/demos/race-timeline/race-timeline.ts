@@ -8,20 +8,10 @@
  * "BTC" comes back first. Then the stale "BT" response lands. Without a guard
  * it overwrites the newer results; with a guard it's dropped.
  */
+import type { TimelineMarker, TimelineSegment } from "../shared/timeline-types";
+
 export type ScreenState =
   { kind: "idle" } | { kind: "loading"; query: string } | { kind: "results"; query: string; isStale: boolean };
-
-export interface RaceSegment {
-  lane: string;
-  kind: string;
-  start: number;
-  end: number;
-}
-export interface RaceMarker {
-  lane: string;
-  kind: string;
-  at: number;
-}
 
 const DEBOUNCE = 1.5;
 
@@ -41,8 +31,8 @@ function latencyFor(query: string): number {
 }
 
 export function buildRace(isGuarded: boolean) {
-  const segments: RaceSegment[] = [];
-  const markers: RaceMarker[] = [];
+  const segments: TimelineSegment[] = [];
+  const markers: TimelineMarker[] = [];
 
   // Debounce: a request fires DEBOUNCE after a keystroke with no newer keystroke.
   const requests: { query: string; sentAt: number; returnsAt: number }[] = [];

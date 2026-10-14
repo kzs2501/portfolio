@@ -6,6 +6,8 @@ import { notes, formatDate } from "@/content/notes";
 import { projects } from "@/content/projects";
 import { SectionLabel } from "@/components/ledger";
 import { PageTransition } from "@/components/page-transition";
+import { routes } from "@/lib/routes";
+import { PillLink } from "@/components/pill-link";
 
 export default function Home() {
   return (
@@ -17,17 +19,14 @@ export default function Home() {
             id="intro"
             className="mt-5 max-w-3xl font-serif text-[2.6rem] leading-[1.05] tracking-tight text-balance sm:text-6xl"
           >
-            Senior frontend engineer.{" "}
-            <span className="text-ink-2 italic">Payments, multi-step checkout, and the tests that keep them safe.</span>
+            Senior frontend engineer. <span className="text-ink-2 italic">{site.focus}</span>
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-ink-2">
             Three years shipping React and Next.js into money-moving products — most recently four payment rails behind
             one checkout, and a nonprofit portal I built from an empty repo.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 text-sm">
-            <Link href="#work" className="press rounded-full bg-ink px-5 py-2.5 text-paper hover:opacity-85">
-              See the work
-            </Link>
+            <PillLink href={routes.homeSection("work")}>See the work</PillLink>
             <a
               href={`mailto:${site.email}`}
               className="press rounded-full border border-rule px-5 py-2.5 text-ink hover:bg-surface-2"
@@ -43,7 +42,7 @@ export default function Home() {
             {work.map((w, i) => (
               <li key={w.slug} className="border-b border-rule">
                 <Link
-                  href={`/work/${w.slug}`}
+                  href={routes.work(w.slug)}
                   transitionTypes={["nav-forward"]}
                   className="group grid gap-x-8 gap-y-2 py-8 sm:grid-cols-[3rem_1fr_auto]"
                 >
@@ -76,7 +75,7 @@ export default function Home() {
             {projects.map((p) => (
               <li key={p.slug} className="border-b border-rule">
                 <Link
-                  href={`/projects/${p.slug}`}
+                  href={routes.project(p.slug)}
                   transitionTypes={["nav-forward"]}
                   className="group grid gap-x-8 gap-y-2 py-8 sm:grid-cols-[3rem_1fr_auto]"
                 >
@@ -108,7 +107,7 @@ export default function Home() {
             {notes.map((n) => (
               <li key={n.slug} className="border-b border-rule">
                 <Link
-                  href={`/notes/${n.slug}`}
+                  href={routes.note(n.slug)}
                   transitionTypes={["nav-forward"]}
                   className="group flex flex-col gap-1 py-5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8"
                 >

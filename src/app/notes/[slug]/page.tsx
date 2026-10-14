@@ -1,25 +1,20 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { notes, findNote, formatDate } from "@/content/notes";
+import { ArticleHeader } from "@/components/article-header";
+import { BackLink } from "@/components/back-link";
 import { PageTransition } from "@/components/page-transition";
 import { ReadingProgress } from "@/components/reading-progress";
+import { routes } from "@/lib/routes";
+import { articleMetadata, toSlugParams } from "@/app/_lib/content-page";
 import { loadMdxBody } from "@/app/_lib/load-mdx";
 
 export const dynamicParams = false;
 
-export function generateStaticParams() {
-  return notes.map((n) => ({ slug: n.slug }));
-}
+export const generateStaticParams = () => toSlugParams(notes);
 
-export async function generateMetadata({ params }: PageProps<"/notes/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/notes/[slug]">) {
   const meta = findNote((await params).slug);
-  if (!meta) return {};
-  return {
-    title: meta.title,
-    description: meta.summary,
-    openGraph: { title: meta.title, description: meta.summary, type: "article", publishedTime: meta.date },
-  };
+  return articleMetadata(meta, meta ? { publishedTime: meta.date } : {});
 }
 
 export default async function Note({ params }: PageProps<"/notes/[slug]">) {
@@ -32,22 +27,16 @@ export default async function Note({ params }: PageProps<"/notes/[slug]">) {
     <PageTransition>
       <ReadingProgress />
       <article className="mx-auto max-w-2xl px-5 pt-14 sm:px-8">
-        <Link
-          href="/notes"
-          transitionTypes={["nav-back"]}
-          className="-mx-1 inline-flex min-h-8 items-center px-1 text-sm text-ink-3 hover:text-ink"
-        >
-          ← All notes
-        </Link>
-        <header className="mt-10">
-          <p className="num text-xs tracking-[0.18em] text-ink-3 uppercase">
-            Note · <time dateTime={meta.date}>{formatDate(meta.date)}</time>
-          </p>
-          <h1 className="mt-4 font-serif text-[2.4rem] leading-[1.05] tracking-tight text-balance sm:text-5xl">
-            {meta.title}
-          </h1>
-          <p className="mt-5 text-lg leading-relaxed text-pretty text-ink-2">{meta.summary}</p>
-        </header>
+        <BackLink href={routes.notes()}>All notes</BackLink>
+        <ArticleHeader
+          eyebrow={
+            <>
+              Note · <time dateTime={meta.date}>{formatDate(meta.date)}</time>
+            </>
+          }
+          title={meta.title}
+          summary={meta.summary}
+        />
         <div className="prose-ledger mt-12">
           <Body />
         </div>

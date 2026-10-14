@@ -1,9 +1,10 @@
 import { flushSync } from "react-dom";
+import { PAPER, THEME_STORAGE_KEY } from "./design-tokens";
 
 export type Theme = "light" | "dark";
 
 /** The paper colour of each theme, for the browser chrome (theme-color). */
-export const THEME_COLORS: Record<Theme, string> = { light: "#fcfaf6", dark: "#120f0c" };
+export const THEME_COLORS: Record<Theme, string> = PAPER;
 
 export const readTheme = (): Theme => (document.documentElement.dataset["theme"] === "dark" ? "dark" : "light");
 
@@ -18,7 +19,7 @@ export const subscribeTheme = (onChange: () => void) => {
 
 const storedTheme = (): Theme | null => {
   try {
-    const t = localStorage.getItem("theme");
+    const t = localStorage.getItem(THEME_STORAGE_KEY);
     return t === "light" || t === "dark" ? t : null;
   } catch {
     return null;
@@ -57,7 +58,7 @@ export function setTheme(next: Theme, origin?: { x: number; y: number }) {
     document.documentElement.dataset["theme"] = next;
     syncThemeColor(next);
     try {
-      localStorage.setItem("theme", next);
+      localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {
       // Private mode or blocked storage: the choice just won't persist.
     }
