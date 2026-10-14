@@ -1,13 +1,7 @@
 import type { ReactNode } from "react";
 
 /** Receipt-style facts: `Role ........ Founding engineer`. */
-export function Ledger({
-  rows,
-  caption,
-}: {
-  rows: { label: string; value: ReactNode }[];
-  caption?: string;
-}) {
+export function Ledger({ rows, caption }: { rows: { label: string; value: ReactNode }[]; caption?: string }) {
   return (
     <dl aria-label={caption} className="space-y-2 text-sm">
       {rows.map(({ label, value }) => (

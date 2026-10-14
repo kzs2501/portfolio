@@ -21,7 +21,10 @@ export function SiteFooter() {
           {links.map((l) => (
             <li key={l.label}>
               {/* Padding (not just text) so each link is a ≥24px target. */}
-              <a href={l.href} className="inline-flex min-h-8 items-center px-2 text-ink-2 underline-offset-4 hover:text-ink hover:underline">
+              <a
+                href={l.href}
+                className="inline-flex min-h-8 items-center px-2 text-ink-2 underline-offset-4 hover:text-ink hover:underline"
+              >
                 {l.label}
               </a>
             </li>
@@ -30,7 +33,10 @@ export function SiteFooter() {
       </div>
       <p className="mx-auto max-w-5xl px-5 pb-10 text-xs text-ink-3 sm:px-8">
         Built with Next.js, static and dependency-light.{" "}
-        <a href={site.links.source} className="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-ink">
+        <a
+          href={site.links.source}
+          className="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-ink"
+        >
           Source on GitHub
         </a>
         .

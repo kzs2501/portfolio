@@ -30,7 +30,8 @@ export default function SingleFlightDemo() {
     for (const s of timeline.segments) {
       if (s.kind === "send") list.push({ at: s.start, text: `${label(s.lane)} sent with the expired token` });
       if (s.kind === "refresh") list.push({ at: s.start, text: `${label(s.lane)} → POST /token/refresh` });
-      if (s.kind === "refresh-rejected") list.push({ at: s.start, text: `${label(s.lane)} → POST /token/refresh (replays a spent token)` });
+      if (s.kind === "refresh-rejected")
+        list.push({ at: s.start, text: `${label(s.lane)} → POST /token/refresh (replays a spent token)` });
       if (s.kind === "wait") list.push({ at: s.start, text: `${label(s.lane)} awaits the refresh already in flight` });
       if (s.kind === "retry") list.push({ at: s.start, text: `${label(s.lane)} retries with the new token` });
     }
@@ -91,7 +92,9 @@ export default function SingleFlightDemo() {
         ].map(([k, v]) => (
           <div key={k} className="rounded-lg border border-rule bg-paper px-3 py-2.5">
             <dt className="text-xs text-ink-3">{k}</dt>
-            <dd className={`num mt-0.5 text-lg ${player.done ? (summary.sessionRevoked && k !== "Refresh calls" ? "text-accent" : "text-ink") : "text-ink-3"}`}>
+            <dd
+              className={`num mt-0.5 text-lg ${player.done ? (summary.sessionRevoked && k !== "Refresh calls" ? "text-accent" : "text-ink") : "text-ink-3"}`}
+            >
               {player.done ? v : "—"}
             </dd>
           </div>

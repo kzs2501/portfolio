@@ -27,21 +27,48 @@ export const brands: Brand[] = [
   {
     id: "northwind",
     name: "Northwind Motors",
-    tokens: { accent: "oklch(0.45 0.09 200)", accentInk: "#ffffff", surface: "#ffffff", ink: "oklch(0.22 0.02 220)", muted: "oklch(0.5 0.02 220)", radius: "14px", font: "sans", button: "pill" },
+    tokens: {
+      accent: "oklch(0.45 0.09 200)",
+      accentInk: "#ffffff",
+      surface: "#ffffff",
+      ink: "oklch(0.22 0.02 220)",
+      muted: "oklch(0.5 0.02 220)",
+      radius: "14px",
+      font: "sans",
+      button: "pill",
+    },
     modules: { tradeIn: true, financing: true, protection: true },
     cta: "Reserve now",
   },
   {
     id: "halden",
     name: "Halden",
-    tokens: { accent: "oklch(0.42 0.12 330)", accentInk: "#ffffff", surface: "oklch(0.98 0.01 330)", ink: "oklch(0.24 0.03 330)", muted: "oklch(0.5 0.03 330)", radius: "2px", font: "serif", button: "square" },
+    tokens: {
+      accent: "oklch(0.42 0.12 330)",
+      accentInk: "#ffffff",
+      surface: "oklch(0.98 0.01 330)",
+      ink: "oklch(0.24 0.03 330)",
+      muted: "oklch(0.5 0.03 330)",
+      radius: "2px",
+      font: "serif",
+      button: "square",
+    },
     modules: { tradeIn: false, financing: true, protection: false },
     cta: "Continue to payment",
   },
   {
     id: "vesper",
     name: "Vesper Auto",
-    tokens: { accent: "oklch(0.8 0.14 75)", accentInk: "oklch(0.2 0.02 75)", surface: "oklch(0.22 0.012 260)", ink: "oklch(0.95 0.005 260)", muted: "oklch(0.72 0.01 260)", radius: "8px", font: "mono", button: "square" },
+    tokens: {
+      accent: "oklch(0.8 0.14 75)",
+      accentInk: "oklch(0.2 0.02 75)",
+      surface: "oklch(0.22 0.012 260)",
+      ink: "oklch(0.95 0.005 260)",
+      muted: "oklch(0.72 0.01 260)",
+      radius: "8px",
+      font: "mono",
+      button: "square",
+    },
     modules: { tradeIn: true, financing: false, protection: true },
     cta: "Place deposit",
   },
@@ -63,7 +90,8 @@ export function buildSummary(brand: Brand): { items: LineItem[]; totalCents: num
     { id: "destination", label: "Destination & handling", cents: PRICES.destination },
   ];
   if (brand.modules.tradeIn) items.push({ id: "trade-in", label: "Trade-in credit", cents: -PRICES.tradeInCredit });
-  if (brand.modules.protection) items.push({ id: "protection", label: "Protection plan, 5 yr", cents: PRICES.protection });
+  if (brand.modules.protection)
+    items.push({ id: "protection", label: "Protection plan, 5 yr", cents: PRICES.protection });
   return { items, totalCents: items.reduce((sum, i) => sum + i.cents, 0) };
 }
 

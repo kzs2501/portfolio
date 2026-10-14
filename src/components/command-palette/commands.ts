@@ -4,10 +4,7 @@ import { notes } from "@/content/notes";
 import { projects } from "@/content/projects";
 
 export type CommandAction =
-  | { type: "navigate"; href: string }
-  | { type: "external"; href: string }
-  | { type: "theme" }
-  | { type: "copy-email" };
+  { type: "navigate"; href: string } | { type: "external"; href: string } | { type: "theme" } | { type: "copy-email" };
 
 export type Command = {
   id: string;
@@ -21,7 +18,13 @@ export type Command = {
 export const commands: Command[] = [
   { id: "home", group: "Pages", label: "Home", action: { type: "navigate", href: "/" } },
   { id: "notes", group: "Pages", label: "Notes", action: { type: "navigate", href: "/notes" } },
-  { id: "about", group: "Pages", label: "About", keywords: "experience cv history", action: { type: "navigate", href: "/about" } },
+  {
+    id: "about",
+    group: "Pages",
+    label: "About",
+    keywords: "experience cv history",
+    action: { type: "navigate", href: "/about" },
+  },
   ...work.map<Command>((w) => ({
     id: `work-${w.slug}`,
     group: "Case studies",
@@ -45,10 +48,35 @@ export const commands: Command[] = [
     action: { type: "navigate", href: `/notes/${n.slug}` },
   })),
   { id: "theme", group: "Actions", label: "Switch theme", keywords: "dark light mode", action: { type: "theme" } },
-  { id: "email", group: "Actions", label: "Copy email address", hint: site.email, keywords: "contact mail", action: { type: "copy-email" } },
-  { id: "resume", group: "Actions", label: "Open résumé", keywords: "resume cv pdf", action: { type: "external", href: site.links.resume } },
-  { id: "github", group: "Actions", label: "GitHub", keywords: "code source", action: { type: "external", href: site.links.github } },
-  { id: "linkedin", group: "Actions", label: "LinkedIn", keywords: "contact", action: { type: "external", href: site.links.linkedin } },
+  {
+    id: "email",
+    group: "Actions",
+    label: "Copy email address",
+    hint: site.email,
+    keywords: "contact mail",
+    action: { type: "copy-email" },
+  },
+  {
+    id: "resume",
+    group: "Actions",
+    label: "Open résumé",
+    keywords: "resume cv pdf",
+    action: { type: "external", href: site.links.resume },
+  },
+  {
+    id: "github",
+    group: "Actions",
+    label: "GitHub",
+    keywords: "code source",
+    action: { type: "external", href: site.links.github },
+  },
+  {
+    id: "linkedin",
+    group: "Actions",
+    label: "LinkedIn",
+    keywords: "contact",
+    action: { type: "external", href: site.links.linkedin },
+  },
 ];
 
 /**

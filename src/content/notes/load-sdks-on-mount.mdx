@@ -27,7 +27,7 @@ and the bundler puts it in its own chunk.
 ## Trap 1: loading it twice
 
 Two payment components mounting at the same time — say, a saved-cards list and an
-add-card form — can each kick off a load if the guard is a boolean set *after* the load
+add-card form — can each kick off a load if the guard is a boolean set _after_ the load
 finishes. Storing the **promise**, not the result, closes that window: the second caller
 arrives while the first load is in flight and simply awaits it. It's the same
 single-flight idea that makes token refresh safe.
@@ -42,14 +42,14 @@ existence and pushes everything below it down. That's layout shift the user feel
 "Pay" button moves under their thumb, and it shows up in Cumulative Layout Shift.
 
 Reserve the space. Render the form's frame with the field's final height and a quiet
-skeleton inside it, so the SDK's arrival changes what's *inside* the box and never the box
+skeleton inside it, so the SDK's arrival changes what's _inside_ the box and never the box
 itself.
 
 ## Make the wait shorter, too
 
 Deferring the load means the user may wait for it on the payment screen itself. Two cheap
 mitigations: add a `preconnect` hint for the SDK's origin so the connection is warm, and
-start the load one step early — when the user reaches the step *before* payment — rather
+start the load one step early — when the user reaches the step _before_ payment — rather
 than on the payment step itself.
 
 ## The rule

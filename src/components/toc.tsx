@@ -33,7 +33,9 @@ export function TocInline({ items }: { items: TocItem[] }) {
     <details className="group mt-4 rounded-lg border border-rule px-5 py-3 xl:hidden">
       <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between text-sm text-ink-2 [&::-webkit-details-marker]:hidden">
         On this page
-        <span aria-hidden="true" className="text-ink-3 transition-transform duration-200 group-open:rotate-45">+</span>
+        <span aria-hidden="true" className="text-ink-3 transition-transform duration-200 group-open:rotate-45">
+          +
+        </span>
       </summary>
       <nav aria-label="On this page" className="mt-2 -ml-3 pb-1">
         <TocList items={items} />

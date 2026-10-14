@@ -30,7 +30,12 @@ export default function NotesIndex() {
           ))}
         </ul>
         <p className="mt-8 text-sm text-ink-3">
-          <a href="/notes/rss.xml" className="inline-flex min-h-8 items-center underline underline-offset-4 hover:text-ink">RSS feed</a>
+          <a
+            href="/notes/rss.xml"
+            className="inline-flex min-h-8 items-center underline underline-offset-4 hover:text-ink"
+          >
+            RSS feed
+          </a>
         </p>
       </div>
     </PageTransition>

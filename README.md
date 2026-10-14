@@ -44,13 +44,13 @@ Tailwind CSS 4 · MDX · Vitest · Playwright + axe · Lighthouse CI.
 
 ## Quality gates
 
-| Check | What it enforces |
-|---|---|
-| `npm test` | 51 unit tests: demo logic, palette ranking, contents extraction, local time, content typography |
-| `npm run test:e2e` | 44 browser tests: axe (WCAG 2.2 AA) on every route in light and dark, keyboard paths, 375px layout, reduced motion, demo behaviour, navigation scroll, contents, anchors, clipboard, timezone |
-| `npm run lhci` | Lighthouse ≥ 95 in every category, CLS ≤ 0.05 |
-| `npm run test:e2e:all` | The same browser suite on Chromium, WebKit (Safari's engine) and Firefox — 132 tests |
-| CI | All of the above on every push and pull request (browser tests on Chromium) |
+| Check                  | What it enforces                                                                                                                                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm test`             | 51 unit tests: demo logic, palette ranking, contents extraction, local time, content typography                                                                                               |
+| `npm run test:e2e`     | 44 browser tests: axe (WCAG 2.2 AA) on every route in light and dark, keyboard paths, 375px layout, reduced motion, demo behaviour, navigation scroll, contents, anchors, clipboard, timezone |
+| `npm run lhci`         | Lighthouse ≥ 95 in every category, CLS ≤ 0.05                                                                                                                                                 |
+| `npm run test:e2e:all` | The same browser suite on Chromium, WebKit (Safari's engine) and Firefox — 132 tests                                                                                                          |
+| CI                     | All of the above on every push and pull request (browser tests on Chromium)                                                                                                                   |
 
 Desktop Lighthouse: 100 / 100 / 100 / 100 on every audited page. Mobile (`npx lhci autorun --config=lighthouserc.mobile.json`: simulated slow 4G and 4× CPU, 5 runs per page): performance 96–99 and 100 for the other three, with LCP between 2.1s and 2.8s depending on the run.
 

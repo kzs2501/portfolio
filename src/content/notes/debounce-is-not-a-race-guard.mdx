@@ -2,8 +2,8 @@ Every typeahead tutorial adds a debounce, and most stop there. Debounce is a goo
 instead of firing a request on every keystroke, you wait until the user pauses, so typing
 "BTC" costs one request instead of three.
 
-But debounce answers *how many* requests you send. It says nothing about *the order they
-come back in* — and network latency is not first-in, first-out.
+But debounce answers _how many_ requests you send. It says nothing about _the order they
+come back in_ — and network latency is not first-in, first-out.
 
 ## The race
 
@@ -32,8 +32,8 @@ const handleFetch = async (query: string) => {
 };
 ```
 
-Inside that function, `input` is whatever it was *when this render's function was
-created*, which is exactly the value that was passed in as `query`. Both come from the
+Inside that function, `input` is whatever it was _when this render's function was
+created_, which is exactly the value that was passed in as `query`. Both come from the
 same snapshot, so the comparison is always true. A render is a snapshot; a closure keeps
 its snapshot even after the component has moved on.
 
@@ -61,13 +61,13 @@ useEffect(() => {
 ```
 
 Each effect run gets its own `ignore`. When the query changes, React runs the previous
-run's cleanup first, flipping *that* run's flag. When the slow response finally lands, it
+run's cleanup first, flipping _that_ run's flag. When the slow response finally lands, it
 reads its own flag — now `true` — and drops itself. As a bonus, the cleanup also runs on
 unmount, so the same flag prevents setting state on an unmounted component.
 
 ## Then add AbortController — as well, not instead
 
-The flag stops the stale *render*, but the request still runs to completion and spends
+The flag stops the stale _render_, but the request still runs to completion and spends
 the user's bandwidth. Passing an `AbortController` signal and aborting in the cleanup
 cancels it on the wire. Keep the flag anyway: aborting only works if every layer between
 you and the network honours the signal, and an `AbortError` must be treated as a

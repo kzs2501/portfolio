@@ -20,7 +20,17 @@ export const projects: ProjectMeta[] = [
     summary:
       "An event-ticketing checkout with timed holds, a typed step registry, idempotent payments and webhooks — plus a chaos panel that breaks it on purpose.",
     period: "2026",
-    stack: ["Next.js 16", "React 19", "TypeScript", "TanStack Query", "React Hook Form", "Zod", "MSW", "Vitest", "Playwright"],
+    stack: [
+      "Next.js 16",
+      "React 19",
+      "TypeScript",
+      "TanStack Query",
+      "React Hook Form",
+      "Zod",
+      "MSW",
+      "Vitest",
+      "Playwright",
+    ],
     demoUrl: site.links.admitOneDemo,
     sourceUrl: site.links.admitOneSource,
     highlight: "Nine failure scenarios, each one an end-to-end test",

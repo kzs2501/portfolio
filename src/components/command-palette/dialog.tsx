@@ -116,7 +116,15 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
       className="m-auto mt-[12vh] w-[min(36rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-rule bg-paper p-0 text-ink shadow-2xl backdrop:bg-ink/25 backdrop:backdrop-blur-sm"
     >
       <div className="flex items-center gap-3 border-b border-rule px-4">
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4 shrink-0 text-ink-3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="size-4 shrink-0 text-ink-3"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        >
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
@@ -142,10 +150,18 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
         <kbd className="num rounded border border-rule px-1.5 py-0.5 text-[10px] text-ink-3">esc</kbd>
       </div>
 
-      <div id={listId} role="listbox" aria-label="Commands" className="max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain p-2">
+      <div
+        id={listId}
+        role="listbox"
+        aria-label="Commands"
+        className="max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain p-2"
+      >
         {groups.map(([group, items]) => (
           <div key={group} role="group" aria-labelledby={`${listId}-${group}`} className="pb-1">
-            <div id={`${listId}-${group}`} className="num px-2 pt-2 pb-1 text-[10px] tracking-[0.16em] text-ink-3 uppercase">
+            <div
+              id={`${listId}-${group}`}
+              className="num px-2 pt-2 pb-1 text-[10px] tracking-[0.16em] text-ink-3 uppercase"
+            >
               {group}
             </div>
             {items.map(({ command, index }) => (
@@ -156,7 +172,7 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
                 aria-selected={index === active}
                 onPointerMove={() => setActive(index)}
                 onClick={() => void run(command)}
-                className={`press flex cursor-pointer items-center justify-between gap-4 rounded-md px-3 py-2.5 text-sm ${
+                className={`flex press cursor-pointer items-center justify-between gap-4 rounded-md px-3 py-2.5 text-sm ${
                   index === active ? "bg-surface-2 text-ink" : "text-ink-2"
                 }`}
               >
@@ -166,9 +182,7 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
             ))}
           </div>
         ))}
-        {results.length === 0 && (
-          <p className="px-3 py-8 text-center text-sm text-ink-3">Nothing matches “{query}”.</p>
-        )}
+        {results.length === 0 && <p className="px-3 py-8 text-center text-sm text-ink-3">Nothing matches “{query}”.</p>}
       </div>
 
       <div role="status" aria-live="polite" className="border-t border-rule px-4 py-2 text-xs text-ink-3">

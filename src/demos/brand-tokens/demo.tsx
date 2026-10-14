@@ -47,8 +47,8 @@ function CheckoutSummary({ brand }: { brand: Brand }) {
       </div>
       {modules.financing && (
         <p className="mt-2 text-xs text-[var(--b-muted)]">
-          or about <span className="tabular-nums">{formatUSD(monthlyPaymentCents(totalCents, 5.9, 60))}</span>/mo over 60
-          months at 5.9% APR
+          or about <span className="tabular-nums">{formatUSD(monthlyPaymentCents(totalCents, 5.9, 60))}</span>/mo over
+          60 months at 5.9% APR
         </p>
       )}
       <button
@@ -68,7 +68,11 @@ export default function BrandTokensDemo() {
   const [id, setId] = useState(brands[0].id);
   const brand = brands.find((b) => b.id === id)!;
 
-  const config = JSON.stringify({ name: brand.name, tokens: brand.tokens, modules: brand.modules, cta: brand.cta }, null, 2);
+  const config = JSON.stringify(
+    { name: brand.name, tokens: brand.tokens, modules: brand.modules, cta: brand.cta },
+    null,
+    2,
+  );
 
   return (
     <DemoShell
@@ -93,7 +97,11 @@ export default function BrandTokensDemo() {
         </div>
         <div>
           <p className="num mb-2 text-[10px] tracking-[0.16em] text-ink-3 uppercase">The entire brand definition</p>
-          <pre tabIndex={0} aria-label="Brand definition" className="max-h-[22rem] overflow-auto rounded-lg border border-rule bg-paper p-3.5 font-mono text-[11px] leading-relaxed text-ink">
+          <pre
+            tabIndex={0}
+            aria-label="Brand definition"
+            className="max-h-[22rem] overflow-auto rounded-lg border border-rule bg-paper p-3.5 font-mono text-[11px] leading-relaxed text-ink"
+          >
             {config}
           </pre>
         </div>

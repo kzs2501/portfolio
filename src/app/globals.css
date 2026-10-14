@@ -451,7 +451,6 @@ body {
   animation: var(--dur-move) var(--ease-out) both vt-fade;
 }
 
-
 /* Theme toggle: the new theme grows out of the toggle button as a circle. Scoped
    to theme switches by a class on <html>; route changes must never get this, or
    the new page would be clipped to a small circle mid-navigation. */

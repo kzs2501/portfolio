@@ -25,7 +25,7 @@ flows into a single config-driven flow, then built most of the stages on top of 
 ## The key decision: a registry, not a flow per rail
 
 Instead of encoding each rail's journey as its own sequence, every stage lives in **one
-registry**, and each stage declares *when it applies*. The flow a user sees is simply the
+registry**, and each stage declares _when it applies_. The flow a user sees is simply the
 registry filtered by their context — which rail they chose, whether they're a guest,
 whether the gift recurs. Navigation, progress, back-and-forward, and error handling are
 written once, against the filtered list, and never know which rail they're serving.
@@ -39,7 +39,7 @@ Three properties fell out of that structure, and each one was a product requirem
 - **Deep links.** The current stage lives in the URL, so a refresh, a shared link or the
   browser's back button lands exactly where the user was. A checkout that loses your place
   on refresh loses donations.
-- **Lazy stages with prefetch.** Each stage is its own code-split chunk, and the *next*
+- **Lazy stages with prefetch.** Each stage is its own code-split chunk, and the _next_
   stage is prefetched while the user is on the current one. The flow has 30-plus stages
   across all rails; nobody downloads 30 stages to give by card, and nobody waits on a
   spinner between steps either.

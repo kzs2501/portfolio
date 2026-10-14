@@ -39,8 +39,7 @@ export const registry: Stage[] = [
   { id: "receipt", label: "Receipt", rule: "always" },
 ];
 
-export const resolveStages = (ctx: Ctx, stages: Stage[] = registry) =>
-  stages.filter((s) => !s.when || s.when(ctx));
+export const resolveStages = (ctx: Ctx, stages: Stage[] = registry) => stages.filter((s) => !s.when || s.when(ctx));
 
 /**
  * After the context changes, where should the user be? Stay on the same stage

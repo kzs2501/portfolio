@@ -9,4 +9,8 @@ const subscribe = (cb: () => void) => {
 
 /** True when the visitor's OS asks for less motion. */
 export const useReducedMotion = () =>
-  useSyncExternalStore(subscribe, () => window.matchMedia(query).matches, () => false);
+  useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia(query).matches,
+    () => false,
+  );

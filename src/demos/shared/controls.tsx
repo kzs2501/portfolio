@@ -12,7 +12,11 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-lg border border-rule bg-paper p-0.5 text-sm">
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="inline-flex rounded-lg border border-rule bg-paper p-0.5 text-sm"
+    >
       {options.map((o) => {
         const selected = o.value === value;
         return (
@@ -26,7 +30,12 @@ export function Segmented<T extends string>({
             onKeyDown={(e) => {
               // Roving focus: arrows move the selection like native radios.
               const i = options.findIndex((x) => x.value === value);
-              const delta = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+              const delta =
+                e.key === "ArrowRight" || e.key === "ArrowDown"
+                  ? 1
+                  : e.key === "ArrowLeft" || e.key === "ArrowUp"
+                    ? -1
+                    : 0;
               if (!delta) return;
               e.preventDefault();
               const next = options[(i + delta + options.length) % options.length];
@@ -59,16 +68,25 @@ export function PlayerControls({
   onStep: () => void;
   onReset: () => void;
 }) {
-  const btn = "press rounded-md border border-rule bg-paper px-3 py-1.5 text-sm text-ink hover:bg-surface-2 disabled:opacity-40";
+  const btn =
+    "press rounded-md border border-rule bg-paper px-3 py-1.5 text-sm text-ink hover:bg-surface-2 disabled:opacity-40";
   return (
     <div className="flex flex-wrap gap-2">
       {playing ? (
-        <button type="button" className={btn} onClick={onPause}>Pause</button>
+        <button type="button" className={btn} onClick={onPause}>
+          Pause
+        </button>
       ) : (
-        <button type="button" className={btn} onClick={onPlay}>{done ? "Replay" : "Play"}</button>
+        <button type="button" className={btn} onClick={onPlay}>
+          {done ? "Replay" : "Play"}
+        </button>
       )}
-      <button type="button" className={btn} onClick={onStep} disabled={done}>Step</button>
-      <button type="button" className={btn} onClick={onReset}>Reset</button>
+      <button type="button" className={btn} onClick={onStep} disabled={done}>
+        Step
+      </button>
+      <button type="button" className={btn} onClick={onReset}>
+        Reset
+      </button>
     </div>
   );
 }

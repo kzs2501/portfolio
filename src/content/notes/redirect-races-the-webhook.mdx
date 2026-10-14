@@ -20,7 +20,7 @@ the URL.
 
 ## The fix: the webhook decides, the page waits
 
-The provider guarantees one thing: it will deliver the webhook *at least once*. So make
+The provider guarantees one thing: it will deliver the webhook _at least once_. So make
 the webhook the only thing that can mark an order paid, and make the page honest about
 waiting:
 
@@ -29,8 +29,8 @@ waiting:
 2. **The order page polls until the order is settled.** It shows "Confirming your
    payment…" and asks the server, with backoff — half a second, a second, two seconds,
    then every four — and stops the moment the order is settled.
-3. **If it's slow, say so.** After a few seconds: *this is taking longer than usual,
-   your payment is safe, you don't need to do anything.* That one sentence prevents the
+3. **If it's slow, say so.** After a few seconds: _this is taking longer than usual,
+   your payment is safe, you don't need to do anything._ That one sentence prevents the
    most expensive thing a nervous buyer can do, which is pay again.
 
 The race stops mattering. If the webhook wins, the order page opens already confirmed.
@@ -43,7 +43,7 @@ A provider that guarantees delivery will sometimes deliver twice: it retried bec
 your server was slow to reply, or a network blip ate the acknowledgement. If processing
 a webhook issues tickets, a duplicate issues them twice.
 
-Every webhook event has an id. Record it *before* acting, and skip any id you've already
+Every webhook event has an id. Record it _before_ acting, and skip any id you've already
 seen:
 
 ```ts
@@ -61,11 +61,11 @@ money.
 
 ## The same idea on the way in: idempotency keys
 
-The browser has its own version of the duplicate problem. A buyer double-clicks *Pay*,
+The browser has its own version of the duplicate problem. A buyer double-clicks _Pay_,
 or the request times out and the app retries. Did the first one go through?
 
 Send an **idempotency key** with the payment request: a random id per payment
-*attempt*. The server stores the response against the key and replays it for any
+_attempt_. The server stores the response against the key and replays it for any
 repeat, so a retry can never charge twice. The subtle part is when to mint a new key.
 Keep the same one after a network error, because you don't know what happened and a
 retry must be safe. Make a new one only after a definitive answer, such as "card

@@ -17,9 +17,7 @@ export function generateStaticParams() {
   return work.map((w) => ({ slug: w.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps<"/work/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/work/[slug]">): Promise<Metadata> {
   const meta = getWork((await params).slug);
   if (!meta) return {};
   return {
@@ -40,12 +38,7 @@ export default async function CaseStudy({ params }: PageProps<"/work/[slug]">) {
 
   const { default: Body } = await import(`@/content/work/${slug}.mdx`);
   // Contents are built from the MDX source at build time — static HTML, no JS needed.
-  const toc = extractToc(
-    readFileSync(
-      join(process.cwd(), "src/content/work", `${slug}.mdx`),
-      "utf8",
-    ),
-  );
+  const toc = extractToc(readFileSync(join(process.cwd(), "src/content/work", `${slug}.mdx`), "utf8"));
   const index = work.findIndex((w) => w.slug === slug);
   const next = work[(index + 1) % work.length];
 
@@ -62,30 +55,23 @@ export default async function CaseStudy({ params }: PageProps<"/work/[slug]">) {
           <Link
             href="/#work"
             transitionTypes={["nav-back"]}
-            className="text-ink-3 hover:text-ink -mx-1 inline-flex min-h-8 items-center px-1 text-sm"
+            className="-mx-1 inline-flex min-h-8 items-center px-1 text-sm text-ink-3 hover:text-ink"
           >
             ← All work
           </Link>
           <header className="mt-10">
-            <p className="num text-ink-3 text-xs tracking-[0.18em] uppercase">
-              Case study {String(index + 1).padStart(2, "0")} · {meta.org} ·{" "}
-              {meta.period}
+            <p className="num text-xs tracking-[0.18em] text-ink-3 uppercase">
+              Case study {String(index + 1).padStart(2, "0")} · {meta.org} · {meta.period}
             </p>
             {/* Same name as the homepage row: the title morphs between the two. Works because
               data-scroll-behavior lets Next reset scroll before the new snapshot. */}
-            <ViewTransition
-              name={`work-title-${slug}`}
-              share="morph"
-              default="none"
-            >
+            <ViewTransition name={`work-title-${slug}`} share="morph" default="none">
               <h1 className="mt-4 font-serif text-[2.4rem] leading-[1.05] tracking-tight text-balance sm:text-5xl">
                 {meta.title}
               </h1>
             </ViewTransition>
-            <p className="text-ink-2 mt-5 text-lg leading-relaxed text-pretty">
-              {meta.summary}
-            </p>
-            <div className="border-rule bg-surface mt-8 rounded-lg border px-5 py-4">
+            <p className="mt-5 text-lg leading-relaxed text-pretty text-ink-2">{meta.summary}</p>
+            <div className="mt-8 rounded-lg border border-rule bg-surface px-5 py-4">
               <Ledger
                 caption="Project facts"
                 rows={[
@@ -103,17 +89,12 @@ export default async function CaseStudy({ params }: PageProps<"/work/[slug]">) {
             <Body />
           </div>
 
-          <nav
-            aria-label="Next case study"
-            className="border-rule mt-20 border-t pt-8"
-          >
-            <p className="num text-ink-3 text-xs tracking-[0.18em] uppercase">
-              Next case study
-            </p>
+          <nav aria-label="Next case study" className="mt-20 border-t border-rule pt-8">
+            <p className="num text-xs tracking-[0.18em] text-ink-3 uppercase">Next case study</p>
             <Link
               href={`/work/${next.slug}`}
               transitionTypes={["nav-forward"]}
-              className="hover:text-accent mt-2 block font-serif text-2xl tracking-tight"
+              className="mt-2 block font-serif text-2xl tracking-tight hover:text-accent"
             >
               {next.title} →
             </Link>

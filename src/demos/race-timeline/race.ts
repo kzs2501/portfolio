@@ -9,9 +9,7 @@
  * it overwrites the newer results; with a guard it's dropped.
  */
 export type ScreenState =
-  | { kind: "idle" }
-  | { kind: "loading"; query: string }
-  | { kind: "results"; query: string; stale: boolean };
+  { kind: "idle" } | { kind: "loading"; query: string } | { kind: "results"; query: string; stale: boolean };
 
 export type RaceSegment = { lane: string; kind: string; start: number; end: number };
 export type RaceMarker = { lane: string; kind: string; at: number };

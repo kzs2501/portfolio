@@ -24,14 +24,14 @@ verification, organization onboarding, profiles, team management and banking.
 The first commit set up the things that are painful to retrofit: strict TypeScript,
 linting and formatting, pre-commit hooks, and a test runner. Data fetching went through
 TanStack Query, forms through React Hook Form with Zod schemas, styling through Tailwind.
-None of these choices are exotic. The point was choosing them *before* there was code to
+None of these choices are exotic. The point was choosing them _before_ there was code to
 migrate, so the second engineer to join inherited conventions rather than a debate.
 
 ## The interesting bug: five 401s, five refreshes
 
 The portal keeps users signed in with short-lived access tokens and a refresh token.
 A dashboard page fires several API requests at once. When the access token has expired,
-*all of them* come back 401 within a few milliseconds — and the obvious implementation
+_all of them_ come back 401 within a few milliseconds — and the obvious implementation
 starts a refresh for each one.
 
 That's wasteful, and with refresh-token rotation it's worse than wasteful. Each refresh

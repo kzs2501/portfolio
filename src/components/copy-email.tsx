@@ -12,9 +12,12 @@ export function CopyEmail({ email, className = "" }: { email: string; className?
   const linkRef = useRef<HTMLAnchorElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
 
   const copy = async () => {
     try {
@@ -42,7 +45,7 @@ export function CopyEmail({ email, className = "" }: { email: string; className?
         type="button"
         onClick={copy}
         aria-label={copied ? "Email address copied" : "Copy email address"}
-        className="press num inline-flex min-h-6 items-center rounded border border-rule px-1.5 text-[11px] text-ink-3 hover:border-ink-3 hover:text-ink"
+        className="num inline-flex min-h-6 press items-center rounded border border-rule px-1.5 text-[11px] text-ink-3 hover:border-ink-3 hover:text-ink"
       >
         {copied ? "Copied" : "Copy"}
       </button>

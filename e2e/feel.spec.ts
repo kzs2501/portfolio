@@ -22,13 +22,20 @@ test.describe("identity & chrome", () => {
     await toggle.click();
     // The theme applies inside a view transition's update callback, a frame later.
     const colors = () =>
-      page.locator('meta[name="theme-color"]').evaluateAll((ms) => [...new Set(ms.map((m) => m.getAttribute("content")))]);
+      page
+        .locator('meta[name="theme-color"]')
+        .evaluateAll((ms) => [...new Set(ms.map((m) => m.getAttribute("content")))]);
     await expect.poll(colors).toEqual(["#120f0c"]);
   });
 
   test("nav marks the current section", async ({ page }) => {
     const current = () => page.getByRole("navigation", { name: "Primary" }).locator('[aria-current="page"]');
-    for (const [path, label] of [["/", "Work"], [CASE, "Work"], ["/notes/", "Notes"], ["/about/", "About"]]) {
+    for (const [path, label] of [
+      ["/", "Work"],
+      [CASE, "Work"],
+      ["/notes/", "Notes"],
+      ["/about/", "About"],
+    ]) {
       await page.goto(path);
       await expect(current()).toHaveText(label);
       await expect(current()).toHaveCount(1);

@@ -22,7 +22,7 @@ export function triggerIntersect(el: Element) {
 
 It works, and that's the problem. A real browser **never** calls the observer's callback
 synchronously. Entries are queued and delivered later, after the current task. A
-synchronous fake lets code pass that depends on the callback running *inside* the same
+synchronous fake lets code pass that depends on the callback running _inside_ the same
 tick — for example, code that reads state it expects the callback to have already set.
 Your test suite is then green against timing that production never produces.
 
@@ -59,7 +59,7 @@ unmount.
 
 ## Make the fake inspectable
 
-Expose the fake's instances, so tests can assert what the component *did*, not just what
+Expose the fake's instances, so tests can assert what the component _did_, not just what
 it rendered:
 
 - an observer was created and is observing the sentinel element;

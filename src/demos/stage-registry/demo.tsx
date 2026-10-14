@@ -16,7 +16,10 @@ export default function StageRegistryDemo() {
   const { ctx, currentId } = flow;
 
   const stages = resolveStages(ctx);
-  const index = Math.max(0, stages.findIndex((s) => s.id === currentId));
+  const index = Math.max(
+    0,
+    stages.findIndex((s) => s.id === currentId),
+  );
   const current = stages[index];
   const next = stages[index + 1];
 
@@ -24,7 +27,10 @@ export default function StageRegistryDemo() {
     startTransition(() =>
       setFlow((prev) => {
         const prevStages = resolveStages(prev.ctx);
-        const prevIndex = Math.max(0, prevStages.findIndex((s) => s.id === prev.currentId));
+        const prevIndex = Math.max(
+          0,
+          prevStages.findIndex((s) => s.id === prev.currentId),
+        );
         const nextCtx = { ...prev.ctx, ...patch };
         return { ctx: nextCtx, currentId: reconcileCurrent(prev.currentId, prevIndex, resolveStages(nextCtx)) };
       }),
@@ -46,7 +52,12 @@ export default function StageRegistryDemo() {
       intro="One registry of stages, each with a rule for when it applies. Switch the payment rail or check out as a guest — the flow rebuilds itself, and you keep your place."
     >
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <Segmented<Rail> label="Payment rail" value={ctx.rail} options={rails} onChange={(rail) => changeCtx({ rail })} />
+        <Segmented<Rail>
+          label="Payment rail"
+          value={ctx.rail}
+          options={rails}
+          onChange={(rail) => changeCtx({ rail })}
+        />
         <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-2">
           <input
             type="checkbox"
@@ -63,7 +74,14 @@ export default function StageRegistryDemo() {
           {stages.map((s, i) => {
             const state = i < index ? "done" : i === index ? "current" : s === next ? "prefetched" : "upcoming";
             return (
-              <ViewTransition key={s.id} name={`stage-${s.id}`} enter="item-enter" exit="item-exit" update="item-move" default="none">
+              <ViewTransition
+                key={s.id}
+                name={`stage-${s.id}`}
+                enter="item-enter"
+                exit="item-exit"
+                update="item-move"
+                default="none"
+              >
                 <li
                   aria-current={state === "current" ? "step" : undefined}
                   className={`flex items-center gap-3 rounded-lg border px-3.5 py-2.5 text-sm transition-colors ${
@@ -74,7 +92,9 @@ export default function StageRegistryDemo() {
                         : "border-rule bg-paper text-ink-2"
                   }`}
                 >
-                  <span className={`num w-5 shrink-0 text-xs ${state === "current" ? "text-ink-2" : "text-ink-3"}`}>{String(i + 1).padStart(2, "0")}</span>
+                  <span className={`num w-5 shrink-0 text-xs ${state === "current" ? "text-ink-2" : "text-ink-3"}`}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                   <span className="flex-1">{s.label}</span>
                   {state === "done" && <span className="text-xs text-ok">done</span>}
                   {state === "prefetched" && (
@@ -92,7 +112,7 @@ export default function StageRegistryDemo() {
           <div className="rounded-lg border border-rule bg-paper p-3.5">
             <p className="num text-[10px] tracking-[0.16em] text-ink-3 uppercase">Registry entry</p>
             <pre className="mt-2 font-mono text-xs leading-relaxed whitespace-pre-wrap text-ink">
-{`{
+              {`{
   id: "${current.id}",
   when: ${current.rule === "always" ? "undefined" : `ctx => ${current.rule}`}
 }`}

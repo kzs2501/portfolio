@@ -17,15 +17,7 @@ const loaders: Record<string, () => Promise<{ default: ComponentType }>> = {
 
 export type DemoName = keyof typeof loaders;
 
-export function Demo({
-  name,
-  title,
-  minHeight = 480,
-}: {
-  name: DemoName;
-  title: string;
-  minHeight?: number;
-}) {
+export function Demo({ name, title, minHeight = 480 }: { name: DemoName; title: string; minHeight?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [Loaded, setLoaded] = useState<ComponentType | null>(null);
   const [failed, setFailed] = useState(false);

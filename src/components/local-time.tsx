@@ -8,10 +8,13 @@ import { formatClock, formatUtcOffset, HOME, relativeToVisitor, zoneOffsetMinute
 const subscribe = (onChange: () => void) => {
   let timer: ReturnType<typeof setTimeout>;
   const schedule = () => {
-    timer = setTimeout(() => {
-      onChange();
-      schedule();
-    }, 60_000 - (Date.now() % 60_000) + 50);
+    timer = setTimeout(
+      () => {
+        onChange();
+        schedule();
+      },
+      60_000 - (Date.now() % 60_000) + 50,
+    );
   };
   schedule();
   return () => clearTimeout(timer);
@@ -39,8 +42,7 @@ export function LocalTime() {
       >
         {now ? formatClock(now) : " "}
       </time>{" "}
-      {HOME.abbr} ({formatUtcOffset(HOME.offsetMinutes)})
-      {relative && <span className="block text-xs">{relative}</span>}
+      {HOME.abbr} ({formatUtcOffset(HOME.offsetMinutes)}){relative && <span className="block text-xs">{relative}</span>}
     </p>
   );
 }

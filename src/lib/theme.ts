@@ -5,8 +5,7 @@ export type Theme = "light" | "dark";
 /** The paper colour of each theme, for the browser chrome (theme-color). */
 export const THEME_COLORS: Record<Theme, string> = { light: "#fcfaf6", dark: "#120f0c" };
 
-export const readTheme = (): Theme =>
-  document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+export const readTheme = (): Theme => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 
 export const subscribeTheme = (onChange: () => void) => {
   const observer = new MutationObserver(onChange);
@@ -32,9 +31,7 @@ const storedTheme = (): Theme | null => {
  * phone's status bar keeps showing the OS colour against the chosen page colour.
  */
 export function syncThemeColor(theme: Theme) {
-  document
-    .querySelectorAll('meta[name="theme-color"]')
-    .forEach((m) => m.setAttribute("content", THEME_COLORS[theme]));
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", THEME_COLORS[theme]));
 }
 
 /**

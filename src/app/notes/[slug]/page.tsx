@@ -31,7 +31,11 @@ export default async function Note({ params }: PageProps<"/notes/[slug]">) {
     <PageTransition>
       <ReadingProgress />
       <article className="mx-auto max-w-2xl px-5 pt-14 sm:px-8">
-        <Link href="/notes" transitionTypes={["nav-back"]} className="-mx-1 inline-flex min-h-8 items-center px-1 text-sm text-ink-3 hover:text-ink">
+        <Link
+          href="/notes"
+          transitionTypes={["nav-back"]}
+          className="-mx-1 inline-flex min-h-8 items-center px-1 text-sm text-ink-3 hover:text-ink"
+        >
           ← All notes
         </Link>
         <header className="mt-10">
