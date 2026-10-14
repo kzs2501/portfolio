@@ -11,19 +11,19 @@ const Dialog = lazy(load);
 export const preloadPalette = () => void load();
 
 export function CommandPalette() {
-  const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     const show = () => {
-      setMounted(true);
-      setOpen(true);
+      setIsMounted(true);
+      setIsOpen(true);
     };
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setMounted(true);
-        setOpen((o) => !o);
+        setIsMounted(true);
+        setIsOpen((wasOpen) => !wasOpen);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -34,10 +34,10 @@ export function CommandPalette() {
     };
   }, []);
 
-  if (!mounted) return null;
+  if (!isMounted) return null;
   return (
     <Suspense fallback={null}>
-      <Dialog open={open} onClose={() => setOpen(false)} />
+      <Dialog isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </Suspense>
   );
 }

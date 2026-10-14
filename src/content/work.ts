@@ -1,4 +1,4 @@
-export type WorkMeta = {
+export interface WorkMeta {
   slug: string;
   title: string;
   org: string;
@@ -8,7 +8,7 @@ export type WorkMeta = {
   team: string;
   stack: string[];
   demo: string;
-};
+}
 
 /** Order here is the order on the homepage. */
 export const work: WorkMeta[] = [
@@ -50,4 +50,11 @@ export const work: WorkMeta[] = [
   },
 ];
 
-export const getWork = (slug: string) => work.find((w) => w.slug === slug);
+export const findWork = (slug: string): WorkMeta | undefined => work.find((entry) => entry.slug === slug);
+
+/** For slugs that must exist (static params come from this list): a miss is a bug. */
+export function getWork(slug: string): WorkMeta {
+  const meta = findWork(slug);
+  if (!meta) throw new Error(`Unknown case study: ${slug}`);
+  return meta;
+}

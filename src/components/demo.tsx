@@ -8,45 +8,50 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
  * Stripe.js work. The frame reserves its height up front, so nothing shifts
  * when the demo arrives (no CLS).
  */
-const loaders: Record<string, () => Promise<{ default: ComponentType }>> = {
+const DEMO_LOADERS = {
   "stage-registry": () => import("@/demos/stage-registry/demo"),
   "single-flight": () => import("@/demos/single-flight/demo"),
   "brand-tokens": () => import("@/demos/brand-tokens/demo"),
   "race-timeline": () => import("@/demos/race-timeline/demo"),
-};
+} satisfies Record<string, () => Promise<{ default: ComponentType }>>;
 
-export type DemoName = keyof typeof loaders;
+/** The demos that exist — a misspelt name is a type error, and MDX is checked by a test. */
+export type DemoName = keyof typeof DEMO_LOADERS;
+
+export const isDemoName = (value: string): value is DemoName => Object.hasOwn(DEMO_LOADERS, value);
 
 export function Demo({ name, title, minHeight = 480 }: { name: DemoName; title: string; minHeight?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [Loaded, setLoaded] = useState<ComponentType | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [hasFailed, setHasFailed] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    let cancelled = false;
+    let isCancelled = false;
     const load = () =>
-      loaders[name]()
-        .then((m) => !cancelled && setLoaded(() => m.default))
-        .catch(() => !cancelled && setFailed(true));
+      DEMO_LOADERS[name]()
+        .then((demoModule) => !isCancelled && setLoaded(() => demoModule.default))
+        .catch(() => !isCancelled && setHasFailed(true));
 
     if (!("IntersectionObserver" in window)) {
-      load();
-      return () => void (cancelled = true);
+      void load();
+      return () => {
+        isCancelled = true;
+      };
     }
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
+        if (entries.some((entry) => entry.isIntersecting)) {
           observer.disconnect();
-          load();
+          void load();
         }
       },
       { rootMargin: "300px" },
     );
     observer.observe(el);
     return () => {
-      cancelled = true;
+      isCancelled = true;
       observer.disconnect();
     };
   }, [name]);
@@ -63,7 +68,7 @@ export function Demo({ name, title, minHeight = 480 }: { name: DemoName; title: 
         <Loaded />
       ) : (
         <div className="grid h-full place-items-center p-8 text-sm text-ink-3" style={{ minHeight }}>
-          {failed ? "This demo couldn’t load. Refresh to try again." : "Loading interactive demo…"}
+          {hasFailed ? "This demo couldn’t load. Refresh to try again." : "Loading interactive demo…"}
         </div>
       )}
     </div>

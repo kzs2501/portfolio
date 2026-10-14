@@ -2,7 +2,7 @@
 
 import { startTransition, useState, ViewTransition, type CSSProperties } from "react";
 import { DemoShell, Segmented } from "../shared/controls";
-import { brands, buildSummary, formatUSD, monthlyPaymentCents, type Brand } from "./brands";
+import { BRANDS, buildSummary, formatUsd, monthlyPaymentCents, type Brand } from "./brand-tokens";
 
 const fontFamily: Record<Brand["tokens"]["font"], string> = {
   sans: "var(--font-sans)",
@@ -37,17 +37,17 @@ function CheckoutSummary({ brand }: { brand: Brand }) {
         {items.map((item) => (
           <li key={item.id} className="flex justify-between gap-4">
             <span className="text-[var(--b-muted)]">{item.label}</span>
-            <span className="tabular-nums">{formatUSD(item.cents)}</span>
+            <span className="tabular-nums">{formatUsd(item.cents)}</span>
           </li>
         ))}
       </ul>
       <div className="mt-4 flex justify-between border-t border-current/15 pt-3 font-semibold">
         <span>Total</span>
-        <span className="tabular-nums">{formatUSD(totalCents)}</span>
+        <span className="tabular-nums">{formatUsd(totalCents)}</span>
       </div>
-      {modules.financing && (
+      {modules.hasFinancing && (
         <p className="mt-2 text-xs text-[var(--b-muted)]">
-          or about <span className="tabular-nums">{formatUSD(monthlyPaymentCents(totalCents, 5.9, 60))}</span>/mo over
+          or about <span className="tabular-nums">{formatUsd(monthlyPaymentCents(totalCents, 5.9, 60))}</span>/mo over
           60 months at 5.9% APR
         </p>
       )}
@@ -65,8 +65,8 @@ function CheckoutSummary({ brand }: { brand: Brand }) {
 }
 
 export default function BrandTokensDemo() {
-  const [id, setId] = useState(brands[0].id);
-  const brand = brands.find((b) => b.id === id)!;
+  const [brandId, setBrandId] = useState(BRANDS[0].id);
+  const brand = BRANDS.find((candidate) => candidate.id === brandId) ?? BRANDS[0];
 
   const config = JSON.stringify(
     { name: brand.name, tokens: brand.tokens, modules: brand.modules, cta: brand.cta },
@@ -76,14 +76,14 @@ export default function BrandTokensDemo() {
 
   return (
     <DemoShell
-      title="One checkout, many brands"
-      intro="Three fictional brands, one checkout component. Each brand is a config object — tokens for how it looks, flags for what it offers. Switching brands changes data, not code."
+      title="One checkout, many BRANDS"
+      intro="Three fictional BRANDS, one checkout component. Each brand is a config object — tokens for how it looks, flags for what it offers. Switching BRANDS changes data, not code."
     >
       <Segmented
         label="Brand"
-        value={id}
-        options={brands.map((b) => ({ value: b.id, label: b.name }))}
-        onChange={(next) => startTransition(() => setId(next))}
+        value={brandId}
+        options={BRANDS.map((b) => ({ value: b.id, label: b.name }))}
+        onChange={(next) => startTransition(() => setBrandId(next))}
       />
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">

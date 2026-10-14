@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { projects, getProject } from "@/content/projects";
+import { projects, findProject } from "@/content/projects";
 import { Ledger } from "@/components/ledger";
 import { PageTransition } from "@/components/page-transition";
 import { ReadingProgress } from "@/components/reading-progress";
+import { loadMdxBody } from "@/app/_lib/load-mdx";
 
 export const dynamicParams = false;
 
@@ -13,7 +14,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps<"/projects/[slug]">): Promise<Metadata> {
-  const meta = getProject((await params).slug);
+  const meta = findProject((await params).slug);
   if (!meta) return {};
   return {
     title: meta.title,
@@ -26,9 +27,9 @@ const external = { target: "_blank", rel: "noopener noreferrer" } as const;
 
 export default async function Project({ params }: PageProps<"/projects/[slug]">) {
   const { slug } = await params;
-  const meta = getProject(slug);
+  const meta = findProject(slug);
   if (!meta) notFound();
-  const { default: Body } = await import(`@/content/projects/${slug}.mdx`);
+  const Body = await loadMdxBody("projects", slug);
 
   return (
     <PageTransition>

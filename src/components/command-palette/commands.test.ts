@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { commands, filterCommands, score } from "./commands";
+import { COMMANDS, filterCommands, score } from "./commands";
 
 describe("palette ranking", () => {
   it("returns everything for an empty query", () => {
-    expect(filterCommands("   ")).toHaveLength(commands.length);
+    expect(filterCommands("   ")).toHaveLength(COMMANDS.length);
   });
 
   it("prefers a match at a word start over one mid-word", () => {
-    expect(score("rail", "Four payment rails")!).toBeGreaterThan(score("rail", "Guardrails")!);
+    expect(score("rail", "Four payment rails") ?? 0).toBeGreaterThan(score("rail", "Guardrails") ?? 0);
   });
 
   it("prefers a contiguous match over a scattered one", () => {
-    expect(score("note", "Notes")!).toBeGreaterThan(score("nts", "Notes")!);
+    expect(score("note", "Notes") ?? 0).toBeGreaterThan(score("nts", "Notes") ?? 0);
   });
 
   it("matches subsequences, and rejects non-matches", () => {
@@ -20,16 +20,16 @@ describe("palette ranking", () => {
   });
 
   it("finds case studies by title and by stack keywords", () => {
-    expect(filterCommands("portal")[0].id).toBe("work-charity-portal");
+    expect(filterCommands("portal")[0]?.id).toBe("work-charity-portal");
     expect(filterCommands("redux").map((c) => c.id)).toContain("work-multi-brand-checkout");
   });
 
   it("finds actions by synonym", () => {
-    expect(filterCommands("dark")[0].id).toBe("theme");
+    expect(filterCommands("dark")[0]?.id).toBe("theme");
     expect(filterCommands("cv").map((c) => c.id)).toContain("resume");
   });
 
   it("has unique command ids", () => {
-    expect(new Set(commands.map((c) => c.id)).size).toBe(commands.length);
+    expect(new Set(COMMANDS.map((command) => command.id)).size).toBe(COMMANDS.length);
   });
 });

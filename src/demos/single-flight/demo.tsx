@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { DemoShell, PlayerControls, Segmented } from "../shared/controls";
 import { TimelineChart, type ChartEvent } from "../shared/timeline-chart";
 import { useTimelinePlayer } from "../shared/use-timeline-player";
-import { buildTimeline, type Mode } from "./timeline";
+import { buildTimeline, type Mode } from "./single-flight";
 
 const styles = {
   send: { className: "bg-ink-3/50", label: "Request in flight" },
@@ -64,8 +64,8 @@ export default function SingleFlightDemo() {
           }}
         />
         <PlayerControls
-          playing={player.playing}
-          done={player.done}
+          isPlaying={player.isPlaying}
+          isDone={player.isDone}
           onPlay={player.play}
           onPause={player.pause}
           onStep={player.step}
@@ -88,14 +88,14 @@ export default function SingleFlightDemo() {
         {[
           ["Refresh calls", summary.refreshCalls],
           ["Succeeded", `${summary.succeeded} / 5`],
-          ["Outcome", summary.sessionRevoked ? "Logged out" : "All good"],
+          ["Outcome", summary.isSessionRevoked ? "Logged out" : "All good"],
         ].map(([k, v]) => (
           <div key={k} className="rounded-lg border border-rule bg-paper px-3 py-2.5">
             <dt className="text-xs text-ink-3">{k}</dt>
             <dd
-              className={`num mt-0.5 text-lg ${player.done ? (summary.sessionRevoked && k !== "Refresh calls" ? "text-accent" : "text-ink") : "text-ink-3"}`}
+              className={`num mt-0.5 text-lg ${player.isDone ? (summary.isSessionRevoked && k !== "Refresh calls" ? "text-accent" : "text-ink") : "text-ink-3"}`}
             >
-              {player.done ? v : "—"}
+              {player.isDone ? v : "—"}
             </dd>
           </div>
         ))}

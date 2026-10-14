@@ -11,6 +11,6 @@ export function generateStaticParams() {
 }
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
-  const meta = getWork((await params).slug)!;
+  const meta = getWork((await params).slug);
   return renderOg({ kicker: `Case study · ${meta.org} · ${meta.period}`, title: meta.title });
 }

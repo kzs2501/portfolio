@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { notes, getNote, formatDate } from "@/content/notes";
+import { notes, findNote, formatDate } from "@/content/notes";
 import { PageTransition } from "@/components/page-transition";
 import { ReadingProgress } from "@/components/reading-progress";
+import { loadMdxBody } from "@/app/_lib/load-mdx";
 
 export const dynamicParams = false;
 
@@ -12,7 +13,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps<"/notes/[slug]">): Promise<Metadata> {
-  const meta = getNote((await params).slug);
+  const meta = findNote((await params).slug);
   if (!meta) return {};
   return {
     title: meta.title,
@@ -23,9 +24,9 @@ export async function generateMetadata({ params }: PageProps<"/notes/[slug]">): 
 
 export default async function Note({ params }: PageProps<"/notes/[slug]">) {
   const { slug } = await params;
-  const meta = getNote(slug);
+  const meta = findNote(slug);
   if (!meta) notFound();
-  const { default: Body } = await import(`@/content/notes/${slug}.mdx`);
+  const Body = await loadMdxBody("notes", slug);
 
   return (
     <PageTransition>

@@ -1,6 +1,9 @@
 import GithubSlugger from "github-slugger";
 
-export type TocItem = { id: string; title: string };
+export interface TocItem {
+  id: string;
+  title: string;
+}
 
 /** Strip inline markdown from a heading so the slug matches the rendered text. */
 const plain = (md: string) =>
@@ -23,19 +26,19 @@ const smart = (s: string) => s.replace(/(\w)'(\w)/g, "$1â€™$2").replace(/'/g, "â
 export function extractToc(source: string): TocItem[] {
   const slugger = new GithubSlugger();
   const items: TocItem[] = [];
-  let inFence = false;
+  let isInFence = false;
 
   for (const line of source.split("\n")) {
     if (/^\s*(```|~~~)/.test(line)) {
-      inFence = !inFence;
+      isInFence = !isInFence;
       continue;
     }
-    if (inFence) continue;
-    const m = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
-    if (!m) continue;
-    const text = plain(m[2]);
-    const id = slugger.slug(text);
-    if (m[1].length === 2) items.push({ id, title: smart(text) });
+    if (isInFence) continue;
+    const [, hashes, rawTitle] = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line) ?? [];
+    if (!hashes || !rawTitle) continue;
+    const text = plain(rawTitle);
+    const id = slugger.slug(text); // every heading takes a slug, so later ids match the page
+    if (hashes.length === 2) items.push({ id, title: smart(text) });
   }
   return items;
 }

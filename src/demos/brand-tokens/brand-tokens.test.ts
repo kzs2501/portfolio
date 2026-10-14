@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { brands, buildSummary, formatUSD, monthlyPaymentCents, PRICES } from "./brands";
+import { BRANDS, buildSummary, formatUsd, monthlyPaymentCents, PRICES } from "./brand-tokens";
 
-const byId = (id: string) => brands.find((b) => b.id === id)!;
+function byId(id: string) {
+  const brand = BRANDS.find((candidate) => candidate.id === id);
+  if (!brand) throw new Error(`No brand ${id}`);
+  return brand;
+}
 
 describe("brand-driven checkout", () => {
   it("includes only the modules a brand enables", () => {
@@ -13,13 +17,13 @@ describe("brand-driven checkout", () => {
 
   it("totals line items exactly, in integer cents", () => {
     const { totalCents } = buildSummary(byId("northwind"));
-    expect(totalCents).toBe(PRICES.vehicle + PRICES.destination - PRICES.tradeInCredit + PRICES.protection);
+    expect(totalCents).toBe(PRICES.vehicle + PRICES.destination - PRICES.tradeInCredit + PRICES.hasProtection);
     expect(Number.isInteger(totalCents)).toBe(true);
   });
 
   it("subtracts trade-in credit rather than adding it", () => {
-    const tradeIn = buildSummary(byId("vesper")).items.find((i) => i.id === "trade-in")!;
-    expect(tradeIn.cents).toBeLessThan(0);
+    const tradeIn = buildSummary(byId("vesper")).items.find((item) => item.id === "trade-in");
+    expect(tradeIn?.cents).toBeLessThan(0);
   });
 
   it("computes an amortised monthly payment", () => {
@@ -32,12 +36,12 @@ describe("brand-driven checkout", () => {
   });
 
   it("formats cents as dollars", () => {
-    expect(formatUSD(3_249_500)).toBe("$32,495.00");
-    expect(formatUSD(-850_000)).toBe("-$8,500.00");
+    expect(formatUsd(3_249_500)).toBe("$32,495.00");
+    expect(formatUsd(-850_000)).toBe("-$8,500.00");
   });
 
   it("gives every brand a distinct id and every token a value", () => {
-    expect(new Set(brands.map((b) => b.id)).size).toBe(brands.length);
-    for (const b of brands) for (const v of Object.values(b.tokens)) expect(v).toBeTruthy();
+    expect(new Set(BRANDS.map((b) => b.id)).size).toBe(BRANDS.length);
+    for (const b of BRANDS) for (const v of Object.values(b.tokens)) expect(v).toBeTruthy();
   });
 });

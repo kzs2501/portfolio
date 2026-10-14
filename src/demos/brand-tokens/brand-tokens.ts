@@ -6,7 +6,7 @@
  * All brands here are fictional. Money is integer cents throughout: floats
  * can't represent most cent values exactly, and checkouts must add up.
  */
-export type Brand = {
+export interface Brand {
   id: string;
   name: string;
   tokens: {
@@ -19,11 +19,11 @@ export type Brand = {
     font: "sans" | "serif" | "mono";
     button: "pill" | "square";
   };
-  modules: { tradeIn: boolean; financing: boolean; protection: boolean };
+  modules: { hasTradeIn: boolean; hasFinancing: boolean; hasProtection: boolean };
   cta: string;
-};
+}
 
-export const brands: Brand[] = [
+export const BRANDS: readonly [Brand, ...Brand[]] = [
   {
     id: "northwind",
     name: "Northwind Motors",
@@ -37,7 +37,7 @@ export const brands: Brand[] = [
       font: "sans",
       button: "pill",
     },
-    modules: { tradeIn: true, financing: true, protection: true },
+    modules: { hasTradeIn: true, hasFinancing: true, hasProtection: true },
     cta: "Reserve now",
   },
   {
@@ -53,7 +53,7 @@ export const brands: Brand[] = [
       font: "serif",
       button: "square",
     },
-    modules: { tradeIn: false, financing: true, protection: false },
+    modules: { hasTradeIn: false, hasFinancing: true, hasProtection: false },
     cta: "Continue to payment",
   },
   {
@@ -69,7 +69,7 @@ export const brands: Brand[] = [
       font: "mono",
       button: "square",
     },
-    modules: { tradeIn: true, financing: false, protection: true },
+    modules: { hasTradeIn: true, hasFinancing: false, hasProtection: true },
     cta: "Place deposit",
   },
 ];
@@ -78,10 +78,14 @@ export const PRICES = {
   vehicle: 3_249_500,
   destination: 119_500,
   tradeInCredit: 850_000,
-  protection: 129_900,
+  hasProtection: 129_900,
 } as const;
 
-export type LineItem = { id: string; label: string; cents: number };
+export interface LineItem {
+  id: string;
+  label: string;
+  cents: number;
+}
 
 /** The summary is derived from the brand's modules — no `if (brand === …)` anywhere. */
 export function buildSummary(brand: Brand): { items: LineItem[]; totalCents: number } {
@@ -89,9 +93,9 @@ export function buildSummary(brand: Brand): { items: LineItem[]; totalCents: num
     { id: "vehicle", label: "2026 Sedan, Touring trim", cents: PRICES.vehicle },
     { id: "destination", label: "Destination & handling", cents: PRICES.destination },
   ];
-  if (brand.modules.tradeIn) items.push({ id: "trade-in", label: "Trade-in credit", cents: -PRICES.tradeInCredit });
-  if (brand.modules.protection)
-    items.push({ id: "protection", label: "Protection plan, 5 yr", cents: PRICES.protection });
+  if (brand.modules.hasTradeIn) items.push({ id: "trade-in", label: "Trade-in credit", cents: -PRICES.tradeInCredit });
+  if (brand.modules.hasProtection)
+    items.push({ id: "protection", label: "Protection plan, 5 yr", cents: PRICES.hasProtection });
   return { items, totalCents: items.reduce((sum, i) => sum + i.cents, 0) };
 }
 
@@ -102,5 +106,5 @@ export function monthlyPaymentCents(principalCents: number, aprPercent: number, 
   return Math.round((principalCents * r) / (1 - Math.pow(1 + r, -months)));
 }
 
-export const formatUSD = (cents: number) =>
+export const formatUsd = (cents: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);

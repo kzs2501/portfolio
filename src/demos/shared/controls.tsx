@@ -8,7 +8,7 @@ export function Segmented<T extends string>({
 }: {
   label: string;
   value: T;
-  options: { value: T; label: string }[];
+  options: readonly { value: T; label: string }[];
   onChange: (v: T) => void;
 }) {
   return (
@@ -17,19 +17,19 @@ export function Segmented<T extends string>({
       aria-label={label}
       className="inline-flex rounded-lg border border-rule bg-paper p-0.5 text-sm"
     >
-      {options.map((o) => {
-        const selected = o.value === value;
+      {options.map((option) => {
+        const isSelected = option.value === value;
         return (
           <button
-            key={o.value}
+            key={option.value}
             type="button"
             role="radio"
-            aria-checked={selected}
-            tabIndex={selected ? 0 : -1}
-            onClick={() => onChange(o.value)}
+            aria-checked={isSelected}
+            tabIndex={isSelected ? 0 : -1}
+            onClick={() => onChange(option.value)}
             onKeyDown={(e) => {
               // Roving focus: arrows move the selection like native radios.
-              const i = options.findIndex((x) => x.value === value);
+              const i = options.findIndex((candidate) => candidate.value === value);
               const delta =
                 e.key === "ArrowRight" || e.key === "ArrowDown"
                   ? 1
@@ -38,14 +38,14 @@ export function Segmented<T extends string>({
                     : 0;
               if (!delta) return;
               e.preventDefault();
-              const next = options[(i + delta + options.length) % options.length];
-              onChange(next.value);
+              const nextOption = options[(i + delta + options.length) % options.length];
+              if (nextOption) onChange(nextOption.value);
               const group = e.currentTarget.parentElement;
               requestAnimationFrame(() => group?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus());
             }}
-            className={`press rounded-md px-3 py-1.5 ${selected ? "bg-ink text-paper" : "text-ink-2 hover:text-ink"}`}
+            className={`press rounded-md px-3 py-1.5 ${isSelected ? "bg-ink text-paper" : "text-ink-2 hover:text-ink"}`}
           >
-            {o.label}
+            {option.label}
           </button>
         );
       })}
@@ -54,15 +54,15 @@ export function Segmented<T extends string>({
 }
 
 export function PlayerControls({
-  playing,
-  done,
+  isPlaying,
+  isDone,
   onPlay,
   onPause,
   onStep,
   onReset,
 }: {
-  playing: boolean;
-  done: boolean;
+  isPlaying: boolean;
+  isDone: boolean;
   onPlay: () => void;
   onPause: () => void;
   onStep: () => void;
@@ -72,16 +72,16 @@ export function PlayerControls({
     "press rounded-md border border-rule bg-paper px-3 py-1.5 text-sm text-ink hover:bg-surface-2 disabled:opacity-40";
   return (
     <div className="flex flex-wrap gap-2">
-      {playing ? (
+      {isPlaying ? (
         <button type="button" className={btn} onClick={onPause}>
           Pause
         </button>
       ) : (
         <button type="button" className={btn} onClick={onPlay}>
-          {done ? "Replay" : "Play"}
+          {isDone ? "Replay" : "Play"}
         </button>
       )}
-      <button type="button" className={btn} onClick={onStep} disabled={done}>
+      <button type="button" className={btn} onClick={onStep} disabled={isDone}>
         Step
       </button>
       <button type="button" className={btn} onClick={onReset}>

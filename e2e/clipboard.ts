@@ -15,12 +15,16 @@ export async function clipboardReader(page: Page, context: BrowserContext, brows
   }
   await page.addInitScript(() => {
     const copied: string[] = [];
-    Object.defineProperty(window, "__copied", { value: copied });
+    Object.defineProperty(window, "capturedClipboardWrites", { value: copied });
     Object.defineProperty(navigator.clipboard, "writeText", {
-      value: async (text: string) => {
+      value: (text: string) => {
         copied.push(text);
+        return Promise.resolve();
       },
     });
   });
-  return () => page.evaluate(() => (window as unknown as { __copied: string[] }).__copied.at(-1) ?? "");
+  return () =>
+    page.evaluate(
+      () => (window as unknown as { capturedClipboardWrites: string[] }).capturedClipboardWrites.at(-1) ?? "",
+    );
 }

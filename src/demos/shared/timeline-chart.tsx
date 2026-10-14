@@ -1,8 +1,23 @@
-export type ChartSegment = { lane: string; kind: string; start: number; end: number };
-export type ChartMarker = { lane: string; kind: string; at: number };
-export type ChartEvent = { at: number; text: string };
+export interface ChartSegment {
+  lane: string;
+  kind: string;
+  start: number;
+  end: number;
+}
+export interface ChartMarker {
+  lane: string;
+  kind: string;
+  at: number;
+}
+export interface ChartEvent {
+  at: number;
+  text: string;
+}
 
-export type KindStyle = { className: string; label: string };
+export interface KindStyle {
+  className: string;
+  label: string;
+}
 
 /**
  * Lanes of time-bounded segments, revealed up to the playhead `t`. Purely

@@ -28,7 +28,7 @@ export function TocActive({ ids }: { ids: string[] }) {
         else break; // headings are in document order
       }
       document.querySelectorAll<HTMLAnchorElement>("[data-toc-id]").forEach((a) => {
-        if (a.dataset.tocId === current) a.setAttribute("aria-current", "location");
+        if (a.dataset["tocId"] === current) a.setAttribute("aria-current", "location");
         else a.removeAttribute("aria-current");
       });
     };

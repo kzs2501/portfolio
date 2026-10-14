@@ -5,7 +5,7 @@ export type Theme = "light" | "dark";
 /** The paper colour of each theme, for the browser chrome (theme-color). */
 export const THEME_COLORS: Record<Theme, string> = { light: "#fcfaf6", dark: "#120f0c" };
 
-export const readTheme = (): Theme => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+export const readTheme = (): Theme => (document.documentElement.dataset["theme"] === "dark" ? "dark" : "light");
 
 export const subscribeTheme = (onChange: () => void) => {
   const observer = new MutationObserver(onChange);
@@ -42,7 +42,7 @@ export function followSystemTheme() {
   const mql = window.matchMedia("(prefers-color-scheme: dark)");
   const onChange = (e: MediaQueryListEvent) => {
     if (storedTheme()) return;
-    document.documentElement.dataset.theme = e.matches ? "dark" : "light";
+    document.documentElement.dataset["theme"] = e.matches ? "dark" : "light";
   };
   mql.addEventListener("change", onChange);
   return () => mql.removeEventListener("change", onChange);
@@ -54,7 +54,7 @@ export function followSystemTheme() {
  */
 export function setTheme(next: Theme, origin?: { x: number; y: number }) {
   const apply = () => {
-    document.documentElement.dataset.theme = next;
+    document.documentElement.dataset["theme"] = next;
     syncThemeColor(next);
     try {
       localStorage.setItem("theme", next);
@@ -63,8 +63,9 @@ export function setTheme(next: Theme, origin?: { x: number; y: number }) {
     }
   };
 
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!document.startViewTransition || reduceMotion) {
+  const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Firefox has no view transitions, whatever the DOM types say.
+  if (!("startViewTransition" in document) || shouldReduceMotion) {
     apply();
     return;
   }
@@ -82,7 +83,7 @@ export function setTheme(next: Theme, origin?: { x: number; y: number }) {
   const root = document.documentElement;
   root.classList.add("theme-transition");
   const transition = document.startViewTransition(() => flushSync(apply));
-  transition.finished.finally(() => root.classList.remove("theme-transition"));
+  void transition.finished.finally(() => root.classList.remove("theme-transition"));
 }
 
 export const toggleTheme = (origin?: { x: number; y: number }) =>

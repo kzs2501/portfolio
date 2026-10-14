@@ -35,7 +35,7 @@ test.describe("identity & chrome", () => {
       [CASE, "Work"],
       ["/notes/", "Notes"],
       ["/about/", "About"],
-    ]) {
+    ] as const) {
       await page.goto(path);
       await expect(current()).toHaveText(label);
       await expect(current()).toHaveCount(1);
@@ -60,8 +60,8 @@ test.describe("navigation & flow", () => {
 
   test("reading progress fills as you scroll (or stays hidden where unsupported)", async ({ page }) => {
     await page.goto(CASE);
-    const supported = await page.evaluate(() => CSS.supports("animation-timeline: scroll()"));
-    if (!supported) {
+    const isSupported = await page.evaluate(() => CSS.supports("animation-timeline: scroll()"));
+    if (!isSupported) {
       // Graceful fallback: no scroll timelines, no bar — never a frozen or full one.
       await expect(page.locator(".reading-progress")).toBeHidden();
       return;
@@ -79,9 +79,14 @@ test.describe("skimmability", () => {
 
   test("every contents link points at a real heading", async ({ page }) => {
     await page.goto(CASE);
-    const hrefs = await page.locator("aside [data-toc-id]").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+    const hrefs = await page
+      .locator("aside [data-toc-id]")
+      .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
     expect(hrefs.length).toBeGreaterThan(4);
-    for (const href of hrefs) await expect(page.locator(href!)).toHaveCount(1);
+    for (const href of hrefs) {
+      expect(href).toMatch(/^#/);
+      await expect(page.locator(href ?? "#missing")).toHaveCount(1);
+    }
   });
 
   test("contents marks the section in view, including after a big jump up", async ({ page }) => {
@@ -89,7 +94,7 @@ test.describe("skimmability", () => {
     const active = page.locator('aside [aria-current="location"]');
     await page.locator('aside a[href="#quality"]').click();
     await expect(active).toHaveText("Quality");
-    await page.evaluate(() => document.getElementById("the-problem")!.scrollIntoView({ behavior: "instant" }));
+    await page.evaluate(() => document.getElementById("the-problem")?.scrollIntoView({ behavior: "instant" }));
     await expect(active).toHaveText("The problem");
     await expect(active).toHaveCount(1);
   });

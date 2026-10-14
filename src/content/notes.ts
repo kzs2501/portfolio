@@ -1,9 +1,9 @@
-export type NoteMeta = {
+export interface NoteMeta {
   slug: string;
   title: string;
   summary: string;
   date: string; // ISO
-};
+}
 
 /** Newest first. */
 export const notes: NoteMeta[] = [
@@ -37,7 +37,14 @@ export const notes: NoteMeta[] = [
   },
 ];
 
-export const getNote = (slug: string) => notes.find((n) => n.slug === slug);
+export const findNote = (slug: string): NoteMeta | undefined => notes.find((entry) => entry.slug === slug);
+
+/** For slugs that must exist (static params come from this list): a miss is a bug. */
+export function getNote(slug: string): NoteMeta {
+  const meta = findNote(slug);
+  if (!meta) throw new Error(`Unknown note: ${slug}`);
+  return meta;
+}
 
 export const formatDate = (iso: string) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", {

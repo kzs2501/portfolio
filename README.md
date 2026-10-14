@@ -11,8 +11,8 @@ Tailwind CSS 4 · MDX · Vitest · Playwright + axe · Lighthouse CI.
 ## What's worth a look
 
 - **Demos as pure logic plus a thin UI.** Each demo's behaviour lives in a plain,
-  unit-tested module, such as [`stage-registry/registry.ts`](src/demos/stage-registry/registry.ts)
-  and [`single-flight/timeline.ts`](src/demos/single-flight/timeline.ts). The React
+  unit-tested module, such as [`stage-registry/stage-registry.ts`](src/demos/stage-registry/stage-registry.ts)
+  and [`single-flight/single-flight.ts`](src/demos/single-flight/single-flight.ts). The React
   layer only renders it. The tests assert the claims the case studies make, e.g.
   "however many requests 401, the refresh endpoint is called once."
 - **Demos cost nothing until you approach them.** [`Demo`](src/components/demo.tsx)
@@ -70,7 +70,7 @@ src/
   app/              routes: home, /work/[slug], /notes/[slug], /projects/[slug], /about, OG images, RSS
   content/          the typed content index + case-study, note and project MDX
   components/       layout, ledger primitives, demo loader, ⌘K palette
-  demos/            each demo: logic.ts + logic.test.ts + demo.tsx
+  demos/            each demo: <name>.ts (pure logic) + <name>.test.ts + demo.tsx
 e2e/                Playwright + axe
 ```
 

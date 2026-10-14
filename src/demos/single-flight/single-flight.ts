@@ -15,16 +15,25 @@ export type Mode = "naive" | "single-flight";
 export type SegmentKind = "send" | "wait" | "refresh" | "refresh-rejected" | "retry";
 export type MarkerKind = "401" | "ok" | "fail";
 
-export type Segment = { lane: string; kind: SegmentKind; start: number; end: number };
-export type Marker = { lane: string; kind: MarkerKind; at: number };
+export interface Segment {
+  lane: string;
+  kind: SegmentKind;
+  start: number;
+  end: number;
+}
+export interface Marker {
+  lane: string;
+  kind: MarkerKind;
+  at: number;
+}
 
-export type Timeline = {
+export interface Timeline {
   lanes: { id: string; label: string }[];
   segments: Segment[];
   markers: Marker[];
   duration: number;
-  summary: { refreshCalls: number; succeeded: number; failed: number; sessionRevoked: boolean };
-};
+  summary: { refreshCalls: number; succeeded: number; failed: number; isSessionRevoked: boolean };
+}
 
 const STAGGER = 0.5;
 const NETWORK = 1.5;
@@ -89,6 +98,6 @@ export function buildTimeline(mode: Mode, count = 5): Timeline {
     segments,
     markers,
     duration: Math.ceil(Math.max(...ends) + 0.5),
-    summary: { refreshCalls, succeeded, failed, sessionRevoked: mode === "naive" && failed > 0 },
+    summary: { refreshCalls, succeeded, failed, isSessionRevoked: mode === "naive" && failed > 0 },
   };
 }

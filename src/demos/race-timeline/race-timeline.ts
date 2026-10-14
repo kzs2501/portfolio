@@ -9,10 +9,19 @@
  * it overwrites the newer results; with a guard it's dropped.
  */
 export type ScreenState =
-  { kind: "idle" } | { kind: "loading"; query: string } | { kind: "results"; query: string; stale: boolean };
+  { kind: "idle" } | { kind: "loading"; query: string } | { kind: "results"; query: string; isStale: boolean };
 
-export type RaceSegment = { lane: string; kind: string; start: number; end: number };
-export type RaceMarker = { lane: string; kind: string; at: number };
+export interface RaceSegment {
+  lane: string;
+  kind: string;
+  start: number;
+  end: number;
+}
+export interface RaceMarker {
+  lane: string;
+  kind: string;
+  at: number;
+}
 
 const DEBOUNCE = 1.5;
 
@@ -24,7 +33,14 @@ const keystrokes = [
 
 const latency: Record<string, number> = { BT: 4, BTC: 1 };
 
-export function buildRace(guard: boolean) {
+/** Every query the timeline sends has a latency; a missing one is a bug in this table. */
+function latencyFor(query: string): number {
+  const ticks = latency[query];
+  if (ticks === undefined) throw new Error(`No latency for "${query}"`);
+  return ticks;
+}
+
+export function buildRace(isGuarded: boolean) {
   const segments: RaceSegment[] = [];
   const markers: RaceMarker[] = [];
 
@@ -39,18 +55,18 @@ export function buildRace(guard: boolean) {
       return;
     }
     segments.push({ lane: "debounce", kind: "debounce", start: k.at, end: firesAt });
-    requests.push({ query: k.value, sentAt: firesAt, returnsAt: firesAt + latency[k.value] });
+    requests.push({ query: k.value, sentAt: firesAt, returnsAt: firesAt + latencyFor(k.value) });
   });
 
   for (const r of requests) {
     const lane = `req-${r.query}`;
     segments.push({ lane, kind: "request", start: r.sentAt, end: r.returnsAt });
     const isLatest = r === requests[requests.length - 1];
-    const arrivesLate = requests.some((o) => o !== r && o.sentAt > r.sentAt && o.returnsAt < r.returnsAt);
-    markers.push({ lane, kind: guard && !isLatest ? "dropped" : arrivesLate ? "stale" : "fresh", at: r.returnsAt });
+    const isLate = requests.some((o) => o !== r && o.sentAt > r.sentAt && o.returnsAt < r.returnsAt);
+    markers.push({ lane, kind: isGuarded && !isLatest ? "dropped" : isLate ? "stale" : "fresh", at: r.returnsAt });
   }
 
-  const latestQuery = keystrokes[keystrokes.length - 1].value;
+  const latestQuery = keystrokes.at(-1)?.value ?? "";
   const duration = Math.ceil(Math.max(...requests.map((r) => r.returnsAt)) + 1);
 
   /** What the user sees at time t: the input's value and the results panel. */
@@ -70,8 +86,8 @@ export function buildRace(guard: boolean) {
       if (e.type === "send") screen = { kind: "loading", query: e.r.query };
       else {
         const newest = latestSent(e.at);
-        if (guard && newest && newest !== e.r) continue; // the guard: ignore superseded responses
-        screen = { kind: "results", query: e.r.query, stale: e.r.query !== input };
+        if (isGuarded && newest && newest !== e.r) continue; // the guard: ignore superseded responses
+        screen = { kind: "results", query: e.r.query, isStale: e.r.query !== input };
       }
     }
     return { input, screen };

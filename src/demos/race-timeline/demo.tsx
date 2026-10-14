@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { DemoShell, PlayerControls, Segmented } from "../shared/controls";
 import { TimelineChart, type ChartEvent } from "../shared/timeline-chart";
 import { useTimelinePlayer } from "../shared/use-timeline-player";
-import { buildRace, resultsFor } from "./race";
+import { buildRace, resultsFor } from "./race-timeline";
 
 const lanes = [
   { id: "keys", label: "Keystrokes" },
@@ -26,8 +26,8 @@ const markerStyles = {
 };
 
 export default function RaceTimelineDemo() {
-  const [guard, setGuard] = useState<"off" | "on">("off");
-  const race = useMemo(() => buildRace(guard === "on"), [guard]);
+  const [guardMode, setGuardMode] = useState<"off" | "on">("off");
+  const race = useMemo(() => buildRace(guardMode === "on"), [guardMode]);
   const player = useTimelinePlayer(race.duration, 1.6);
   const { input, screen } = race.screenAt(player.t);
 
@@ -38,7 +38,8 @@ export default function RaceTimelineDemo() {
     }
     for (const r of race.requests) {
       list.push({ at: r.sentAt, text: `debounce settles → fetch("${r.query}")` });
-      const marker = race.markers.find((m) => m.lane === `req-${r.query}`)!;
+      const marker = race.markers.find((candidate) => candidate.lane === `req-${r.query}`);
+      if (!marker) continue; // every request has a marker; skip rather than crash if not
       const outcome =
         marker.kind === "dropped"
           ? "superseded by a newer query, ignored"
@@ -60,19 +61,19 @@ export default function RaceTimelineDemo() {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <Segmented
           label="Stale-response guard"
-          value={guard}
+          value={guardMode}
           options={[
             { value: "off", label: "No guard" },
             { value: "on", label: "With guard" },
           ]}
           onChange={(g) => {
-            setGuard(g);
+            setGuardMode(g);
             player.reset();
           }}
         />
         <PlayerControls
-          playing={player.playing}
-          done={player.done}
+          isPlaying={player.isPlaying}
+          isDone={player.isDone}
           onPlay={player.play}
           onPause={player.pause}
           onStep={player.step}
@@ -111,7 +112,7 @@ export default function RaceTimelineDemo() {
                       </li>
                     ))}
                   </ul>
-                  {screen.stale && (
+                  {screen.isStale && (
                     <p role="alert" className="mt-2 rounded bg-accent-soft px-2 py-1.5 text-xs text-ink">
                       Stale: results for “{screen.query}” under a search for “{input}”.
                     </p>

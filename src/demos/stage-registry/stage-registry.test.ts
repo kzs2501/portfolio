@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { deepLink, reconcileCurrent, registry, resolveStages } from "./registry";
+import { deepLink, reconcileCurrent, resolveStages, STAGE_REGISTRY, type Rail } from "./stage-registry";
 
-const ids = (rail: Parameters<typeof resolveStages>[0]["rail"], guest = false) =>
-  resolveStages({ rail, guest }).map((s) => s.id);
+const ids = (rail: Rail, isGuest = false) => resolveStages({ rail, isGuest }).map((stage) => stage.id);
 
 describe("stage registry", () => {
   it("builds each rail's flow from the same registry", () => {
@@ -12,7 +11,7 @@ describe("stage registry", () => {
     expect(ids("fund")).toEqual(["amount", "rail", "fund", "review", "processing", "receipt"]);
   });
 
-  it("adds guest details only for guests, in registry order", () => {
+  it("adds guest details only for guests, in STAGE_REGISTRY order", () => {
     expect(ids("card", true).slice(0, 3)).toEqual(["amount", "rail", "details"]);
     expect(ids("card", false)).not.toContain("details");
   });
@@ -23,26 +22,26 @@ describe("stage registry", () => {
   });
 
   it("keeps the user on their stage when it survives a context change", () => {
-    const next = resolveStages({ rail: "crypto", guest: false });
+    const next = resolveStages({ rail: "crypto", isGuest: false });
     expect(reconcileCurrent("review", 4, next)).toBe("review");
   });
 
   it("lands on the same position when the current stage disappears", () => {
-    const next = resolveStages({ rail: "crypto", guest: false });
+    const next = resolveStages({ rail: "crypto", isGuest: false });
     // Was on "frequency" (card only, index 3) → now index 3 is "network".
     expect(reconcileCurrent("frequency", 3, next)).toBe("network");
   });
 
   it("clamps to the last stage rather than running off the end", () => {
-    const next = resolveStages({ rail: "fund", guest: false });
+    const next = resolveStages({ rail: "fund", isGuest: false });
     expect(reconcileCurrent("authorization", 99, next)).toBe("receipt");
   });
 
   it("encodes the position in a shareable deep link", () => {
-    expect(deepLink({ rail: "stock", guest: true }, "shares")).toBe("/give?rail=stock&guest=1&step=shares");
+    expect(deepLink({ rail: "stock", isGuest: true }, "shares")).toBe("/give?rail=stock&guest=1&step=shares");
   });
 
   it("has unique stage ids", () => {
-    expect(new Set(registry.map((s) => s.id)).size).toBe(registry.length);
+    expect(new Set(STAGE_REGISTRY.map((s) => s.id)).size).toBe(STAGE_REGISTRY.length);
   });
 });

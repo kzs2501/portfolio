@@ -9,20 +9,20 @@ import { useReducedMotion } from "./use-reduced-motion";
  *   from the keyboard without watching anything animate.
  */
 export function useTimelinePlayer(duration: number, ticksPerSecond = 2.2) {
-  const reduced = useReducedMotion();
+  const isReducedMotion = useReducedMotion();
   const [t, setT] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const raf = useRef<number | null>(null);
   const last = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!playing) return;
+    if (!isPlaying) return;
 
-    if (reduced) {
+    if (isReducedMotion) {
       const id = window.setInterval(() => {
         setT((prev) => {
           const next = Math.min(duration, Math.floor(prev) + 1);
-          if (next >= duration) setPlaying(false);
+          if (next >= duration) setIsPlaying(false);
           return next;
         });
       }, 650);
@@ -34,7 +34,7 @@ export function useTimelinePlayer(duration: number, ticksPerSecond = 2.2) {
       last.current = now;
       setT((prev) => {
         const next = Math.min(duration, prev + dt * ticksPerSecond);
-        if (next >= duration) setPlaying(false);
+        if (next >= duration) setIsPlaying(false);
         return next;
       });
       raf.current = requestAnimationFrame(frame);
@@ -44,21 +44,21 @@ export function useTimelinePlayer(duration: number, ticksPerSecond = 2.2) {
       if (raf.current !== null) cancelAnimationFrame(raf.current);
       last.current = null;
     };
-  }, [playing, reduced, duration, ticksPerSecond]);
+  }, [isPlaying, isReducedMotion, duration, ticksPerSecond]);
 
   const play = useCallback(() => {
     setT((prev) => (prev >= duration ? 0 : prev));
-    setPlaying(true);
+    setIsPlaying(true);
   }, [duration]);
-  const pause = useCallback(() => setPlaying(false), []);
+  const pause = useCallback(() => setIsPlaying(false), []);
   const step = useCallback(() => {
-    setPlaying(false);
+    setIsPlaying(false);
     setT((prev) => Math.min(duration, Math.floor(prev) + 1));
   }, [duration]);
   const reset = useCallback(() => {
-    setPlaying(false);
+    setIsPlaying(false);
     setT(0);
   }, []);
 
-  return { t, playing, play, pause, step, reset, done: t >= duration };
+  return { t, isPlaying, play, pause, step, reset, isDone: t >= duration };
 }

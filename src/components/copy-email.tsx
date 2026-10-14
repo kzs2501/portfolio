@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
  * selected instead so ⌘C still works.
  */
 export function CopyEmail({ email, className = "" }: { email: string; className?: string }) {
-  const [copied, setCopied] = useState(false);
+  const [hasCopied, setHasCopied] = useState(false);
   const linkRef = useRef<HTMLAnchorElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -22,9 +22,9 @@ export function CopyEmail({ email, className = "" }: { email: string; className?
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(email);
-      setCopied(true);
+      setHasCopied(true);
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setCopied(false), 1500);
+      timer.current = setTimeout(() => setHasCopied(false), 1500);
     } catch {
       const el = linkRef.current;
       if (!el) return;
@@ -44,13 +44,13 @@ export function CopyEmail({ email, className = "" }: { email: string; className?
       <button
         type="button"
         onClick={copy}
-        aria-label={copied ? "Email address copied" : "Copy email address"}
+        aria-label={hasCopied ? "Email address copied" : "Copy email address"}
         className="num inline-flex min-h-6 press items-center rounded border border-rule px-1.5 text-[11px] text-ink-3 hover:border-ink-3 hover:text-ink"
       >
-        {copied ? "Copied" : "Copy"}
+        {hasCopied ? "Copied" : "Copy"}
       </button>
       <span role="status" aria-live="polite" className="sr-only">
-        {copied ? "Email address copied" : ""}
+        {hasCopied ? "Email address copied" : ""}
       </span>
     </span>
   );

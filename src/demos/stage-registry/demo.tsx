@@ -2,44 +2,57 @@
 
 import { startTransition, useState, ViewTransition } from "react";
 import { DemoShell, Segmented } from "../shared/controls";
-import { deepLink, rails, reconcileCurrent, registry, resolveStages, type Ctx, type Rail } from "./registry";
+import {
+  deepLink,
+  RAILS,
+  reconcileCurrent,
+  resolveStages,
+  STAGE_REGISTRY,
+  type FlowContext,
+  type Rail,
+} from "./stage-registry";
 
 export default function StageRegistryDemo() {
   // Context and position live in ONE state object and change only through
   // functional updates. Updates run inside transitions, so a second quick click
   // can arrive before React re-renders; reading `index` from this render's
   // closure would then compute the same target twice and swallow a click.
-  const [flow, setFlow] = useState<{ ctx: Ctx; currentId: string }>({
-    ctx: { rail: "card", guest: false },
+  const [flow, setFlow] = useState<{ context: FlowContext; currentId: string }>({
+    context: { rail: "card", isGuest: false },
     currentId: "amount",
   });
-  const { ctx, currentId } = flow;
+  const { context, currentId } = flow;
 
-  const stages = resolveStages(ctx);
+  const stages = resolveStages(context);
   const index = Math.max(
     0,
     stages.findIndex((s) => s.id === currentId),
   );
   const current = stages[index];
   const next = stages[index + 1];
+  // amount and rail apply to every flow, so there is always a current stage.
+  if (!current) throw new Error("A giving flow always has at least one stage.");
 
-  const changeCtx = (patch: Partial<Ctx>) =>
+  const changeContext = (patch: Partial<FlowContext>) =>
     startTransition(() =>
       setFlow((prev) => {
-        const prevStages = resolveStages(prev.ctx);
+        const prevStages = resolveStages(prev.context);
         const prevIndex = Math.max(
           0,
           prevStages.findIndex((s) => s.id === prev.currentId),
         );
-        const nextCtx = { ...prev.ctx, ...patch };
-        return { ctx: nextCtx, currentId: reconcileCurrent(prev.currentId, prevIndex, resolveStages(nextCtx)) };
+        const nextContext = { ...prev.context, ...patch };
+        return {
+          context: nextContext,
+          currentId: reconcileCurrent(prev.currentId, prevIndex, resolveStages(nextContext)),
+        };
       }),
     );
 
   const go = (delta: number) =>
     startTransition(() =>
       setFlow((prev) => {
-        const list = resolveStages(prev.ctx);
+        const list = resolveStages(prev.context);
         const i = list.findIndex((s) => s.id === prev.currentId);
         const target = list[i + delta];
         return target ? { ...prev, currentId: target.id } : prev;
@@ -54,15 +67,15 @@ export default function StageRegistryDemo() {
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <Segmented<Rail>
           label="Payment rail"
-          value={ctx.rail}
-          options={rails}
-          onChange={(rail) => changeCtx({ rail })}
+          value={context.rail}
+          options={RAILS}
+          onChange={(rail) => changeContext({ rail })}
         />
         <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-2">
           <input
             type="checkbox"
-            checked={ctx.guest}
-            onChange={(e) => changeCtx({ guest: e.target.checked })}
+            checked={context.isGuest}
+            onChange={(changeEvent) => changeContext({ isGuest: changeEvent.target.checked })}
             className="size-4 accent-[var(--accent)]"
           />
           Check out as guest
@@ -114,16 +127,16 @@ export default function StageRegistryDemo() {
             <pre className="mt-2 font-mono text-xs leading-relaxed whitespace-pre-wrap text-ink">
               {`{
   id: "${current.id}",
-  when: ${current.rule === "always" ? "undefined" : `ctx => ${current.rule}`}
+  when: ${current.rule === "always" ? "undefined" : `context => ${current.rule}`}
 }`}
             </pre>
           </div>
           <div className="rounded-lg border border-rule bg-paper p-3.5">
             <p className="num text-[10px] tracking-[0.16em] text-ink-3 uppercase">Deep link</p>
-            <p className="mt-2 font-mono text-xs break-all text-ink">{deepLink(ctx, current.id)}</p>
+            <p className="mt-2 font-mono text-xs break-all text-ink">{deepLink(context, current.id)}</p>
           </div>
           <p className="text-ink-3">
-            <span className="num text-ink">{stages.length}</span> of {registry.length} registered stages apply.
+            <span className="num text-ink">{stages.length}</span> of {STAGE_REGISTRY.length} registered stages apply.
           </p>
         </div>
       </div>

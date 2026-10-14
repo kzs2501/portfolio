@@ -1,6 +1,6 @@
 import { site } from "./site";
 
-export type ProjectMeta = {
+export interface ProjectMeta {
   slug: string;
   title: string;
   summary: string;
@@ -10,7 +10,7 @@ export type ProjectMeta = {
   sourceUrl: string;
   /** One line on why it's worth a look. */
   highlight: string;
-};
+}
 
 /** Public, runnable work — the code is the evidence. */
 export const projects: ProjectMeta[] = [
@@ -37,4 +37,11 @@ export const projects: ProjectMeta[] = [
   },
 ];
 
-export const getProject = (slug: string) => projects.find((p) => p.slug === slug);
+export const findProject = (slug: string): ProjectMeta | undefined => projects.find((entry) => entry.slug === slug);
+
+/** For slugs that must exist (static params come from this list): a miss is a bug. */
+export function getProject(slug: string): ProjectMeta {
+  const meta = findProject(slug);
+  if (!meta) throw new Error(`Unknown project: ${slug}`);
+  return meta;
+}

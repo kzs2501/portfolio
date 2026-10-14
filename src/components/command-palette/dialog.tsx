@@ -12,7 +12,7 @@ import { filterCommands, type Command } from "./commands";
  * input and list follow the ARIA combobox pattern — focus stays in the input and
  * aria-activedescendant points at the highlighted option.
  */
-export default function PaletteDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,21 +25,21 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
   const results = useMemo(() => filterCommands(query), [query]);
   const optionId = (i: number) => `${listId}-opt-${i}`;
 
-  // Keep the native dialog in sync with the `open` prop.
+  // Keep the native dialog in sync with the `isOpen` prop.
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (open && !dialog.open) {
+    if (isOpen && !dialog.open) {
       returnFocus.current = document.activeElement;
       setQuery("");
       setActive(0);
       setStatus("");
       dialog.showModal();
       inputRef.current?.focus();
-    } else if (!open && dialog.open) {
+    } else if (!isOpen && dialog.open) {
       dialog.close();
     }
-  }, [open]);
+  }, [isOpen]);
 
   // Keep the highlighted option visible while arrowing through a long list.
   useEffect(() => {
@@ -89,7 +89,8 @@ export default function PaletteDialog({ open, onClose }: { open: boolean; onClos
       setActive((i) => (i - 1 + results.length) % results.length);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      void run(results[active]);
+      const selected = results[active];
+      if (selected) void run(selected);
     }
   };
 

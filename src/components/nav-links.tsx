@@ -11,7 +11,7 @@ const nav = [
 
 /** Primary nav with a "you are here" underline (aria-current="page"). */
 export function NavLinks() {
-  const pathname = usePathname() ?? "/";
+  const pathname = usePathname();
   return (
     <ul className="flex items-center gap-1 text-sm">
       {nav.map((item) => (

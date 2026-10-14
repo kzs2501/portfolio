@@ -4,12 +4,13 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { work, getWork } from "@/content/work";
+import { work, findWork } from "@/content/work";
 import { Ledger } from "@/components/ledger";
 import { PageTransition } from "@/components/page-transition";
 import { ReadingProgress } from "@/components/reading-progress";
 import { TocInline, TocSidebar } from "@/components/toc";
 import { extractToc } from "@/lib/toc";
+import { loadMdxBody } from "@/app/_lib/load-mdx";
 
 export const dynamicParams = false;
 
@@ -18,7 +19,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps<"/work/[slug]">): Promise<Metadata> {
-  const meta = getWork((await params).slug);
+  const meta = findWork((await params).slug);
   if (!meta) return {};
   return {
     title: meta.title,
@@ -33,13 +34,13 @@ export async function generateMetadata({ params }: PageProps<"/work/[slug]">): P
 
 export default async function CaseStudy({ params }: PageProps<"/work/[slug]">) {
   const { slug } = await params;
-  const meta = getWork(slug);
+  const meta = findWork(slug);
   if (!meta) notFound();
 
-  const { default: Body } = await import(`@/content/work/${slug}.mdx`);
+  const Body = await loadMdxBody("work", slug);
   // Contents are built from the MDX source at build time — static HTML, no JS needed.
   const toc = extractToc(readFileSync(join(process.cwd(), "src/content/work", `${slug}.mdx`), "utf8"));
-  const index = work.findIndex((w) => w.slug === slug);
+  const index = work.findIndex((entry) => entry.slug === slug);
   const next = work[(index + 1) % work.length];
 
   return (
@@ -89,16 +90,18 @@ export default async function CaseStudy({ params }: PageProps<"/work/[slug]">) {
             <Body />
           </div>
 
-          <nav aria-label="Next case study" className="mt-20 border-t border-rule pt-8">
-            <p className="num text-xs tracking-[0.18em] text-ink-3 uppercase">Next case study</p>
-            <Link
-              href={`/work/${next.slug}`}
-              transitionTypes={["nav-forward"]}
-              className="mt-2 block font-serif text-2xl tracking-tight hover:text-accent"
-            >
-              {next.title} →
-            </Link>
-          </nav>
+          {next && (
+            <nav aria-label="Next case study" className="mt-20 border-t border-rule pt-8">
+              <p className="num text-xs tracking-[0.18em] text-ink-3 uppercase">Next case study</p>
+              <Link
+                href={`/work/${next.slug}`}
+                transitionTypes={["nav-forward"]}
+                className="mt-2 block font-serif text-2xl tracking-tight hover:text-accent"
+              >
+                {next.title} →
+              </Link>
+            </nav>
+          )}
         </article>
       </div>
     </PageTransition>
