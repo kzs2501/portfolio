@@ -43,17 +43,29 @@ A provider that guarantees delivery will sometimes deliver twice: it retried bec
 your server was slow to reply, or a network blip ate the acknowledgement. If processing
 a webhook issues tickets, a duplicate issues them twice.
 
-Every webhook event has an id. Record it _before_ acting, and skip any id you've already
-seen:
+Every webhook event has an id. Record it and act on it in **one transaction**, and let a
+unique key on the id skip any you've already seen:
 
 ```ts
-function processWebhook(event: WebhookEvent) {
-  // A redelivery: already handled.
-  if (processedEvents.has(event.id)) return;
-  processedEvents.add(event.id);
-  markPaidAndIssueTickets(event.paymentId);
+async function processWebhook(event: WebhookEvent) {
+  await db.transaction(async (tx) => {
+    // The unique key on event_id makes a redelivery insert nothing.
+    const { rowCount } = await tx.query(
+      `INSERT INTO processed_events (event_id) VALUES ($1)
+       ON CONFLICT DO NOTHING`,
+      [event.id],
+    );
+    if (rowCount === 0) return; // already handled
+    await markPaidAndIssueTickets(tx, event.paymentId);
+  });
 }
 ```
+
+The transaction is the important part. Record the id first and act separately, and a
+failure in between — the ticket service times out — leaves the id recorded and the work
+undone. The provider retries, the retry is skipped as a duplicate, and the buyer is
+paid with no tickets: the first bug again, by another route. In one transaction, the
+failure rolls the id back too, and the retry gets its second chance.
 
 Add a second guard for good measure: ignore a "payment succeeded" event for an order
 that's already settled. Belt and braces, because this is the code path that touches
