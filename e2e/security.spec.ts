@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { ROUTES } from "./routes";
+import { loadDemos, ROUTES } from "./site";
 
 interface HostHeader {
   key: string;
@@ -65,11 +65,7 @@ test("no page breaks the content security policy, demos included", async ({ page
   const violations = await asTheHostServesIt(page);
   for (const route of ROUTES) {
     await page.goto(route);
-    const demo = page.locator('[aria-label^="Interactive demo"]');
-    if (await demo.count()) {
-      await demo.first().scrollIntoViewIfNeeded();
-      await expect(demo.first().getByText("Loading interactive demo")).toHaveCount(0);
-    }
+    await loadDemos(page);
   }
   expect(violations).toEqual([]);
 });

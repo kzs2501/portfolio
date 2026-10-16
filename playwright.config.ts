@@ -13,7 +13,9 @@ export default defineConfig({
   globalTimeout: 10 * 60_000,
   retries: isCI ? 1 : 0,
   reporter: isCI ? "github" : "list",
-  use: { baseURL: "http://localhost:4173", trace: "retain-on-failure" },
+  // CI traces the retry of a failed test (Playwright's advice: cheap, and it's the run
+  // that shows a flake); locally, keep the trace of whatever failed.
+  use: { baseURL: "http://localhost:4173", trace: isCI ? "on-first-retry" : "retain-on-failure" },
   // Tests run against the real static export — the exact files that ship. Never reuse a
   // running server: one left over from before a rebuild would serve stale files.
   webServer: {

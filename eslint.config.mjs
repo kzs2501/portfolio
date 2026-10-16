@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import playwright from "eslint-plugin-playwright";
 import tseslint from "typescript-eslint";
 
 /**
@@ -88,6 +89,16 @@ const eslintConfig = defineConfig([
       "src/components/command-palette/dialog.tsx",
     ],
     rules: { "import/no-default-export": "off" },
+  },
+  {
+    // Browser tests: no fixed waits, no floating promises, web-first assertions.
+    ...playwright.configs["flat/recommended"],
+    files: ["e2e/**/*.ts"],
+    rules: {
+      ...playwright.configs["flat/recommended"].rules,
+      // Skipping where a browser lacks a feature is how Playwright's docs say to do it.
+      "playwright/no-skipped-test": ["warn", { allowConditional: true }],
+    },
   },
   {
     files: ["**/*.mjs"],

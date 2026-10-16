@@ -1,8 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { PAPER } from "../src/lib/design-tokens";
 import { clipboardReader } from "./clipboard";
 
 const CASE = "/work/four-rails-one-checkout/";
+
+const hasScrollTimelines = (page: Page) => page.evaluate(() => CSS.supports("animation-timeline: scroll()"));
 
 test.describe("identity & chrome", () => {
   test("serves the K monogram favicon and no default favicon", async ({ page, request }) => {
@@ -59,19 +61,21 @@ test.describe("navigation & flow", () => {
     expect(errors).toEqual([]);
   });
 
-  test("reading progress fills as you scroll (or stays hidden where unsupported)", async ({ page }) => {
+  test("reading progress fills as you scroll, where scroll timelines exist", async ({ page }) => {
     await page.goto(CASE);
-    const isSupported = await page.evaluate(() => CSS.supports("animation-timeline: scroll()"));
-    if (!isSupported) {
-      // Graceful fallback: no scroll timelines, no bar — never a frozen or full one.
-      await expect(page.locator(".reading-progress")).toBeHidden();
-      return;
-    }
+    test.skip(!(await hasScrollTimelines(page)), "this browser has no scroll timelines");
     const scale = () =>
       page.locator(".reading-progress").evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).a);
     const before = await scale();
     await page.evaluate(() => scrollTo(0, document.body.scrollHeight / 2));
     await expect.poll(scale).toBeGreaterThan(before + 0.2);
+  });
+
+  test("reading progress stays hidden where scroll timelines don't exist", async ({ page }) => {
+    await page.goto(CASE);
+    test.skip(await hasScrollTimelines(page), "this browser has scroll timelines");
+    // Graceful fallback: no scroll timelines, no bar — never a frozen or full one.
+    await expect(page.locator(".reading-progress")).toBeHidden();
   });
 });
 
@@ -126,6 +130,7 @@ test.describe("personal touches", () => {
 
   test.describe("from New York", () => {
     test.use({ timezoneId: "America/New_York" });
+
     test("local time shows IST and the gap to the visitor", async ({ page }) => {
       await page.goto("/");
       const footer = page.getByRole("contentinfo");
