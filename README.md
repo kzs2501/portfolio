@@ -86,3 +86,9 @@ page with exactly those headers and fails on any policy violation. The policy al
 inline scripts because Next.js inlines its own, and nonces would need a server; Vercel's
 preview-only toolbar is blocked by it. After deploying, check with
 `curl -sI https://<your-domain> | grep -i content-security`.
+
+## Licence
+
+The code is [MIT licensed](LICENSE). The writing, case studies, images and résumé are
+not: they are © Kshitiz Sonakiya, all rights reserved. To report a vulnerability, see
+[SECURITY.md](SECURITY.md).
