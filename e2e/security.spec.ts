@@ -39,17 +39,32 @@ function hostHeaders(): Record<string, string> {
 
 const HOST_HEADERS = hostHeaders();
 
-/** Serve every response as the host would, and collect any policy violation. */
+declare global {
+  interface Window {
+    reportCspViolation?: (violation: string) => Promise<void>;
+  }
+}
+
+/**
+ * Serve every response as the host would, and collect every policy violation. Listens
+ * for the browser's `securitypolicyviolation` events rather than console errors: a
+ * blocked call the page catches is still a violation, but logs nothing.
+ */
 async function asTheHostServesIt(page: Page) {
   await page.route("**/*", async (route) => {
     const response = await route.fetch();
     await route.fulfill({ response, headers: { ...response.headers(), ...HOST_HEADERS } });
   });
   const violations: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error" && message.text().includes("Content Security Policy")) {
-      violations.push(message.text());
-    }
+  await page.exposeFunction("reportCspViolation", (violation: string) => {
+    violations.push(violation);
+  });
+  await page.addInitScript(() => {
+    document.addEventListener("securitypolicyviolation", (event) => {
+      void window.reportCspViolation?.(
+        `${event.effectiveDirective} blocked ${event.blockedURI} in ${event.sourceFile}`,
+      );
+    });
   });
   return violations;
 }
