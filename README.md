@@ -78,3 +78,11 @@ type-check, tests and the build. On a fresh clone the check is skipped.
 Static output, so any host works. On Vercel: import the repo, set
 `NEXT_PUBLIC_SITE_URL` to the production URL, and deploy. Vercel Analytics is enabled
 automatically on Vercel builds only.
+
+A static export can't send headers, so the security headers — a Content Security
+Policy, nosniff, referrer and permissions policies, and framing protection — live in
+`vercel.json`. On another host, send the same ones. `e2e/security.spec.ts` serves every
+page with exactly those headers and fails on any policy violation. The policy allows
+inline scripts because Next.js inlines its own, and nonces would need a server; Vercel's
+preview-only toolbar is blocked by it. After deploying, check with
+`curl -sI https://<your-domain> | grep -i content-security`.
