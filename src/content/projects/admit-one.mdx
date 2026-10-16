@@ -42,12 +42,12 @@ recognised and ignored. I wrote up the reasoning in
 the order is refunded in full and the page explains why — rather than overselling or
 keeping the money.
 
-## Nine ways to break it
+## Ten ways to break it
 
-The chaos panel has nine scenarios: a declined card, 3-D Secure, a slow network, a
-webhook that arrives twice, a webhook that beats the browser, a webhook twelve seconds
-late, a hold that expires mid-payment, and a crowd that buys the last ticket a moment
-before you. Each one is also an end-to-end test that checks both what you see and what
+The chaos panel has ten scenarios: a declined card, 3-D Secure, a slow network, a
+connection that loses the payment's answer after the charge, a webhook that arrives
+twice, a webhook that beats the browser, a webhook twelve seconds late, a hold that
+expires mid-payment, and a crowd that buys the last ticket a moment before you. Each one is also an end-to-end test that checks both what you see and what
 the server recorded.
 
 ## How it runs with no backend
@@ -71,16 +71,18 @@ Who may import whom is written down as a lint rule, so the architecture can't qu
 erode. Errors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details
 with a typed code; every response is validated against the contract at the client;
 and each screen's state is a single union, derived by a pure function, rather than a
-pile of booleans. The repository documents all of it — architecture, conventions, API
-and eight decision records.
+pile of booleans. A refresh that fails keeps the last good data on screen instead of
+replacing it with an error. Every response carries a Content Security Policy. The
+repository documents all of it — architecture, conventions, API and nine decision
+records.
 
 ## Quality
 
-- **103 unit, component and HTTP tests**, including every legal and illegal order
+- **126 unit, component and HTTP tests**, including every legal and illegal order
   transition, idempotency replays, webhook deduplication, the API client's error
-  handling and the checkout's state machine.
-- **25 browser tests** covering every chaos scenario, refresh mid-payment, step guards,
-  expiry, and accessibility checks in light and dark mode.
+  handling and the checkout's state machine — with coverage floors per layer in CI.
+- **27 browser tests** covering every chaos scenario, refresh mid-payment, step guards,
+  expiry, the security headers, and accessibility checks in light and dark mode.
 - **Lighthouse 100** across the board on desktop.
 - Strict TypeScript and type-aware lint, including naming conventions and the layer
   boundaries.
