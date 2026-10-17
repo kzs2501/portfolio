@@ -1,0 +1,84 @@
+Most seat maps are a picture: an SVG or a canvas you click on. A keyboard can't get in,
+and a screen reader hears nothing, or hears a thousand unlabelled buttons. I built one
+for [admit-one](/projects/admit-one/) that works for both. None of it is exotic, but
+each piece is easy to get wrong.
+
+## It's a grid, so use the grid pattern
+
+A hall is rows and seats, which is exactly what the WAI-ARIA **grid** pattern is for.
+Each section is one `role="grid"`, each row a `role="row"` with a `rowheader` for its
+letter, and each seat a `gridcell`. The cells are plain HTML, not SVG: focus,
+hit-testing and target size come free, and screen-reader support for ARIA roles inside
+SVG is uneven.
+
+The pattern's most important rule: **the whole grid is one tab stop.** A thousand seats
+must not mean a thousand presses of Tab. One seat has `tabIndex={0}` and the rest have
+`-1`. Arrow keys move focus inside the grid, and the tab stop moves with it (a "roving
+tabindex"). Tab takes you on to the next section.
+
+```tsx
+<div role="grid" aria-labelledby="stalls-heading" onKeyDown={moveFocus}>
+  <div role="row">
+    <div role="rowheader">F</div>
+    <div
+      role="gridcell"
+      tabIndex={isTabStop ? 0 : -1}
+      aria-selected={isChosen}
+      aria-label="Row F, seat 12, Premium, ₹2,499"
+    />
+  </div>
+</div>
+```
+
+## Down means the seat in front
+
+Rows aren't the same length. Front rows curve in and aisles split rows into blocks, so
+seat 12 in row F isn't behind seat 12 in row E. If Down kept the seat number, a
+keyboard user would zigzag across the hall.
+
+So every seat gets a hall-wide **column**, counting aisles. Up and Down move to the seat
+in the next row with the nearest column, the one you'd actually be looking at. Left and
+Right step over aisles. Home and End go to the row's ends. All of it is one pure function,
+`nextSeat(section, current, key)`, so every key is a unit test.
+
+## Let people hear what's taken
+
+It's tempting to make sold seats unfocusable. Then a screen-reader user can only hear
+what's left, never the shape of the room: how far back the free seats start, whether a
+pair is still together. So taken seats stay focusable and are marked `aria-disabled`,
+and their name ends in "taken".
+
+Each seat's name says everything a sighted buyer sees: row, number, tier, price, state,
+"wheelchair space". Sighted users don't depend on colour either. A chosen seat has a
+tick and a taken one a cross, and forced-colors mode gets its own styles.
+
+## A thousand cells, still fast
+
+Two ordinary techniques keep it quick:
+
+- **Event delegation.** One `onClick` and one `onKeyDown` per grid read the seat from a
+  `data-seat-id`, instead of two thousand closures.
+- **Memoised cells with primitive props.** Choosing a seat re-renders that seat, not the
+  hall.
+
+An end-to-end test holds me to it. With the CPU throttled four times, it clicks seats and
+reads the Event Timing API. The longest interaction must stay under 200 ms; it's 56.
+
+## Don't hide focus behind your own footer
+
+The chosen seats and the Reserve button live in a bar stuck to the bottom of the
+screen. That's convenient, until arrowing down a row puts the focused seat behind the
+bar. WCAG 2.2 has a criterion for exactly this (2.4.11, Focus Not Obscured). The fix is
+one class: a `scroll-margin-bottom` on each seat, taller than the bar, so anything
+scrolled into view stops above it.
+
+## Offer a way that doesn't need the map
+
+However good the map is, some people would rather not use it. "Best available" asks for
+"two in Premium" and lets the server choose. It chooses the row nearest the stage with
+the pair together, as central as possible, without leaving a single seat stranded. It
+chooses and holds in one step, so nobody can take the seats in between. It's the fast
+path for everyone, and an equivalent control for anyone the map doesn't suit.
+
+> A map is a picture. A grid is somewhere you can walk around, and every seat should
+> tell you where you are.

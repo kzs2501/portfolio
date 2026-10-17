@@ -12,6 +12,7 @@ export const ROUTES = [
   "/notes/load-sdks-on-mount",
   "/notes/async-intersection-observer-mock",
   "/notes/redirect-races-the-webhook",
+  "/notes/a-seat-map-a-screen-reader-can-use",
   "/projects/admit-one",
 ];
 

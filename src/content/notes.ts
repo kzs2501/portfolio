@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "a-seat-map-a-screen-reader-can-use",
+    title: "A seat map a screen reader can use",
+    summary:
+      "Most seat maps are a picture you click. Built as a WAI-ARIA grid — one tab stop, arrows that move to the seat in front, every seat named — it works for keyboards and screen readers too.",
+    date: "2026-10-17",
+  },
+  {
     slug: "redirect-races-the-webhook",
     title: "The redirect races the webhook",
     summary:
