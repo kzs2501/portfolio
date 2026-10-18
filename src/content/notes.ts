@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "a-waiting-room-should-tell-the-truth",
+    title: "A waiting room should tell the truth",
+    summary:
+      "When 40,000 people want the same tickets, a waiting room decides who goes first. The hard part isn’t the line — it’s being honest about it.",
+    date: "2026-10-19",
+  },
+  {
     slug: "a-seat-map-a-screen-reader-can-use",
     title: "A seat map a screen reader can use",
     summary:

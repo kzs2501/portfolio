@@ -1,0 +1,60 @@
+When 40,000 people arrive for the same tickets at once, something decides who goes
+first. Without a waiting room, the server decides by accident: whoever's request lands
+while stock lasts. Everyone else fails at random, retries and makes it worse. A waiting
+room turns that into a line. I added one to [admit-one](/projects/admit-one/), and most
+of the work was making it honest.
+
+## A place should only ever improve
+
+The page shows three things: how many people are ahead of you, a bar that fills as the
+line moves, and an estimated wait. Each one is a promise.
+
+- **People ahead** only goes down, so the bar only ever moves forward. A progress bar
+  that slips back is worse than none.
+- **The wait is said coarsely:** "less than a minute", "about 3 minutes". An estimate
+  is an estimate. A precise number that turns out wrong costs more trust than an honest
+  range.
+
+## Compute the place; don't count it down
+
+It's tempting to decrement a counter on a timer. Instead, a place is a pure function of
+when you joined, the clock and the line's pace:
+
+```ts
+const batchesSoFar = Math.floor((now - joinedAt) / batchInterval);
+const aheadCount = Math.max(0, aheadAtJoin - batchesSoFar * admittedPerBatch);
+```
+
+Nothing ticks, so nothing drifts. A refresh resumes exactly where you were, and reading
+your place never changes it. Joining twice returns the place you already have, so a
+double click can't send you to the back.
+
+## Let the server set the pace
+
+Forty thousand browsers asking "is it my turn?" every second is a flash sale of its
+own. So each answer says when to ask again: every couple of seconds near a batch, less
+often otherwise. The page asks exactly that often, and not at all while the tab is in
+the background.
+
+## When it's your turn, don't grab the wheel
+
+The obvious move is to redirect people to the tickets the moment they're admitted. But
+the buyer may be in another tab, or halfway through reading something, and a page that
+moves on its own is disorienting (WCAG 3.2.5). So the page:
+
+- announces "It's your turn" and moves focus to it;
+- changes the tab's title, so a tab in the background shows it;
+- offers a button, and shows how long your turn lasts.
+
+Screen readers hear the milestones too: halfway, nearly there, your turn. They don't
+hear every update.
+
+## Then limit everyone, politely
+
+A line doesn't help if one client can hammer the reservation endpoint. So reserving is
+rate-limited, and a refusal is a `429` with a `Retry-After` header saying exactly how
+long to wait. The page counts down and tries again only then. Refused attempts count
+toward the limit too, so hammering only lengthens the wait, while waiting as long as
+you're told always works.
+
+> A line is only fair if everyone can see it moving, and it only ever moves forward.

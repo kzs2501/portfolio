@@ -13,6 +13,7 @@ export const ROUTES = [
   "/notes/async-intersection-observer-mock",
   "/notes/redirect-races-the-webhook",
   "/notes/a-seat-map-a-screen-reader-can-use",
+  "/notes/a-waiting-room-should-tell-the-truth",
   "/projects/admit-one",
 ];
 

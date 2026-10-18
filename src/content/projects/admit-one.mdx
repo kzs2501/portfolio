@@ -52,9 +52,18 @@ has gone, nothing is held and the server names it. "Best available" lets the ser
 choose and hold in one step, keeping a party together without stranding a single seat.
 [How the map works →](/notes/a-seat-map-a-screen-reader-can-use/)
 
-## Eleven ways to break it
+## A waiting room for a flash sale
 
-The chaos panel has eleven scenarios:
+When 40,000 people (simulated) arrive at once, everyone queues first. Your place is
+computed from when you joined and the clock, so a refresh keeps it. The page shows the
+people ahead, a bar that only moves forward and a coarse wait. When it's your turn, it
+says so and moves focus, but doesn't redirect you. Reserving is also rate-limited, with
+a `429` and `Retry-After` that the page waits out exactly.
+[Why the waiting room works this way →](/notes/a-waiting-room-should-tell-the-truth/)
+
+## Thirteen ways to break it
+
+The chaos panel has thirteen scenarios:
 
 - a declined card;
 - 3-D Secure;
@@ -64,7 +73,9 @@ The chaos panel has eleven scenarios:
   late;
 - a hold that expires mid-payment;
 - a crowd that buys the last ticket a moment before you;
-- someone taking one of your chosen seats first.
+- someone taking one of your chosen seats first;
+- too many reservation attempts;
+- a flash sale with a waiting room.
 
 Each one is also an end-to-end test that checks both what you see and what the server
 recorded.
@@ -92,16 +103,18 @@ with a typed code; every response is validated against the contract at the clien
 and each screen's state is a single union, derived by a pure function, rather than a
 pile of booleans. A refresh that fails keeps the last good data on screen instead of
 replacing it with an error. Every response carries a Content Security Policy. The
-repository documents all of it — architecture, conventions, API and ten decision
+repository documents all of it — architecture, conventions, API and eleven decision
 records.
 
 ## Quality
 
-- **184 unit, component and HTTP tests**, including every legal and illegal order
+- **212 unit, component and HTTP tests**, including every legal and illegal order
   transition, idempotency replays, webhook deduplication, the seat allocator, the seat
-  map's keyboard model and the checkout's state machine — with coverage floors per
+  map's keyboard model, the waiting room's line, the rate limiter and the checkout's
+  state machine — with coverage floors per
   layer in CI.
-- **34 browser tests** covering every chaos scenario, a keyboard-only seat purchase,
+- **39 browser tests** covering every chaos scenario, a flash sale through the waiting
+  room, a keyboard-only seat purchase,
   refresh mid-payment, step guards, expiry, the security headers, a responsiveness
   budget for the seat map, and accessibility checks in light and dark mode.
 - **Lighthouse 100** across the board on desktop.

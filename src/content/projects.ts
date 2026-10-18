@@ -35,7 +35,7 @@ export const projects: ProjectMeta[] = [
     ],
     demoUrl: site.links.admitOneDemo,
     sourceUrl: site.links.admitOneSource,
-    highlight: "An accessible seat map and eleven failure scenarios, each one an end-to-end test",
+    highlight: "An accessible seat map, a waiting room, and thirteen failure scenarios, each one an end-to-end test",
     tagline: "a ticketing checkout, done properly",
   },
 ];
