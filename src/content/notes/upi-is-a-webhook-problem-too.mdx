@@ -1,0 +1,70 @@
+I added UPI to [admit-one](/projects/admit-one/), the ticketing checkout I build in
+public. My first plan was the one many checkouts still show: a box for the buyer's UPI
+ID, and a "collect" request sent to their app. That plan is dead. NPCI ended collect for
+payments to merchants on 28 February 2026, so a checkout asks the buyer's app to pay
+instead. Building it that way taught me that UPI has the same problem as a card
+redirect.
+
+## Intent on a phone, a QR code on a computer
+
+Instead of collecting, the shop hands the buyer a payment request to open. On a phone,
+that's a `upi://pay` link that opens their UPI app. On a computer, it's the same link as
+a QR code, scanned with the phone. The link carries everything the app needs:
+
+```txt
+upi://pay?pa=admit-one@example&pn=admit-one&mc=7922
+  &tr=pay_1ee9d180ebdc&tn=admit-one%20order%20ord_3237dc52c99e
+  &am=3038.50&cu=INR
+```
+
+Two of these parameters are easy to miss:
+
+- **`mc` is the merchant category code** (7922 is ticket agencies). A payment to a
+  merchant must carry it.
+- **`tr` is a reference unique to this payment.** It's the payment's id, so when the
+  confirmation comes back it matches exactly one payment.
+
+The amount always has two decimals, worked out from integer paise without floats. The
+payee, `admit-one@example`, belongs to no bank, so scanning the demo's code with a real
+app can't pay anyone. I decoded the QR code from a screenshot to check it's exactly
+that link.
+
+## The approval happens somewhere you can't see
+
+The buyer approves in their UPI app, between them and their bank. The checkout page
+isn't part of that conversation, so it can't know the answer. If the page waited for
+the app to report back, a closed app or a dead battery would leave it guessing.
+
+That's the problem I'd already solved for cards: [the redirect races the
+webhook](/notes/redirect-races-the-webhook/). The fix is the same. The page re-reads the
+order every couple of seconds, and the payment provider's webhook decides. Approving
+schedules `payment.succeeded`; declining, by the buyer or their bank, schedules
+`payment.failed`. Both go through the same outbox and are deduplicated by event id.
+Once the buyer approves, the checkout hands over to the order page, which waits for the
+webhook exactly as it does for a card.
+
+## A request has to end
+
+A request that nobody approves can't wait forever:
+
+- **It runs out after five minutes.** Like a ticket hold, that's worked out when it's
+  read, not by a timer.
+- **It never outlasts the hold.** If a buyer could approve after their seats had gone
+  back on sale, the only honest outcome would be a refund.
+- **It can be cancelled,** so the buyer can pay by card instead. Once they've approved,
+  cancelling is refused: the money may already be moving.
+
+## The small things
+
+- **The QR code is black on white, even in dark mode.** Scanners read dark-on-light
+  codes most reliably.
+- **A phone gets a button, not a QR code.** You can't scan your own screen.
+- **Focus follows what happened:** to the request when it appears, and to the notice
+  when a payment is declined or a request runs out.
+
+In the demo, a simulated phone appears below the checkout so you can approve or
+decline. It talks to the sandbox, not to the shop's API, because that's where a real
+answer happens too.
+
+> A new payment method changes where the buyer says yes. It doesn't change who you
+> believe.

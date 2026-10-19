@@ -61,9 +61,29 @@ says so and moves focus, but doesn't redirect you. Reserving is also rate-limite
 a `429` and `Retry-After` that the page waits out exactly.
 [Why the waiting room works this way →](/notes/a-waiting-room-should-tell-the-truth/)
 
-## Thirteen ways to break it
+## The price you see is the price you pay
 
-The chaos panel has thirteen scenarios:
+Every price is all in from the first screen: the booking fee and GST included, with
+what it's made of one line away. Adding fees at the end is drip pricing, which India's
+dark patterns guidelines and the US FTC's fees rule both ban. One pricing engine serves
+the server's charge and every label on screen. The GST rules are data: 18% on admission,
+none at ₹500 or less, and 18% on the fee. Tax is worked out per ticket in paise, so a
+ticket's price times the quantity is exactly the total.
+
+## Card or UPI
+
+Indian buyers can pay by UPI. Merchants can no longer send "collect" requests, so the
+page shows a QR code on a computer, or a button that opens the UPI app on a phone. Both
+carry the standard intent link, with the merchant category code and a reference unique
+to the payment. The buyer approves in another app, so the page doesn't decide whether
+they paid: it re-reads the order, and the webhook decides. A request runs out, never
+outlasts the hold, and can be cancelled to pay by card. In the demo, a simulated phone
+appears below the checkout so you can approve or decline.
+[Why it's a webhook problem →](/notes/upi-is-a-webhook-problem-too/)
+
+## Fifteen ways to break it
+
+The chaos panel has fifteen scenarios:
 
 - a declined card;
 - 3-D Secure;
@@ -75,7 +95,9 @@ The chaos panel has thirteen scenarios:
 - a crowd that buys the last ticket a moment before you;
 - someone taking one of your chosen seats first;
 - too many reservation attempts;
-- a flash sale with a waiting room.
+- a flash sale with a waiting room;
+- a bank that declines a UPI payment the buyer approved;
+- a UPI request that runs out before anyone approves it.
 
 Each one is also an end-to-end test that checks both what you see and what the server
 recorded.
@@ -103,20 +125,21 @@ with a typed code; every response is validated against the contract at the clien
 and each screen's state is a single union, derived by a pure function, rather than a
 pile of booleans. A refresh that fails keeps the last good data on screen instead of
 replacing it with an error. Every response carries a Content Security Policy. The
-repository documents all of it — architecture, conventions, API and eleven decision
+repository documents all of it — architecture, conventions, API and thirteen decision
 records.
 
 ## Quality
 
-- **212 unit, component and HTTP tests**, including every legal and illegal order
-  transition, idempotency replays, webhook deduplication, the seat allocator, the seat
-  map's keyboard model, the waiting room's line, the rate limiter and the checkout's
-  state machine — with coverage floors per
-  layer in CI.
-- **39 browser tests** covering every chaos scenario, a flash sale through the waiting
-  room, a keyboard-only seat purchase,
-  refresh mid-payment, step guards, expiry, the security headers, a responsiveness
-  budget for the seat map, and accessibility checks in light and dark mode.
+- **268 unit, component and HTTP tests**, including every legal and illegal order
+  transition, idempotency replays, webhook deduplication, GST at its boundaries, UPI
+  intents, expiry and cancelling, the seat allocator, the seat map's keyboard model,
+  the waiting room's line, the rate limiter and the checkout's state machine — with
+  coverage floors per layer in CI.
+- **50 browser tests** covering every chaos scenario, paying by UPI (approved,
+  declined, expired, cancelled and after a refresh), all-in prices, a flash sale
+  through the waiting room, a keyboard-only seat purchase, refresh mid-payment, step
+  guards, expiry, the security headers, a responsiveness budget for the seat map, and
+  accessibility checks in light and dark mode.
 - **Lighthouse 100** across the board on desktop.
 - Strict TypeScript and type-aware lint, including naming conventions and the layer
   boundaries.

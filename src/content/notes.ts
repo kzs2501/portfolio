@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "upi-is-a-webhook-problem-too",
+    title: "UPI is a webhook problem too",
+    summary:
+      "With UPI, the buyer approves in another app, where your page can’t see. So the page shouldn’t decide whether they paid — the webhook should, just as it does for cards.",
+    date: "2026-10-19",
+  },
+  {
     slug: "a-waiting-room-should-tell-the-truth",
     title: "A waiting room should tell the truth",
     summary:
