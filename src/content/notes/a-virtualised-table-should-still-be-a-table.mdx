@@ -1,0 +1,75 @@
+The organisers' dashboard in [admit-one](/projects/admit-one/) lists about 9,000
+orders. Drawing them all would mean 63,000 cells, so the table draws only the rows you
+can see: about 30. That's virtualisation, and the usual way to do it quietly breaks the
+table for anyone who can't see it.
+
+## The usual way, and what it breaks
+
+Most virtualised tables position each row absolutely, at its offset from the top, inside
+a container as tall as the whole list. To make that work, they set `display: grid` or
+`display: flex` on the table's rows and cells.
+
+In some browsers, changing a table element's `display` removes its table semantics.
+A screen reader no longer hears a table with rows and columns. It hears a pile of text,
+with no headers to say which number is the total and which is the ticket count. Adrian
+Roselli has documented this for years. The fix people reach for, ARIA roles on every
+`div`, rebuilds by hand what the browser gave you for free.
+
+## Spacer rows instead
+
+The table in admit-one keeps native table layout. Above the rows in view sits one empty
+row, as tall as all the rows scrolled past; below them sits another, as tall as the rest.
+The browser sees an ordinary table that happens to be short, and so does a screen
+reader.
+
+```tsx
+<tbody>
+  {spacer(heightAbove)}
+  {visibleRows.map((row) => (
+    <OrderRow key={row.id} row={row} />
+  ))}
+  {spacer(heightBelow)}
+</tbody>
+```
+
+The spacers are `aria-hidden`. Column widths stay put, because the table never
+re-measures rows that come and go.
+
+## Say how big the table really is
+
+A table with 30 rows in the DOM says it has 30 rows. Two attributes tell the truth:
+
+- **`aria-rowcount` on the table** is the whole count: 8,959, counting the header.
+- **`aria-rowindex` on each row** says where it sits. Scroll down and a screen reader
+  says "row 5,012" rather than "row 12".
+
+## Don't recycle the row someone is on
+
+Virtualisation removes rows that scroll out of view. If one of them has keyboard focus,
+removing it drops focus back to the start of the page. So the table always draws the
+focused row, wherever it is, with a spacer in the gap. An end-to-end test focuses the
+first order, scrolls 250 rows down, and checks that focus hasn't moved.
+
+## Sorting and filters belong to the server, and the URL
+
+With 9,000 rows, the browser can't sort what it hasn't loaded. So sorting, filters and
+search run on the server, and the table pages through the results with tokens rather
+than offsets. That way, a sale landing mid-scroll can't show a row twice or skip one.
+
+- **Sortable headers** are buttons, with `aria-sort` on the sorted column, as the WAI
+  pattern for a sortable table does it.
+- **The filters live in the URL,** so a view can be shared, a reload keeps it, and Back
+  undoes the last change.
+
+## The parts you only find by using it
+
+- **A checkbox that snapped back.** Next changes the URL in a transition, so a checkbox
+  bound to the URL showed its old state until navigation finished. React's
+  `useOptimistic` fixed it: the filter changes at once, and the URL catches up.
+- **A count that lied.** While new results loaded, the count still showed the old
+  number. Now it says "Updating…".
+- **A table that jumped.** New orders arriving over the live stream don't move the
+  table under the reader. It offers to show them instead.
+
+> Virtualise the drawing, not the meaning. The browser should still know it's a table,
+> and so should everyone using it.

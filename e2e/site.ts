@@ -15,6 +15,7 @@ export const ROUTES = [
   "/notes/a-seat-map-a-screen-reader-can-use",
   "/notes/a-waiting-room-should-tell-the-truth",
   "/notes/upi-is-a-webhook-problem-too",
+  "/notes/a-virtualised-table-should-still-be-a-table",
   "/projects/admit-one",
 ];
 

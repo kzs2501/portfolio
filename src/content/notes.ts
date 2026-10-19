@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "a-virtualised-table-should-still-be-a-table",
+    title: "A virtualised table should still be a table",
+    summary:
+      "Drawing only the rows in view keeps 9,000 orders fast. The usual way of doing it also stops the table being a table for anyone using a screen reader.",
+    date: "2026-10-20",
+  },
+  {
     slug: "upi-is-a-webhook-problem-too",
     title: "UPI is a webhook problem too",
     summary:

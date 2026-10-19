@@ -81,9 +81,24 @@ outlasts the hold, and can be cancelled to pay by card. In the demo, a simulated
 appears below the checkout so you can approve or decline.
 [Why it's a webhook problem →](/notes/upi-is-a-webhook-problem-too/)
 
-## Fifteen ways to break it
+## The organisers' side
 
-The chaos panel has fifteen scenarios:
+Organisers get a dashboard of their own. Sign in as one of three demo accounts, and see
+only your organisation's events, and only what your role allows. The box office can read
+and export but not refund, and the server refuses a refund even if the button were there.
+
+- **Live sales:** tickets sold, revenue, sales by day, the funnel from reservation to
+  ticket, and webhook lag. They update live over server-sent events, and you can pause
+  them.
+- **About 9,000 orders** in a table that stays fast and accessible. It draws about 30
+  rows, but it's still a real table, so screen readers can tell where they are in the
+  whole list. Filters live in the URL, and export goes to CSV.
+- **Refunds** show as pending at once, and roll back if the payment provider refuses.
+  [Why the table is still a table →](/notes/a-virtualised-table-should-still-be-a-table/)
+
+## Seventeen ways to break it
+
+The chaos panel has seventeen scenarios:
 
 - a declined card;
 - 3-D Secure;
@@ -97,7 +112,9 @@ The chaos panel has fifteen scenarios:
 - too many reservation attempts;
 - a flash sale with a waiting room;
 - a bank that declines a UPI payment the buyer approved;
-- a UPI request that runs out before anyone approves it.
+- a UPI request that runs out before anyone approves it;
+- a busy on-sale, with other buyers' sales landing live on the dashboard;
+- a payment provider that refuses to start a refund.
 
 Each one is also an end-to-end test that checks both what you see and what the server
 recorded.
@@ -125,17 +142,17 @@ with a typed code; every response is validated against the contract at the clien
 and each screen's state is a single union, derived by a pure function, rather than a
 pile of booleans. A refresh that fails keeps the last good data on screen instead of
 replacing it with an error. Every response carries a Content Security Policy. The
-repository documents all of it — architecture, conventions, API and thirteen decision
+repository documents all of it — architecture, conventions, API and sixteen decision
 records.
 
 ## Quality
 
-- **268 unit, component and HTTP tests**, including every legal and illegal order
+- **372 unit, component and HTTP tests**, including every legal and illegal order
   transition, idempotency replays, webhook deduplication, GST at its boundaries, UPI
   intents, expiry and cancelling, the seat allocator, the seat map's keyboard model,
   the waiting room's line, the rate limiter and the checkout's state machine — with
   coverage floors per layer in CI.
-- **50 browser tests** covering every chaos scenario, paying by UPI (approved,
+- **63 browser tests** covering every chaos scenario, the organisers' dashboard, paying by UPI (approved,
   declined, expired, cancelled and after a refresh), all-in prices, a flash sale
   through the waiting room, a keyboard-only seat purchase, refresh mid-payment, step
   guards, expiry, the security headers, a responsiveness budget for the seat map, and

@@ -36,7 +36,7 @@ export const projects: ProjectMeta[] = [
     demoUrl: site.links.admitOneDemo,
     sourceUrl: site.links.admitOneSource,
     highlight:
-      "An accessible seat map, a waiting room, UPI and all-in prices, and fifteen failure scenarios, each one an end-to-end test",
+      "An accessible seat map, a waiting room, UPI and all-in prices, an organisers’ dashboard, and seventeen failure scenarios, each one an end-to-end test",
     tagline: "a ticketing checkout, done properly",
   },
 ];
