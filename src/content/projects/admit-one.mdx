@@ -96,6 +96,23 @@ and export but not refund, and the server refuses a refund even if the button we
 - **Refunds** show as pending at once, and roll back if the payment provider refuses.
   [Why the table is still a table →](/notes/a-virtualised-table-should-still-be-a-table/)
 
+## Every state, in a catalogue
+
+Every screen and component has a story for each state it can be in, in a Storybook
+catalogue, including states that are hard to reach by clicking: a failed load, a hold in
+its last minute, a payment slow to confirm. The data comes from the same pricing rules
+as the server, and a test checks it against the API's schemas. Components that fetch
+their own data run on a fresh copy of the in-browser backend for every story.
+
+- **Every story is a test:** it renders in a real browser, passes its own checks
+  (keyboard models, focus, permissions), and has no accessibility violations.
+- **Every story is a screenshot,** in light and dark, and at 375 px for whole screens.
+  They're compared in Playwright's Linux image on ARM, both on my laptop and in CI,
+  because screenshots only compare on the same kind of machine.
+- **It found two bugs at once:** focus rings that `outline-none` should have removed,
+  and busy buttons that could drop keyboard focus.
+  [Why the machine matters →](/notes/a-screenshot-test-is-only-as-stable-as-its-machine/)
+
 ## Seventeen ways to break it
 
 The chaos panel has seventeen scenarios:
@@ -142,12 +159,12 @@ with a typed code; every response is validated against the contract at the clien
 and each screen's state is a single union, derived by a pure function, rather than a
 pile of booleans. A refresh that fails keeps the last good data on screen instead of
 replacing it with an error. Every response carries a Content Security Policy. The
-repository documents all of it — architecture, conventions, API and sixteen decision
+repository documents all of it — architecture, conventions, API and seventeen decision
 records.
 
 ## Quality
 
-- **372 unit, component and HTTP tests**, including every legal and illegal order
+- **401 unit, component and HTTP tests**, including every legal and illegal order
   transition, idempotency replays, webhook deduplication, GST at its boundaries, UPI
   intents, expiry and cancelling, the seat allocator, the seat map's keyboard model,
   the waiting room's line, the rate limiter and the checkout's state machine — with
@@ -157,6 +174,8 @@ records.
   through the waiting room, a keyboard-only seat purchase, refresh mid-payment, step
   guards, expiry, the security headers, a responsiveness budget for the seat map, and
   accessibility checks in light and dark mode.
+- **85 stories,** each a browser test with accessibility checks, and **210
+  screenshots** compared on every change.
 - **Lighthouse 100** across the board on desktop.
 - Strict TypeScript and type-aware lint, including naming conventions and the layer
   boundaries.

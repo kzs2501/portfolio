@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "a-screenshot-test-is-only-as-stable-as-its-machine",
+    title: "A screenshot test is only as stable as its machine",
+    summary:
+      "Screenshots only compare with ones made on the same machine — the same OS, and the same kind of chip. Getting that right, and treating a flaky screenshot as a bug report, found two real bugs.",
+    date: "2026-10-21",
+  },
+  {
     slug: "a-virtualised-table-should-still-be-a-table",
     title: "A virtualised table should still be a table",
     summary:

@@ -1,0 +1,66 @@
+[admit-one](/projects/admit-one/) now has a component catalogue: every screen in every
+state it can be in, from a failed load to a UPI request waiting in someone else's app.
+Each one is screenshotted in light and dark, and compared on every change, so a
+one-pixel shift fails a test. Getting there was mostly about the machine, not the test.
+
+## The same operating system isn't enough
+
+Screenshots differ between Mac and Linux: fonts, anti-aliasing, subpixel rounding. So
+the usual advice is to make them in Docker, in Playwright's Linux image, the same image
+CI uses.
+
+That still isn't the same machine. My laptop is Apple Silicon, so Docker runs the ARM
+build of that image, while CI's runners are usually Intel. Playwright's maintainers say
+plainly that the two render differently. They're different libraries, built for
+different chips.
+
+## Emulation is a trap
+
+The obvious fix is to tell Docker to run the Intel image anyway. On Apple Silicon, it
+emulates it.
+
+Chromium in that emulated image draws OKLCH colours as fully transparent, and takes
+white screenshots. Every colour token in admit-one is OKLCH. The tests would have
+passed, because white matches white.
+
+So I made the machine the same instead: the ARM image everywhere. On the laptop, the
+browser runs in the container, and the tests run outside it, connecting to the browser
+(Playwright's remote server). That avoids mounting Mac-built `node_modules` into Linux.
+In CI, the job runs on GitHub's ARM runners, free for public repositories, in the same
+image. A unit test keeps the image's version in step with the installed Playwright, so
+an upgrade can't quietly change the renderer.
+
+## Stable isn't settled
+
+Playwright waits for two identical screenshots in a row before comparing. A loading
+spinner, with animations turned off, is identical in both. So a test could pass on a
+screen that hadn't loaded its data yet.
+
+Each screenshot now waits for three things:
+
+- **the story's own checks have finished,** such as typing into a form or opening a
+  dialog;
+- **nothing is in flight:** no query or mutation for two frames running;
+- **the fonts have loaded.**
+
+And the clock is fixed, so a countdown says the same thing every time.
+
+## A flaky screenshot is a bug report
+
+The first full run found focus rings on headings marked `outline-none`. The global
+`:focus-visible` rule sat outside any CSS cascade layer, and unlayered rules beat
+Tailwind's utilities, so `outline-none` never applied.
+
+Then I ran the whole suite three times over, and one screenshot differed in three runs
+out of six: after pressing Reserve, the button sometimes had a focus ring and
+sometimes didn't. Retrying until it passed would have hidden the real cause. A busy
+button was `disabled`, and Chromium moves focus off an element that becomes disabled,
+but only if the page renders in between. So a keyboard user could lose their place,
+depending on how fast the server answered.
+
+A busy button is now `aria-disabled` and refuses presses itself. It keeps focus, and
+pressing Enter in its form still can't submit twice: a form submits by clicking its
+default button, and the button cancels that click.
+
+> A screenshot only compares with one made on the same machine. And when one changes
+> without a reason, it's usually telling you something.
