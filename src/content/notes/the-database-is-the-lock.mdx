@@ -1,0 +1,62 @@
+[admit-one](/projects/admit-one/) started with its backend in the browser: one buyer,
+one thread, so a ticket could never be sold twice by construction. Server mode puts the
+same API on Postgres, where fifty buyers can want the last ten tickets at the same
+instant. The rule I ended up with: don't check and then write. Let the database do both,
+in one step it can't interleave.
+
+## Check, then write, oversells
+
+The natural code reads how many are left, and if there are enough, takes them. Two
+buyers can both read "10 left" before either writes, and both take them. Each request
+is correct on its own; together they oversell.
+
+## One conditional update
+
+So taking tickets is one statement:
+
+```sql
+UPDATE inventory SET held = held + 1
+WHERE tier_id = $1 AND capacity - sold - held >= 1
+```
+
+If no row comes back, they're gone. Under Postgres's default isolation, a second buyer's
+update waits for the first's row lock, then checks its WHERE clause again against the
+row as committed. It sees the first buyer's tickets, and takes none if there aren't
+enough.
+
+The detail that matters is that the counter lives on that row. A WHERE clause that
+counted live holds with a subquery wouldn't work, because the subquery isn't run again
+on that re-check. The row's own columns are.
+
+## A unique index for seats
+
+Seats are particular, so each held seat is a row, and a partial unique index allows only
+one unreleased claim per seat. The second buyer's insert fails, and that failure becomes
+"those seats were just taken". When a hold becomes a sale, the claim is updated in
+place, so there's no moment between "held" and "sold" when the seat looks free.
+
+## A race test that couldn't fail
+
+The test fires 50 holds at the last 10 tickets, and expects exactly 10. It passed. Then I
+broke the code on purpose: I took the row lock out of the payment path. Ten payments at
+once for one order should have charged more than once. The test still passed.
+
+Opening a connection to Postgres takes a few milliseconds, which is longer than a whole
+short transaction. On a cold pool, the first "simultaneous" request finished before the
+others had even connected, so the requests never overlapped.
+
+The fix is to open every connection in the pool before the race starts. Now the version
+without the lock fails, and so does a read-then-write stock update that only goes wrong
+under concurrency. A race test that hasn't failed against the race isn't testing it.
+
+## Webhooks: once, in the same transaction
+
+The payment provider's webhook says a payment succeeded. Providers send at least once,
+so the same event can arrive twice, sometimes at the same moment. The server records
+the event id with an insert that does nothing on conflict, in the same transaction as
+fulfilling the order. A duplicate finds the id already there and does nothing, and a
+crash can't leave an event recorded but not acted on.
+
+> Correctness under concurrency comes from what the database refuses, not from code that
+> remembers to check first. And a race test proves nothing until it has failed against
+> the race.

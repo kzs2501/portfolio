@@ -17,6 +17,7 @@ export const ROUTES = [
   "/notes/upi-is-a-webhook-problem-too",
   "/notes/a-virtualised-table-should-still-be-a-table",
   "/notes/a-screenshot-test-is-only-as-stable-as-its-machine",
+  "/notes/the-database-is-the-lock",
   "/projects/admit-one",
 ];
 

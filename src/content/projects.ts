@@ -33,11 +33,12 @@ export const projects: ProjectMeta[] = [
       "Vitest",
       "Playwright",
       "Storybook",
+      "Postgres",
     ],
     demoUrl: site.links.admitOneDemo,
     sourceUrl: site.links.admitOneSource,
     highlight:
-      "An accessible seat map, a waiting room, UPI and all-in prices, an organisers’ dashboard, a catalogue of every state with screenshot tests, and seventeen failure scenarios, each one an end-to-end test",
+      "An accessible seat map, a waiting room, UPI and all-in prices, an organisers’ dashboard, a catalogue of every state with screenshot tests, the same API on Postgres with races the database can’t lose, and seventeen failure scenarios, each one an end-to-end test",
     tagline: "a ticketing checkout, done properly",
   },
 ];

@@ -113,6 +113,21 @@ their own data run on a fresh copy of the in-browser backend for every story.
   and busy buttons that could drop keyboard focus.
   [Why the machine matters →](/notes/a-screenshot-test-is-only-as-stable-as-its-machine/)
 
+## The same API, on Postgres
+
+Built in server mode, the app talks to a server instead of the browser sandbox: the
+same API, answered by the same handlers, over Postgres. The same contract tests pass on
+both, and so do the buyer's end-to-end flows.
+
+- **No oversold tickets, no seat held twice:** the database refuses them itself, with one
+  conditional update for tickets and a unique index for seats. Fifty buyers at the last
+  ten tickets get exactly ten.
+- **Payments and retries across processes:** a lock on the hold serialises everything
+  about an order, and Idempotency-Keys are claimed in a table before any work starts.
+- **Signed webhooks,** checked over the raw body and acted on once, in the same
+  transaction as their effect.
+  [Why the database is the lock →](/notes/the-database-is-the-lock/)
+
 ## Seventeen ways to break it
 
 The chaos panel has seventeen scenarios:
@@ -159,17 +174,17 @@ with a typed code; every response is validated against the contract at the clien
 and each screen's state is a single union, derived by a pure function, rather than a
 pile of booleans. A refresh that fails keeps the last good data on screen instead of
 replacing it with an error. Every response carries a Content Security Policy. The
-repository documents all of it — architecture, conventions, API and seventeen decision
+repository documents all of it — architecture, conventions, API and eighteen decision
 records.
 
 ## Quality
 
-- **401 unit, component and HTTP tests**, including every legal and illegal order
+- **414 unit, component and HTTP tests**, and **35 against real Postgres** (concurrent holds and payments, signed webhooks, the shared contract), including every legal and illegal order
   transition, idempotency replays, webhook deduplication, GST at its boundaries, UPI
   intents, expiry and cancelling, the seat allocator, the seat map's keyboard model,
   the waiting room's line, the rate limiter and the checkout's state machine — with
   coverage floors per layer in CI.
-- **63 browser tests** covering every chaos scenario, the organisers' dashboard, paying by UPI (approved,
+- **65 browser tests** (18 also run against the Postgres server) covering every chaos scenario, the organisers' dashboard, paying by UPI (approved,
   declined, expired, cancelled and after a refresh), all-in prices, a flash sale
   through the waiting room, a keyboard-only seat purchase, refresh mid-payment, step
   guards, expiry, the security headers, a responsiveness budget for the seat map, and

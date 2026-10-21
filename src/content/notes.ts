@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "the-database-is-the-lock",
+    title: "The database is the lock",
+    summary:
+      "Fifty buyers want the last ten tickets at once. Checking first and then writing oversells; one conditional update can’t. And a race test proves nothing until it has failed against the race.",
+    date: "2026-10-21",
+  },
+  {
     slug: "a-screenshot-test-is-only-as-stable-as-its-machine",
     title: "A screenshot test is only as stable as its machine",
     summary:
