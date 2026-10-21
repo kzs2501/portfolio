@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "an-offline-ticket-needs-a-signature-not-a-server",
+    title: "An offline ticket needs a signature, not a server",
+    summary:
+      "Doors are where networks fail. A signed ticket can be checked with a public key alone, a door has to remember whom it let in, and a service worker had to share its scope with MSW.",
+    date: "2026-10-22",
+  },
+  {
     slug: "the-database-is-the-lock",
     title: "The database is the lock",
     summary:

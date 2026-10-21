@@ -128,6 +128,20 @@ both, and so do the buyer's end-to-end flows.
   transaction as their effect.
   [Why the database is the lock →](/notes/the-database-is-the-lock/)
 
+## Tickets that work in a basement
+
+Doors are where networks fail, so neither the ticket nor the check needs one.
+
+- **Signed tickets:** each ticket's QR code holds its details and an Ed25519 signature,
+  so the door checks it with a public key alone, and refuses one that's been changed.
+- **A wallet on the device:** tickets are kept in IndexedDB, and a service worker keeps
+  the page, so they open in airplane mode.
+- **A door scanner** that reads codes with the camera, or a photo, and remembers whom it
+  has let in, so a ticket shown twice is caught. Only that page may use the camera.
+- **Tested with a fake camera:** Chromium plays a video of a signed ticket, and the
+  scanner reads it.
+  [Why a signature, not a server →](/notes/an-offline-ticket-needs-a-signature-not-a-server/)
+
 ## Seventeen ways to break it
 
 The chaos panel has seventeen scenarios:
@@ -174,22 +188,22 @@ with a typed code; every response is validated against the contract at the clien
 and each screen's state is a single union, derived by a pure function, rather than a
 pile of booleans. A refresh that fails keeps the last good data on screen instead of
 replacing it with an error. Every response carries a Content Security Policy. The
-repository documents all of it — architecture, conventions, API and eighteen decision
+repository documents all of it — architecture, conventions, API and nineteen decision
 records.
 
 ## Quality
 
-- **414 unit, component and HTTP tests**, and **35 against real Postgres** (concurrent holds and payments, signed webhooks, the shared contract), including every legal and illegal order
+- **457 unit, component and HTTP tests**, and **35 against real Postgres** (concurrent holds and payments, signed webhooks, the shared contract), including every legal and illegal order
   transition, idempotency replays, webhook deduplication, GST at its boundaries, UPI
-  intents, expiry and cancelling, the seat allocator, the seat map's keyboard model,
+  intents, expiry and cancelling, signed tickets and the door's decisions, the seat allocator, the seat map's keyboard model,
   the waiting room's line, the rate limiter and the checkout's state machine — with
   coverage floors per layer in CI.
-- **65 browser tests** (18 also run against the Postgres server) covering every chaos scenario, the organisers' dashboard, paying by UPI (approved,
+- **78 browser tests** (22 also run against the Postgres server) covering every chaos scenario, tickets offline, the door scanner by photo and by a fake camera, the organisers' dashboard, paying by UPI (approved,
   declined, expired, cancelled and after a refresh), all-in prices, a flash sale
   through the waiting room, a keyboard-only seat purchase, refresh mid-payment, step
   guards, expiry, the security headers, a responsiveness budget for the seat map, and
   accessibility checks in light and dark mode.
-- **85 stories,** each a browser test with accessibility checks, and **210
+- **96 stories,** each a browser test with accessibility checks, and **210
   screenshots** compared on every change.
 - **Lighthouse 100** across the board on desktop.
 - Strict TypeScript and type-aware lint, including naming conventions and the layer

@@ -1,0 +1,60 @@
+Doors are where networks fail: a basement venue, a field, a crowd of phones on one
+cell. A ticket that has to be fetched from a server fails there, and so does a door
+that asks a server whether a ticket is real. In [admit-one](/projects/admit-one/),
+neither the ticket nor the check needs a network. That took a signature, a memory at
+the door, and a service worker that had to share its scope.
+
+## Sign it once, check it anywhere
+
+Each ticket is a token: its details (code, event, name, tier, seat) and an Ed25519
+signature over them, and the ticket's QR code holds it. The door has the public key,
+and checking a signature needs nothing else. Change the name on a ticket and the
+signature no longer matches. Make one up and there's no signature that checks.
+
+It isn't a JWT. There's one algorithm and no header to trust, so nobody can pick the
+algorithm for you, and a key id in the token lets keys rotate.
+
+The honest limit is the demo's. Its backend runs in the browser, so the key it signs
+with ships in the page, and anyone who reads the bundle can sign tickets its scanner
+accepts. A real server keeps the signing key secret, and the scanner only ever needs
+the public half. The scanner fails closed: one built for a production server never
+trusts the demo key, and with no key at all it says it can't check tickets.
+
+## The door has to remember
+
+A signature proves a ticket is real, not that it hasn't been used. A screenshot of a
+real ticket is still a real ticket. So the scanner keeps a log on the device: the first
+scan lets someone in, and every later one says when that was.
+
+Reading the log and writing to it happen in one IndexedDB transaction. Two tabs on one
+device can't both see a ticket as new. Two devices offline still could: each door only
+knows its own scans, until they share them with a server.
+
+## One service worker, and MSW already had the site
+
+The demo's API runs in a service worker: Mock Service Worker answers `/api/*` in the
+browser. A scope has one worker, so the offline cache couldn't have its own. The app's
+worker imports MSW's, and adds its listeners first, so it answers the pages and files it
+owns before MSW sees them.
+
+Two things weren't obvious.
+
+- **MSW's worker unregisters itself when its last tab closes.** That's right for a
+  development mock, and fatal for an app that has to open offline tomorrow. The merged
+  worker keeps its registration.
+- **A first visit's files arrive before the worker does.** The page loads its scripts
+  while the new worker is still installing, so the worker never sees those requests.
+  The test that opens the scanner offline found it with no code reader. Now the page
+  tells the worker which of the build's files it loaded, and the worker keeps them.
+
+## Testing a camera without a camera
+
+Chromium can play a video file as its camera. The test draws a signed ticket's QR code
+into a single frame, Chromium plays it on a loop, and the scanner reads it: admitted.
+After a reload, the same feed reads as already scanned.
+
+The catch: Playwright's default headless browser has no camera at all, and
+`getUserMedia` just says "not supported". The camera test runs in full Chromium.
+
+> An offline ticket needs two things: a signature, so it can be checked with no server,
+> and a memory at the door, because a real ticket can be shown twice.

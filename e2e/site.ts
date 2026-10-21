@@ -18,6 +18,7 @@ export const ROUTES = [
   "/notes/a-virtualised-table-should-still-be-a-table",
   "/notes/a-screenshot-test-is-only-as-stable-as-its-machine",
   "/notes/the-database-is-the-lock",
+  "/notes/an-offline-ticket-needs-a-signature-not-a-server",
   "/projects/admit-one",
 ];
 
