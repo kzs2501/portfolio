@@ -1,8 +1,34 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { loadDemos, ROUTES } from "./site";
+import { loadDemos, NOT_FOUND, ROUTES } from "./site";
+
+const WCAG_22_AA = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"];
+const violationsOf = async (page: Page) =>
+  (await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze()).violations.map(
+    (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
+  );
 
 for (const scheme of ["light", "dark"] as const) {
+  test(`no axe violations: the 404 page (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    const response = await page.goto(NOT_FOUND);
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await violationsOf(page)).toEqual([]);
+  });
+
+  test(`no axe violations: the ⌘K palette, open (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto("/");
+    await page.keyboard.press("ControlOrMeta+k");
+    await expect(page.getByRole("dialog", { name: "Command palette" })).toBeVisible();
+    // Every group has its heading for a name.
+    for (const group of await page.getByRole("dialog").getByRole("group").all()) {
+      await expect(group).toHaveAccessibleName(/\w/);
+    }
+    expect(await violationsOf(page)).toEqual([]);
+  });
+
   for (const route of ROUTES) {
     test(`no axe violations: ${route} (${scheme})`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });

@@ -19,7 +19,8 @@ export default defineConfig({
   // Tests run against the real static export — the exact files that ship. Never reuse a
   // running server: one left over from before a rebuild would serve stale files.
   webServer: {
-    command: "npx --yes serve@14 out -l 4173",
+    // The pinned dev dependency: no download, and the same version every run.
+    command: "npx serve out -l 4173",
     port: 4173,
     reuseExistingServer: false,
   },

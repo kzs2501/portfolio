@@ -8,13 +8,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "npx --yes serve@14 out -l 3000",
+    "start": "serve out -l 3000",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lhci": "lhci autorun",
+    "lhci:mobile": "lhci autorun --config=lighthouserc.mobile.json",
     "format": "prettier --write .",
     "check:claims": "node scripts/check-claims.mjs",
     "prelaunch": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run check:claims",
@@ -58,6 +59,7 @@
     "lint-staged": "^16.4.0",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "serve": "14.2.6",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.3"

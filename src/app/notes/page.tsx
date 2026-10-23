@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { alternatesFor } from "@/app/_lib/content-page";
 import Link from "next/link";
 import { notes, formatDate } from "@/content/notes";
 import { PageTransition } from "@/components/page-transition";
@@ -7,6 +8,7 @@ import { routes } from "@/lib/routes";
 export const metadata: Metadata = {
   title: "Notes",
   description: "Short technical notes on async UI, performance and testing.",
+  alternates: alternatesFor(routes.notes()),
 };
 
 export default function NotesIndex() {

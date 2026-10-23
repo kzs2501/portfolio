@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { alternatesFor } from "@/app/_lib/content-page";
+import { routes } from "@/lib/routes";
 import { site } from "@/content/site";
 import { CopyEmail } from "@/components/copy-email";
 import { experience, education } from "@/content/experience";
@@ -8,6 +10,7 @@ import { PageTransition } from "@/components/page-transition";
 export const metadata: Metadata = {
   title: "About",
   description: "Experience, how I work, and the tools I reach for.",
+  alternates: alternatesFor(routes.about()),
 };
 
 const principles = [

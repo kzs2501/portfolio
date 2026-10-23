@@ -20,7 +20,8 @@ export const dynamicParams = false;
 export const generateStaticParams = () => toSlugParams(work);
 
 export async function generateMetadata({ params }: PageProps<"/work/[slug]">) {
-  return articleMetadata(findWork((await params).slug));
+  const { slug } = await params;
+  return articleMetadata(findWork(slug), routes.work(slug));
 }
 
 export default async function CaseStudy({ params }: PageProps<"/work/[slug]">) {

@@ -6,6 +6,8 @@ import { site } from "@/content/site";
 import { toggleTheme } from "@/lib/theme";
 import { filterCommands, type Command } from "./commands";
 
+const slugOf = (group: string) => group.toLowerCase().replaceAll(" ", "-");
+
 /**
  * Native <dialog> + showModal() gives us, for free: a focus trap, an inert page
  * behind it, Escape-to-close, and the top layer (no z-index wars). Inside, the
@@ -158,9 +160,10 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
         className="max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain p-2"
       >
         {groups.map(([group, items]) => (
-          <div key={group} role="group" aria-labelledby={`${listId}-${group}`} className="pb-1">
+          // An id can't hold a space: `aria-labelledby` would read "Case studies" as two ids.
+          <div key={group} role="group" aria-labelledby={`${listId}-${slugOf(group)}`} className="pb-1">
             <div
-              id={`${listId}-${group}`}
+              id={`${listId}-${slugOf(group)}`}
               className="num px-2 pt-2 pb-1 text-[10px] tracking-[0.16em] text-ink-3 uppercase"
             >
               {group}

@@ -13,8 +13,9 @@ export const dynamicParams = false;
 export const generateStaticParams = () => toSlugParams(notes);
 
 export async function generateMetadata({ params }: PageProps<"/notes/[slug]">) {
-  const meta = findNote((await params).slug);
-  return articleMetadata(meta, meta ? { publishedTime: meta.date } : {});
+  const { slug } = await params;
+  const meta = findNote(slug);
+  return articleMetadata(meta, routes.note(slug), meta ? { publishedTime: meta.date } : {});
 }
 
 export default async function Note({ params }: PageProps<"/notes/[slug]">) {

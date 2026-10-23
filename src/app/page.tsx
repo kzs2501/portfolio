@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ViewTransition } from "react";
 import { site } from "@/content/site";
@@ -8,6 +9,9 @@ import { SectionLabel } from "@/components/ledger";
 import { PageTransition } from "@/components/page-transition";
 import { routes } from "@/lib/routes";
 import { PillLink } from "@/components/pill-link";
+import { alternatesFor } from "@/app/_lib/content-page";
+
+export const metadata: Metadata = { alternates: alternatesFor(routes.home()) };
 
 export default function Home() {
   return (

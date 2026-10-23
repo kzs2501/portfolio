@@ -45,7 +45,11 @@ jobs:
           npx playwright test
 
       - name: Lighthouse budgets (fail below 95 in any category)
-        run: npx lhci autorun
+        run: npm run lhci
+      # On a mid-range phone: accessibility, best practices, SEO and layout shift fail
+      # the run; performance and LCP only warn, since the simulated phone is slow.
+      - name: Lighthouse budgets, mobile
+        run: npm run lhci:mobile
 
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -55,3 +59,4 @@ jobs:
             playwright-report
             test-results
             .lighthouseci
+            .lighthouseci-mobile

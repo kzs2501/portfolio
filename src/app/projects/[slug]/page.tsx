@@ -15,7 +15,8 @@ export const dynamicParams = false;
 export const generateStaticParams = () => toSlugParams(projects);
 
 export async function generateMetadata({ params }: PageProps<"/projects/[slug]">) {
-  return articleMetadata(findProject((await params).slug));
+  const { slug } = await params;
+  return articleMetadata(findProject(slug), routes.project(slug));
 }
 
 export default async function Project({ params }: PageProps<"/projects/[slug]">) {

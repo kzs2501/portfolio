@@ -6,17 +6,25 @@ async function stepToEnd(demo: Locator) {
   for (let i = 0; i < 50 && (await step.isEnabled()); i++) await step.click();
 }
 
-test("home page ships no demo code until a demo is approached", async ({ page }) => {
-  const scripts: string[] = [];
-  page.on("request", (r) => r.resourceType() === "script" && scripts.push(r.url()));
-  await page.goto("/work/charity-portal");
-  const before = scripts.length;
-  await page.locator('[aria-label="Interactive demo: Single-flight token refresh"]').scrollIntoViewIfNeeded();
-  await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
-  expect(scripts.length, "scrolling to the demo should fetch its chunk").toBeGreaterThan(before);
+test("a case study ships no demo code until its demo is approached", async ({ page }) => {
+  const scripts = new Set<string>();
+  page.on("request", (r) => {
+    if (r.resourceType() === "script") scripts.add(r.url());
+  });
+  await page.goto("/work/charity-portal/");
+  const demo = page.locator('[aria-label="Interactive demo: Single-flight token refresh"]');
+  // Loaded, but the demo isn't: it's far below the fold, still a placeholder.
+  await page.waitForLoadState("load");
+  await expect(demo).toContainText("Loading interactive demo");
+  const before = new Set(scripts);
+
+  await demo.scrollIntoViewIfNeeded();
+  await expect(demo.getByRole("button", { name: "Play" })).toBeVisible();
+  const fetched = [...scripts].filter((url) => !before.has(url));
+  expect(fetched, "scrolling to the demo should fetch its chunk, and only then").not.toEqual([]);
 });
 
-test("⌘K palette: open, filter, navigate by keyboard, focus returns", async ({ page }) => {
+test("⌘K palette: open, filter, navigate by keyboard", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("ControlOrMeta+k");
   const input = page.getByRole("combobox", { name: "Search commands" });
@@ -28,12 +36,18 @@ test("⌘K palette: open, filter, navigate by keyboard, focus returns", async ({
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/charity portal/i);
 });
 
-test("⌘K palette: Escape closes it", async ({ page }) => {
+test("⌘K palette: Escape closes it, and focus goes back to what opened it", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open command palette" }).click();
+  const trigger = page.getByRole("button", { name: "Open command palette" });
+  // From the keyboard, where focus returning matters. (Safari doesn't focus a button on
+  // a mouse click, so there'd be nothing to return to.)
+  await trigger.focus();
+  await page.keyboard.press("Enter");
   await expect(page.getByRole("dialog", { name: "Command palette" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Search commands" })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "Command palette" })).toBeHidden();
+  await expect(trigger).toBeFocused();
 });
 
 test("theme toggle switches and persists across reloads", async ({ page }) => {

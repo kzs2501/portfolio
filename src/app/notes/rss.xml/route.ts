@@ -1,5 +1,6 @@
 import { site } from "@/content/site";
 import { notes } from "@/content/notes";
+import { pagePath, routes } from "@/lib/routes";
 
 export const dynamic = "force-static";
 
@@ -9,7 +10,7 @@ const escape = (s: string) =>
 export function GET() {
   const items = notes
     .map((n) => {
-      const link = new URL(`/notes/${n.slug}`, site.url).toString();
+      const link = new URL(pagePath(routes.note(n.slug)), site.url).toString();
       return `<item><title>${escape(n.title)}</title><link>${link}</link><guid>${link}</guid><pubDate>${new Date(n.date).toUTCString()}</pubDate><description>${escape(n.summary)}</description></item>`;
     })
     .join("");

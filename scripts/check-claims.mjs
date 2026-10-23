@@ -1,8 +1,10 @@
 // Fails while any claim in content-review/ is still unticked.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
-const dir = new URL("../content-review/", import.meta.url).pathname;
+// A file URL's pathname keeps its %20s: a folder with a space in its name was never found.
+const dir = fileURLToPath(new URL("../content-review/", import.meta.url));
 
 // The checklist is private and gitignored, so a fresh clone or CI won't have it.
 if (!existsSync(dir)) {
