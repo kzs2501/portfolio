@@ -125,7 +125,7 @@ both, and so do the buyer's end-to-end flows.
 - **Payments and retries across processes:** a lock on the hold serialises everything
   about an order, and Idempotency-Keys are claimed in a table before any work starts.
 - **Signed webhooks,** checked over the raw body and acted on once, in the same
-  transaction as their effect.
+  transaction as their effect. One that fails is retried, and never holds up the rest.
   [Why the database is the lock →](/notes/the-database-is-the-lock/)
 
 ## Tickets that work in a basement
@@ -138,13 +138,16 @@ Doors are where networks fail, so neither the ticket nor the check needs one.
   the page, so they open in airplane mode.
 - **A door scanner** that reads codes with the camera, or a photo, and remembers whom it
   has let in, so a ticket shown twice is caught. Only that page may use the camera.
+- **Refunds reach the door:** a signature can't say a ticket was refunded, so the door
+  downloads its event's refunded codes while it's online, and keeps them for when it
+  isn't.
 - **Tested with a fake camera:** Chromium plays a video of a signed ticket, and the
   scanner reads it.
   [Why a signature, not a server →](/notes/an-offline-ticket-needs-a-signature-not-a-server/)
 
-## Seventeen ways to break it
+## Sixteen ways to break it
 
-The chaos panel has seventeen scenarios:
+Besides the happy path, the chaos panel has sixteen scenarios:
 
 - a declined card;
 - 3-D Secure;
@@ -173,10 +176,11 @@ their own sandbox, and the chaos panel can genuinely control the server. Because
 server lives in the page, its state is saved as it changes, including webhooks still
 waiting to be delivered, so reloading mid-payment resumes exactly where you were.
 
-The honest limit: one browser tab can't exercise true multi-client concurrency. The
-README says exactly what a real database would do instead, and swapping one in means
-deleting the `backend/` folder and the one line that starts it — a lint rule
-guarantees nothing else depends on it.
+The honest limit: one browser tab can't exercise true multi-client concurrency. That's
+what server mode is for: the same API on Postgres, where the database itself refuses
+an oversold tier or a seat held twice. The app can't tell which one it's talking to. A
+lint rule lets it reach the backend only over HTTP, except in the two places that
+start one, and the chaos panel, which drives the sandbox through its public port.
 
 ## How it's built
 
@@ -193,18 +197,19 @@ records.
 
 ## Quality
 
-- **457 unit, component and HTTP tests**, and **35 against real Postgres** (concurrent holds and payments, signed webhooks, the shared contract), including every legal and illegal order
+- **528 unit, component and HTTP tests**, and **58 against real Postgres** (concurrent holds and payments, signed webhooks, deliveries that fail and are retried, the shared contract), including every legal and illegal order
   transition, idempotency replays, webhook deduplication, GST at its boundaries, UPI
   intents, expiry and cancelling, signed tickets and the door's decisions, the seat allocator, the seat map's keyboard model,
   the waiting room's line, the rate limiter and the checkout's state machine — with
   coverage floors per layer in CI.
-- **78 browser tests** (22 also run against the Postgres server) covering every chaos scenario, tickets offline, the door scanner by photo and by a fake camera, the organisers' dashboard, paying by UPI (approved,
+- **86 browser tests** (22 also run against the Postgres server) covering every chaos scenario, tickets offline, the door scanner by photo (refunded tickets too) and by a fake camera, the organisers' dashboard, paying by UPI (approved,
   declined, expired, cancelled and after a refresh), all-in prices, a flash sale
   through the waiting room, a keyboard-only seat purchase, refresh mid-payment, step
-  guards, expiry, the security headers, a responsiveness budget for the seat map, and
-  accessibility checks in light and dark mode.
-- **96 stories,** each a browser test with accessibility checks, and **210
+  guards, expiry, the security headers, and accessibility checks in light and dark
+  mode. Two responsiveness budgets, for the seat map and the orders table, run on their
+  own and are never retried.
+- **98 stories,** each a browser test with accessibility checks, and **210
   screenshots** compared on every change.
-- **Lighthouse 100** across the board on desktop.
+- **Lighthouse 100** in every category on desktop, on every page a buyer sees.
 - Strict TypeScript and type-aware lint, including naming conventions and the layer
   boundaries.
