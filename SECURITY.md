@@ -12,6 +12,23 @@ This is a static site with no accounts, forms or server. The reports that matter
 are anything that runs script in a visitor's page, weakens the security headers in
 `vercel.json`, or exposes the CI pipeline.
 
+## What's been checked
+
+Reviewed on 2026-10-24:
+
+- **Headers:** every page has a Content Security Policy that allows scripts, styles,
+  fonts and connections from this site only, plus HSTS, `nosniff`, a strict referrer
+  policy, no framing and no camera, microphone or location. A test reads `vercel.json`
+  and checks each one, and that no page trips the policy.
+- **No HTML from data:** the one script written into a page is the theme switch, built
+  from constants. MDX content is compiled at build time from this repository.
+- **Nothing from elsewhere:** fonts are self-hosted, and Vercel Analytics loads from the
+  site's own origin.
+- **No secrets** are tracked. The site has nothing to keep secret: no keys, tokens or
+  personal data.
+- **CI** runs with read-only permissions, its actions are pinned by commit, and CodeQL
+  scans each change.
+
 ## Dependencies
 
 - **What ships has no known vulnerabilities.** CI runs `npm audit --omit=dev
