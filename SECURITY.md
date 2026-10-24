@@ -11,3 +11,21 @@ within a week.
 This is a static site with no accounts, forms or server. The reports that matter most
 are anything that runs script in a visitor's page, weakens the security headers in
 `vercel.json`, or exposes the CI pipeline.
+
+## Dependencies
+
+- **What ships has no known vulnerabilities.** CI runs `npm audit --omit=dev
+--audit-level=high` on every change, and Dependabot proposes updates weekly.
+- **Development tools are patched where a fix exists.** `overrides` in `package.json`
+  pins patched versions deep in the Lighthouse CI chain (`basic-ftp`, `tmp`, `uuid`),
+  and `compression` under `serve`, where the tools that use them haven't caught up yet.
+- **Two advisories have no fix yet**, both in development tools that never see
+  untrusted input:
+  - `extract-zip` ≤ 2.0.1, the latest release (symlink path traversal), comes with
+    Puppeteer. Puppeteer only uses it to unpack a Chrome it downloads, and these
+    tools never download one: Lighthouse CI and the browser tests run a Chrome that's
+    already installed.
+  - `zod` 3.x (memory exhaustion on oversized collections), under Puppeteer's
+    WebDriver BiDi client. Lighthouse drives Chrome over the DevTools protocol, so
+    that client isn't used, and its input would be the local browser's own messages.
+    The app's own Zod is 4.x, which isn't affected.

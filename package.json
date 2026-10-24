@@ -70,5 +70,11 @@
       "eslint --fix"
     ],
     "*.{json,md,mdx,css,yml,yaml}": "prettier --write"
+  },
+  "overrides": {
+    "basic-ftp": "6.2.3",
+    "tmp": "0.2.7",
+    "uuid": "11.1.1",
+    "compression": "1.8.2"
   }
 }
