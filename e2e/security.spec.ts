@@ -74,6 +74,7 @@ test("vercel.json sends a content security policy and the other security headers
   expect(HOST_HEADERS["content-security-policy"]).toContain("object-src 'none'");
   expect(HOST_HEADERS["x-content-type-options"]).toBe("nosniff");
   expect(HOST_HEADERS["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+  expect(HOST_HEADERS["strict-transport-security"]).toBe("max-age=63072000; includeSubDomains");
 });
 
 test("no page breaks the content security policy, demos included", async ({ page }) => {
