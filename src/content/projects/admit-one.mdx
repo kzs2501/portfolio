@@ -197,12 +197,12 @@ records.
 
 ## Quality
 
-- **528 unit, component and HTTP tests**, and **58 against real Postgres** (concurrent holds and payments, signed webhooks, deliveries that fail and are retried, the shared contract), including every legal and illegal order
+- **533 unit, component and HTTP tests**, and **67 against real Postgres** (concurrent holds and payments, signed webhooks, deliveries that fail and are retried, a per-client rate limit, the shared contract), including every legal and illegal order
   transition, idempotency replays, webhook deduplication, GST at its boundaries, UPI
   intents, expiry and cancelling, signed tickets and the door's decisions, the seat allocator, the seat map's keyboard model,
   the waiting room's line, the rate limiter and the checkout's state machine — with
   coverage floors per layer in CI.
-- **86 browser tests** (22 also run against the Postgres server) covering every chaos scenario, tickets offline, the door scanner by photo (refunded tickets too) and by a fake camera, the organisers' dashboard, paying by UPI (approved,
+- **88 browser tests** (24 also run against the Postgres server) covering every chaos scenario, tickets offline, the door scanner by photo (refunded tickets too) and by a fake camera, the organisers' dashboard, paying by UPI (approved,
   declined, expired, cancelled and after a refresh), all-in prices, a flash sale
   through the waiting room, a keyboard-only seat purchase, refresh mid-payment, step
   guards, expiry, the security headers, and accessibility checks in light and dark
@@ -210,6 +210,7 @@ records.
   own and are never retried.
 - **98 stories,** each a browser test with accessibility checks, and **210
   screenshots** compared on every change.
-- **Lighthouse 100** in every category on desktop, on every page a buyer sees.
+- **Lighthouse 100** in every category on desktop, on every page a buyer sees, and 93–94 for performance on a simulated phone.
+- **A security review, written down** as a threat model: Next's advisories patched, request bodies cut off as they stream in, buyers' details kept out of the server's logs, and a per-client rate limit against holding every ticket.
 - Strict TypeScript and type-aware lint, including naming conventions and the layer
   boundaries.
