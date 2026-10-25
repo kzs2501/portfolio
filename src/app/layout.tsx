@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { CommandPalette } from "@/components/command-palette/palette";
 import "./globals.css";
 import { PAPER, THEME_STORAGE_KEY } from "@/lib/design-tokens";
+import { scriptLiteral } from "@/lib/script-literal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const serif = Instrument_Serif({
@@ -48,7 +49,7 @@ export const viewport: Viewport = {
  * saved preference it also points both theme-color metas at that theme, so the
  * phone's browser chrome matches the page rather than the OS setting.
  */
-const themeScript = `(function(){try{var s=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});var d=s?s==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light";if(s){document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",d?${JSON.stringify(PAPER.dark)}:${JSON.stringify(PAPER.light)})})})}}catch(e){}})()`;
+const themeScript = `(function(){try{var s=localStorage.getItem(${scriptLiteral(THEME_STORAGE_KEY)});var d=s?s==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light";if(s){document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",d?${scriptLiteral(PAPER.dark)}:${scriptLiteral(PAPER.light)})})})}}catch(e){}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
