@@ -18,7 +18,7 @@ export const site = {
     resume: "/resume.pdf",
     source: "https://github.com/kzs2501/portfolio",
     // Deploy day: replace with the real Vercel URL for admit-one.
-    admitOneDemo: "https://admit-one.vercel.app",
+    admitOneDemo: "https://admit-one-ten.vercel.app",
     admitOneSource: "https://github.com/kzs2501/admit-one",
   },
 } as const;
