@@ -13,12 +13,12 @@ export const site = {
   email: "kshitizsonakiya2001@gmail.com",
   url: process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://kshitizsonakiya.vercel.app",
   links: {
-    github: "https://github.com/Punisher666",
+    github: "https://github.com/kzs2501",
     linkedin: "https://www.linkedin.com/in/kshitiz-sonakiya/",
     resume: "/resume.pdf",
-    source: "https://github.com/Punisher666/portfolio",
+    source: "https://github.com/kzs2501/portfolio",
     // Deploy day: replace with the real Vercel URL for admit-one.
     admitOneDemo: "https://admit-one.vercel.app",
-    admitOneSource: "https://github.com/Punisher666/admit-one",
+    admitOneSource: "https://github.com/kzs2501/admit-one",
   },
 } as const;

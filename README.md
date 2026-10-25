@@ -2,7 +2,7 @@
 
 Source for my portfolio: three case studies, a few technical notes, four interactive
 demos that rebuild the ideas behind private production work from scratch, with fake data,
-and a page for [admit-one](https://github.com/Punisher666/admit-one), an open-source
+and a page for [admit-one](https://github.com/kzs2501/admit-one), an open-source
 ticketing checkout.
 
 **Stack:** Next.js 16 (App Router, static export) · React 19 · TypeScript (strict) ·
