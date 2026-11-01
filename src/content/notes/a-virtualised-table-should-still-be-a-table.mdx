@@ -1,5 +1,5 @@
-The organisers' dashboard in [admit-one](/projects/admit-one/) lists about 9,000
-orders. Drawing them all would mean 63,000 cells, so the table draws only the rows you
+The organisers' dashboard in [Dress Circle](/projects/dresscircle/) lists about 11,000
+orders. Drawing them all would mean 77,000 cells, so the table draws only the rows you
 can see: about 30. That's virtualisation, and the usual way to do it quietly breaks the
 table for anyone who can't see it.
 
@@ -17,7 +17,7 @@ Roselli has documented this for years. The fix people reach for, ARIA roles on e
 
 ## Spacer rows instead
 
-The table in admit-one keeps native table layout. Above the rows in view sits one empty
+The table in Dress Circle keeps native table layout. Above the rows in view sits one empty
 row, as tall as all the rows scrolled past; below them sits another, as tall as the rest.
 The browser sees an ordinary table that happens to be short, and so does a screen
 reader.
@@ -39,7 +39,7 @@ re-measures rows that come and go.
 
 A table with 30 rows in the DOM says it has 30 rows. Two attributes tell the truth:
 
-- **`aria-rowcount` on the table** is the whole count: 8,959, counting the header.
+- **`aria-rowcount` on the table** is the whole count: 10,837, counting the header.
 - **`aria-rowindex` on each row** says where it sits. Scroll down and a screen reader
   says "row 5,012" rather than "row 12".
 
@@ -52,7 +52,7 @@ first order, scrolls 250 rows down, and checks that focus hasn't moved.
 
 ## Sorting and filters belong to the server, and the URL
 
-With 9,000 rows, the browser can't sort what it hasn't loaded. So sorting, filters and
+With 11,000 rows, the browser can't sort what it hasn't loaded. So sorting, filters and
 search run on the server, and the table pages through the results with tokens rather
 than offsets. That way, a sale landing mid-scroll can't show a row twice or skip one.
 

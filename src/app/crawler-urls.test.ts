@@ -74,3 +74,23 @@ describe("images for crawlers", () => {
     }
   });
 });
+
+describe("old addresses", () => {
+  // Links to the project from before it was renamed (posts, résumés, bookmarks) keep
+  // working: vercel.json sends each to the page's new address, which must exist.
+  const { redirects } = JSON.parse(readFileSync("vercel.json", "utf8")) as {
+    redirects: { source: string; destination: string }[];
+  };
+
+  it("sends the project's old address to its new one, permanently", () => {
+    for (const source of ["/projects/admit-one", "/projects/admit-one/", "/projects/admit-one/:path+"]) {
+      expect(redirects.find((rule) => rule.source === source)).toMatchObject({ permanent: true });
+    }
+  });
+
+  it("sends every old address to a page in the sitemap", () => {
+    const pages = new Set(sitemap().map((entry) => new URL(entry.url).pathname));
+    const destinations = redirects.map(({ destination }) => destination.replace(/:path\+$/, ""));
+    expect(destinations.filter((destination) => !pages.has(destination))).toEqual([]);
+  });
+});

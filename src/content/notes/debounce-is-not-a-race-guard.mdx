@@ -3,17 +3,17 @@ instead of firing a request on every keystroke, you wait until the user pauses, 
 "BTC" costs one request instead of three.
 
 But debounce answers _how many_ requests you send. It says nothing about _the order they
-come back in_ — and network latency is not first-in, first-out.
+come back in_, and network latency is not first-in, first-out.
 
 ## The race
 
 Type "BT" and pause long enough for the debounce to fire. That request happens to be
 slow. Then type "C": a second request goes out for "BTC", and it happens to be fast. The
 "BTC" results arrive first and render correctly. A moment later the slow "BT" response
-lands — and if nothing stops it, it overwrites the screen. The input says "BTC". The
+lands, and if nothing stops it, it overwrites the screen. The input says "BTC". The
 results are for "BT".
 
-<Figure caption="Debounce is on the whole time. Toggle the guard and replay — the only difference is whether a superseded response is allowed to render.">
+<Figure caption="Debounce is on the whole time. Toggle the guard and replay: the only difference is whether a superseded response is allowed to render.">
   <Demo name="race-timeline" title="Debounce vs. the race" minHeight={600} />
 </Figure>
 
@@ -42,7 +42,7 @@ data but a live setter**. That asymmetry is the whole bug.
 
 ## The fix: give the old closure a live channel
 
-The stale response needs some way to learn that the world has moved on — a value that
+The stale response needs some way to learn that the world has moved on: a value that
 isn't frozen. React's effect cleanup is made for this:
 
 ```tsx
@@ -62,10 +62,10 @@ useEffect(() => {
 
 Each effect run gets its own `ignore`. When the query changes, React runs the previous
 run's cleanup first, flipping _that_ run's flag. When the slow response finally lands, it
-reads its own flag — now `true` — and drops itself. As a bonus, the cleanup also runs on
+reads its own flag (now `true`) and drops itself. As a bonus, the cleanup also runs on
 unmount, so the same flag prevents setting state on an unmounted component.
 
-## Then add AbortController — as well, not instead
+## Then add AbortController as well, not instead
 
 The flag stops the stale _render_, but the request still runs to completion and spends
 the user's bandwidth. Passing an `AbortController` signal and aborting in the cleanup

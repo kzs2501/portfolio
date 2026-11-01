@@ -1,9 +1,9 @@
-# kshitizsonakiya — portfolio
+# kshitizsonakiya: portfolio
 
 Source for my portfolio: three case studies, a few technical notes, four interactive
 demos that rebuild the ideas behind private production work from scratch, with fake data,
-and a page for [admit-one](https://github.com/kzs2501/admit-one), an open-source
-ticketing checkout.
+and a page for [Dress Circle](https://github.com/kzs2501/dresscircle), an open-source
+ticket box office.
 
 **Stack:** Next.js 16 (App Router, static export) · React 19 · TypeScript (strict) ·
 Tailwind CSS 4 · MDX · Vitest · Playwright + axe · Lighthouse CI.
@@ -51,7 +51,7 @@ Tailwind CSS 4 · MDX · Vitest · Playwright + axe · Lighthouse CI.
 | `npm run test:e2e`                          | 66 browser tests: axe (WCAG 2.2 AA) on every route, the 404 page and the open palette, in light and dark, keyboard paths, 375px layout, reduced motion, demo behaviour, navigation scroll, contents, anchors, clipboard, timezone                                                            |
 | `npm run lhci`                              | Lighthouse ≥ 95 in every category, CLS ≤ 0.05                                                                                                                                                                                                                                                |
 | `npm run lhci:mobile`                       | On a mid-range phone: accessibility, best practices and SEO ≥ 95 and CLS ≤ 0.05 fail the run; performance below 90 and LCP over 2.5 s warn                                                                                                                                                   |
-| `npm run test:e2e:all`                      | The same browser suite on Chromium, WebKit (Safari's engine) and Firefox — 198 tests                                                                                                                                                                                                         |
+| `npm run test:e2e:all`                      | The same browser suite on Chromium, WebKit (Safari's engine) and Firefox: 198 tests                                                                                                                                                                                                          |
 | CI                                          | All of the above on every pull request and every push to main (browser tests on Chromium); commit messages follow Conventional Commits                                                                                                                                                       |
 
 ## Layout
@@ -80,8 +80,8 @@ Static output, so any host works. On Vercel: import the repo, set
 `NEXT_PUBLIC_SITE_URL` to the production URL, and deploy. Vercel Analytics is enabled
 automatically on Vercel builds only.
 
-A static export can't send headers, so the security headers — a Content Security
-Policy, nosniff, referrer and permissions policies, and framing protection — live in
+A static export can't send headers, so the security headers (a Content Security
+Policy, nosniff, referrer and permissions policies, and framing protection) live in
 `vercel.json`. On another host, send the same ones. `e2e/security.spec.ts` serves every
 page with exactly those headers and fails on any policy violation. The policy allows
 inline scripts because Next.js inlines its own, and nonces would need a server; Vercel's

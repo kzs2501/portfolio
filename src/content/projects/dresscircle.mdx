@@ -1,0 +1,145 @@
+## The problem
+
+My case studies describe checkout work I can't show: the code belongs to the companies I
+built it for. Dress Circle is the same kind of problem, solved from scratch in public, so
+you can read every line, run it, and try to break it.
+
+It's a box office for concerts, plays and talks. Choose seats or tickets, they're held
+while you pay, and you get a ticket that opens offline. No single screen is the hard
+part. What happens between them is: two buyers after the last seat, a payment that
+succeeds after its hold ran out, a webhook that arrives twice, a phone with no signal at
+the door.
+
+<Figure caption="A finished order, with the chaos panel open. The server log shows the payment provider delivering the same webhook twice, and the second delivery being ignored.">
+  <img
+    src="/projects/dresscircle-chaos.webp"
+    width={1280}
+    height={900}
+    loading="lazy"
+    decoding="async"
+    alt="The Dress Circle order page beside the chaos panel, whose server log shows a duplicate webhook being ignored."
+    className="w-full rounded-xl border border-rule"
+  />
+</Figure>
+
+## Context
+
+A personal project, built alone in 2026, in the open. It started with no backend at
+all: the API ran in the browser, so every visitor gets a sandbox of their own to break.
+Later the same API moved onto Postgres, and then took payment through Razorpay's test
+mode, without the app noticing either move. Both versions are live, and the repository
+explains each turn in a decision record.
+
+## My role
+
+All of it: the product, its look, the frontend and the backend, the tests and CI. The
+point was to own every decision a frontend lead has to defend, including the ones
+usually made by someone else.
+
+## Key decisions
+
+**The webhook decides, not the redirect.** Paying never returns "paid". The order page
+waits for the payment provider's webhook, which is signed, checked and acted on once,
+however many times it arrives. Payments carry an idempotency key, so a retried request
+can't charge twice. Money that arrives after the tickets have gone is refunded, never
+kept. [The redirect races the webhook →](/notes/redirect-races-the-webhook/)
+
+**A hold expires by arithmetic, not by a job.** Availability counts only live holds, so
+an expired hold stops counting the moment its time is up. There's no window where a dead
+hold still blocks the next buyer, and no cleanup job to fail.
+
+**The URL drives the checkout.** Each step declares when it applies and when it's done,
+and the flow is whatever applies to your order. A refresh resumes in place, and a deep
+link can't skip ahead. It's an open version of
+[the registry behind my four-rail checkout](/work/four-rails-one-checkout/).
+
+**A backend in the browser, behind a real HTTP contract.** The API is real HTTP, served
+by a service worker, so there's nothing to deploy and the chaos panel can control the
+server. A lint rule lets the app reach the backend only over HTTP. That's what made the
+move to Postgres possible: the same contract tests pass against both.
+
+**The database is the lock.** On Postgres, a hold takes tickets with one conditional
+update, and seats with a unique index. Fifty buyers at the last ten tickets get exactly
+ten. [Why the database is the lock →](/notes/the-database-is-the-lock/)
+
+**A ticket is a signed token.** Each QR code carries its details and an Ed25519
+signature, so the door checks it with a public key and no network. Refunds reach the
+door as a list it downloads while it's online.
+[Why a signature, not a server →](/notes/an-offline-ticket-needs-a-signature-not-a-server/)
+
+## Sixteen ways to break it
+
+The chaos panel switches the sandbox into a scenario: a declined card, 3-D Secure, a
+connection that drops after the charge, a webhook that arrives twice or before the
+browser, a hold that expires mid-payment, a crowd that takes the last ticket a moment
+before you, a flash sale with a waiting room, a UPI payment the bank declines, a
+provider that refuses a refund, and six more. Each is also an end-to-end test that
+checks both what you see and what the server recorded.
+
+## What else is in it
+
+- **A seat map you can use with a keyboard:** a WAI-ARIA grid with one tab stop, every
+  seat named by row, number, tier and price, and "best available" that keeps a party
+  together. [How the map works →](/notes/a-seat-map-a-screen-reader-can-use/)
+- **A waiting room** for 40,000 simulated buyers, which keeps your place through a
+  refresh and only ever moves forward.
+  [Why it works this way →](/notes/a-waiting-room-should-tell-the-truth/)
+- **All-in prices** from the first screen, GST included, as India's dark patterns
+  guidelines and the US FTC's fees rule require.
+- **Card or UPI:** UPI by QR code or an intent link, settled by webhook; and in server
+  mode, Razorpay's own Checkout, so card details never reach the server.
+  [Why UPI is a webhook problem →](/notes/upi-is-a-webhook-problem-too/)
+- **An organisers' dashboard:** live sales, about 11,000 orders in a virtualised table
+  that's still a table to a screen reader, and refunds, with access checked on the
+  server. [Why the table is still a table →](/notes/a-virtualised-table-should-still-be-a-table/)
+- **A first page that's a working box office:** search and filters kept in the URL, a
+  live strip of what's being held and sold, and one click to each hard part.
+
+## Tradeoffs
+
+- **One tab can't race itself.** The browser sandbox can't exercise real concurrency.
+  Server mode, on Postgres, is where those guarantees are tested.
+- **A simulated crowd, labelled.** An empty box office undersells a running system, so
+  the sandbox invents a few buyers now and then. Each of their sales says "simulated",
+  and a test checks that it does. The server shows real activity only.
+- **Caching over rate limiting.** The live strip's feed is the same for every visitor,
+  so the CDN keeps it for five seconds, and the database sees about one read however
+  many people are watching.
+- **History generated, not stored.** The dashboard's orders come from a seed when
+  they're first needed, so the sandbox starts instantly and stays small.
+- **Test mode only.** Server mode refuses live Razorpay keys: the demo can't take real
+  money, even by mistake.
+
+## Quality
+
+- **675 unit, component and HTTP tests**, and **93 against real Postgres**: concurrent
+  holds and payments, signed webhooks, deliveries that fail and are retried, with
+  coverage floors per layer.
+- **100 browser tests:** every chaos scenario, tickets offline, the door scanner with a
+  fake camera, the dashboard, UPI, the waiting room, a keyboard-only seat purchase, and
+  accessibility in light and dark. 32 also run against the Postgres server, and 4 pay
+  through Razorpay's Checkout against a stand-in.
+- **113 stories,** each a browser test with accessibility checks, and **273 screenshots**
+  compared on every change.
+- **Colour contrast is a test,** in both themes, by WCAG's ratio and APCA's.
+- **Lighthouse 100** in every category on desktop, on every page a buyer sees, and 93 to
+  95 for performance on a simulated phone in CI.
+
+## Result
+
+Two live versions: the [sandbox](https://dresscircle.vercel.app), where anyone can break
+it, and [server mode](https://dresscircle-server.vercel.app), on Postgres and Razorpay's
+test mode. Building it in the open found bugs that only show at the edges: an event for
+an order that had moved on was dropped, harmless with simulated money and a kept payment
+with real money; a race test couldn't fail, because the first "simultaneous" request
+finished before the rest had connected; and the story tests caught busy buttons that
+could drop keyboard focus.
+
+## What I'd do next
+
+- **Buyer accounts,** so an order's link stops being the key to it.
+- **The dashboard and the waiting room on the server,** with refunds through Razorpay.
+- **Doors that share what they've scanned,** so a copied ticket can't get in once at
+  each of two offline doors.
+- **A load test from several machines** against server mode, beyond what one test
+  process can do.

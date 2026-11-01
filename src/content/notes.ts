@@ -25,35 +25,35 @@ export const notes: NoteMeta[] = [
     slug: "a-screenshot-test-is-only-as-stable-as-its-machine",
     title: "A screenshot test is only as stable as its machine",
     summary:
-      "Screenshots only compare with ones made on the same machine — the same OS, and the same kind of chip. Getting that right, and treating a flaky screenshot as a bug report, found two real bugs.",
+      "Screenshots only compare with ones made on the same machine: the same OS, and the same kind of chip. Getting that right, and treating a flaky screenshot as a bug report, found two real bugs.",
     date: "2026-10-21",
   },
   {
     slug: "a-virtualised-table-should-still-be-a-table",
     title: "A virtualised table should still be a table",
     summary:
-      "Drawing only the rows in view keeps 9,000 orders fast. The usual way of doing it also stops the table being a table for anyone using a screen reader.",
+      "Drawing only the rows in view keeps 11,000 orders fast. The usual way of doing it also stops the table being a table for anyone using a screen reader.",
     date: "2026-10-20",
   },
   {
     slug: "upi-is-a-webhook-problem-too",
     title: "UPI is a webhook problem too",
     summary:
-      "With UPI, the buyer approves in another app, where your page can’t see. So the page shouldn’t decide whether they paid — the webhook should, just as it does for cards.",
+      "With UPI, the buyer approves in another app, where your page can’t see. So the page shouldn’t decide whether they paid. The webhook should, just as it does for cards.",
     date: "2026-10-19",
   },
   {
     slug: "a-waiting-room-should-tell-the-truth",
     title: "A waiting room should tell the truth",
     summary:
-      "When 40,000 people want the same tickets, a waiting room decides who goes first. The hard part isn’t the line — it’s being honest about it.",
+      "When 40,000 people want the same tickets, a waiting room decides who goes first. The hard part isn’t the line: it’s being honest about it.",
     date: "2026-10-19",
   },
   {
     slug: "a-seat-map-a-screen-reader-can-use",
     title: "A seat map a screen reader can use",
     summary:
-      "Most seat maps are a picture you click. Built as a WAI-ARIA grid — one tab stop, arrows that move to the seat in front, every seat named — it works for keyboards and screen readers too.",
+      "Most seat maps are a picture you click. Built as a WAI-ARIA grid (one tab stop, arrows that move to the seat in front, every seat named), it works for keyboards and screen readers too.",
     date: "2026-10-17",
   },
   {
@@ -67,14 +67,14 @@ export const notes: NoteMeta[] = [
     slug: "debounce-is-not-a-race-guard",
     title: "Debounce doesn’t fix race conditions",
     summary:
-      "Debouncing cuts how many requests you send. It does nothing about the order they come back in — and the stale one wins more often than you’d think.",
+      "Debouncing cuts how many requests you send. It does nothing about the order they come back in, and the stale one wins more often than you’d think.",
     date: "2026-10-04",
   },
   {
     slug: "load-sdks-on-mount",
     title: "Load third-party SDKs when they mount, not on page load",
     summary:
-      "A payments SDK used on two screens was being downloaded on every page. Moving the load to first mount is a small change with a large payoff — and two traps.",
+      "A payments SDK used on two screens was being downloaded on every page. Moving the load to first mount is a small change with a large payoff, and two traps.",
     date: "2026-10-04",
   },
   {

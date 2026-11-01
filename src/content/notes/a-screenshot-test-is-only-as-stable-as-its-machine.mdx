@@ -1,4 +1,4 @@
-[admit-one](/projects/admit-one/) now has a component catalogue: every screen in every
+[Dress Circle](/projects/dresscircle/) now has a component catalogue: every screen in every
 state it can be in, from a failed load to a UPI request waiting in someone else's app.
 Each one is screenshotted in light and dark, and compared on every change, so a
 one-pixel shift fails a test. Getting there was mostly about the machine, not the test.
@@ -20,7 +20,7 @@ The obvious fix is to tell Docker to run the Intel image anyway. On Apple Silico
 emulates it.
 
 Chromium in that emulated image draws OKLCH colours as fully transparent, and takes
-white screenshots. Every colour token in admit-one is OKLCH. The tests would have
+white screenshots. Every colour token in Dress Circle is OKLCH. The tests would have
 passed, because white matches white.
 
 So I made the machine the same instead: the ARM image everywhere. On the laptop, the

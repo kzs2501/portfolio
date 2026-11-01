@@ -77,7 +77,7 @@ export default function BrandTokensDemo() {
   return (
     <DemoShell
       title="One checkout, many BRANDS"
-      intro="Three fictional BRANDS, one checkout component. Each brand is a config object — tokens for how it looks, flags for what it offers. Switching BRANDS changes data, not code."
+      intro="Three fictional brands, one checkout component. Each brand is a config object: tokens for how it looks, flags for what it offers. Switching brands changes data, not code."
     >
       <Segmented
         label="Brand"

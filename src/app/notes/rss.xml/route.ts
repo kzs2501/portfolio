@@ -14,6 +14,6 @@ export function GET() {
       return `<item><title>${escape(n.title)}</title><link>${link}</link><guid>${link}</guid><pubDate>${new Date(n.date).toUTCString()}</pubDate><description>${escape(n.summary)}</description></item>`;
     })
     .join("");
-  const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>${escape(site.name)} — Notes</title><link>${site.url}</link><description>${escape(site.description)}</description>${items}</channel></rss>`;
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>${escape(site.name)} · Notes</title><link>${site.url}</link><description>${escape(site.description)}</description>${items}</channel></rss>`;
   return new Response(xml, { headers: { "Content-Type": "application/rss+xml; charset=utf-8" } });
 }

@@ -9,6 +9,7 @@ import { SectionLabel } from "@/components/ledger";
 import { PageTransition } from "@/components/page-transition";
 import { routes } from "@/lib/routes";
 import { ActionLink } from "@/components/action-link";
+import { CopyEmail } from "@/components/copy-email";
 import { alternatesFor } from "@/app/_lib/content-page";
 
 export const metadata: Metadata = { alternates: alternatesFor(routes.home()) };
@@ -38,11 +39,14 @@ export default function Home() {
             Senior frontend engineer. <span className="font-medium text-ink-2">{site.focus}</span>
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-ink-2">
-            Three years shipping React and Next.js into money-moving products — most recently four payment rails behind
-            one checkout, and a nonprofit portal I built from an empty repo.
+            Three years of React, Next.js and TypeScript across fintech and nonprofit products: design systems, long
+            forms and flows, performance, and the tests behind them.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 text-sm">
             <ActionLink href={routes.homeSection("work")}>See the work</ActionLink>
+            <ActionLink href={site.links.resume} isExternal variant="secondary">
+              Résumé
+            </ActionLink>
             <a
               href={`mailto:${site.email}`}
               className="press rounded-sm border border-rule px-5 py-2.5 font-sans font-medium text-ink hover:bg-surface-2"
@@ -111,6 +115,20 @@ export default function Home() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section aria-labelledby="contact" className="mt-24">
+          <SectionLabel id="contact">Get in touch</SectionLabel>
+          <p className="mt-6 max-w-2xl font-sans text-2xl leading-snug font-bold tracking-tight text-balance sm:text-3xl">
+            Hiring a senior frontend engineer? I&rsquo;m open to remote roles.
+          </p>
+          <p className="mt-4 text-ink-2">
+            Write to <CopyEmail email={site.email} className="text-accent" />, or read the{" "}
+            <a href={site.links.resume} className="text-accent underline underline-offset-4">
+              résumé
+            </a>
+            .
+          </p>
         </section>
       </div>
     </PageTransition>

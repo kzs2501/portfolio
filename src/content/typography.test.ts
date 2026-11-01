@@ -1,3 +1,4 @@
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { site } from "./site";
 import { work } from "./work";
@@ -33,5 +34,34 @@ describe("content typography", () => {
 
   it("uses a real ellipsis, never three dots", () => {
     expect(strings.filter(([, s]) => s.includes("...")).map(([p]) => p)).toEqual([]);
+  });
+
+  it("uses commas, colons and brackets, never an em dash", () => {
+    expect(strings.filter(([, s]) => s.includes("—")).map(([p, s]) => `${p}: ${s}`)).toEqual([]);
+  });
+});
+
+describe("article typography", () => {
+  const articles = (["work", "notes", "projects"] as const).flatMap((collection) =>
+    readdirSync(`src/content/${collection}`)
+      .filter((file) => file.endsWith(".mdx"))
+      .map((file) => [`${collection}/${file}`, readFileSync(`src/content/${collection}/${file}`, "utf8")] as const),
+  );
+  /** What a reader sees as text: code, fenced or inline, keeps its own punctuation. */
+  const prose = (source: string) => source.replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "");
+
+  it("finds the articles to check", () => {
+    expect(articles.length).toBeGreaterThan(10);
+  });
+
+  // Smartypants turns "--" into an em dash, so a double hyphen counts as one.
+  it("uses commas, colons and brackets, never an em dash", () => {
+    const offenders = articles.flatMap(([path, source]) =>
+      prose(source)
+        .split("\n")
+        .filter((line) => /—|--/.test(line))
+        .map((line) => `${path}: ${line.trim()}`),
+    );
+    expect(offenders).toEqual([]);
   });
 });

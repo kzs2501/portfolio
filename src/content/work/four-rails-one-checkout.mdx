@@ -8,7 +8,7 @@ choice between one-off and monthly. A stock gift needs a brokerage, an asset, a 
 count and a signed Letter of Authorization. Crypto needs a source and a network.
 
 Built rail by rail, every new way to give meant a new flow with its own navigation,
-progress, error handling and edge cases — and every shared improvement had to be made
+progress, error handling and edge cases, and every shared improvement had to be made
 four times. Adding a rail was a refactor.
 
 ## Context
@@ -26,11 +26,11 @@ flows into a single config-driven flow, then built most of the stages on top of 
 
 Instead of encoding each rail's journey as its own sequence, every stage lives in **one
 registry**, and each stage declares _when it applies_. The flow a user sees is simply the
-registry filtered by their context — which rail they chose, whether they're a guest,
+registry filtered by their context: which rail they chose, whether they're a guest,
 whether the gift recurs. Navigation, progress, back-and-forward, and error handling are
 written once, against the filtered list, and never know which rail they're serving.
 
-<Figure caption="A toy version of the idea, built from scratch with made-up stages. Switch rails or check out as a guest and the flow rebuilds itself from the same registry — while you keep your place.">
+<Figure caption="A toy version of the idea, built from scratch with made-up stages. Switch rails or check out as a guest and the flow rebuilds itself from the same registry, while you keep your place.">
   <Demo name="stage-registry" title="Stage registry" minHeight={560} />
 </Figure>
 
@@ -43,8 +43,8 @@ Three properties fell out of that structure, and each one was a product requirem
   stage is prefetched while the user is on the current one. The flow has 30-plus stages
   across all rails; nobody downloads 30 stages to give by card, and nobody waits on a
   spinner between steps either.
-- **Keeping your place.** When the context changes mid-flow — say a donor switches from
-  card to stock — the flow re-resolves and the user stays on the same stage if it still
+- **Keeping your place.** When the context changes mid-flow (say a donor switches from
+  card to stock), the flow re-resolves and the user stays on the same stage if it still
   applies, or lands at the same position if it doesn't. They never lose progress they can
   keep.
 
@@ -83,7 +83,7 @@ transition instant but would cost a donor on a phone data they'll never use. One
 ahead is enough to hide the latency of the next step.
 
 **One generic flow means fewer escape hatches.** When a rail needs something genuinely
-unusual, it has to fit the stage contract. That constraint was the point — but it took
+unusual, it has to fit the stage contract. That constraint was the point, but it took
 some negotiation with product about which differences were real.
 
 ## Quality
@@ -97,7 +97,7 @@ through these stages in this order" without rendering a single page.
 
 Adding a payment rail became a configuration change instead of a refactor. By our
 estimate, integrating a new rail went from about three weeks to under one, and checkout
-completion rose by roughly 18% after the refactor and the guest-checkout changes —
+completion rose by roughly 18% after the refactor and the guest-checkout changes:
 estimates rather than controlled experiments, but the direction was consistent.
 
 ## What I'd do next

@@ -1,4 +1,4 @@
-I added UPI to [admit-one](/projects/admit-one/), the ticketing checkout I build in
+I added UPI to [Dress Circle](/projects/dresscircle/), the ticketing checkout I build in
 public. My first plan was the one many checkouts still show: a box for the buyer's UPI
 ID, and a "collect" request sent to their app. That plan is dead. NPCI ended collect for
 payments to merchants on 28 February 2026, so a checkout asks the buyer's app to pay
@@ -12,8 +12,8 @@ that's a `upi://pay` link that opens their UPI app. On a computer, it's the same
 a QR code, scanned with the phone. The link carries everything the app needs:
 
 ```txt
-upi://pay?pa=admit-one@example&pn=admit-one&mc=7922
-  &tr=pay_1ee9d180ebdc&tn=admit-one%20order%20ord_3237dc52c99e
+upi://pay?pa=dresscircle@example&pn=Dress%20Circle&mc=7922
+  &tr=pay_1ee9d180ebdc&tn=Dress%20Circle%20order%20ord_3237dc52c99e
   &am=3038.50&cu=INR
 ```
 
@@ -25,7 +25,7 @@ Two of these parameters are easy to miss:
   confirmation comes back it matches exactly one payment.
 
 The amount always has two decimals, worked out from integer paise without floats. The
-payee, `admit-one@example`, belongs to no bank, so scanning the demo's code with a real
+payee, `dresscircle@example`, belongs to no bank, so scanning the demo's code with a real
 app can't pay anyone. I decoded the QR code from a screenshot to check it's exactly
 that link.
 

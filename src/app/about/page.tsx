@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const principles = [
   {
     title: "Make the hard part a config change",
-    body: "Most of my best work has been turning a pile of special cases — payment rails, brands, onboarding steps — into one system where the next case is data, not a refactor.",
+    body: "Most of my best work has been turning a pile of special cases (payment rails, brands, onboarding steps) into one system where the next case is data, not a refactor.",
   },
   {
     title: "Model the states before the screens",
@@ -24,7 +24,7 @@ const principles = [
   },
   {
     title: "Tests are how a team moves fast",
-    body: "I've introduced testing to codebases that had none, twice. Not for coverage numbers — so that the next person can change payments code without fear.",
+    body: "I’ve introduced testing to codebases that had none, twice. Not for coverage numbers, but so that the next person can change payments code without fear.",
   },
 ];
 
@@ -47,7 +47,7 @@ export default function About() {
             money: automotive checkouts at Tekion, then a multi-rail giving platform and a nonprofit portal at Benefi.
           </p>
           <p>
-            I&rsquo;m happiest where the UI is the hard part — long, branching flows with real consequences when a state
+            I&rsquo;m happiest where the UI is the hard part: long, branching flows with real consequences when a state
             is wrong. I&rsquo;m looking for a remote senior frontend role on a product team that cares about craft.
           </p>
         </div>

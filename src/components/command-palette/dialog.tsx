@@ -75,7 +75,7 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
           await navigator.clipboard.writeText(site.email);
           setStatus("Email address copied");
         } catch {
-          setStatus(`Couldn’t copy — it’s ${site.email}`);
+          setStatus(`Couldn’t copy. The address is ${site.email}`);
         }
         return;
     }

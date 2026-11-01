@@ -32,7 +32,9 @@ for (const scheme of ["light", "dark"] as const) {
   for (const route of ROUTES) {
     test(`no axe violations: ${route} (${scheme})`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
-      await page.goto(route);
+      // The page itself, not the 404 page standing in for a route the build lost.
+      const response = await page.goto(route);
+      expect(response?.status(), route).toBe(200);
       // Demos load lazily: bring them in so they get scanned too.
       await loadDemos(page);
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();

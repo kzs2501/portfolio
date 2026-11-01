@@ -17,10 +17,10 @@ export interface ProjectMeta {
 /** Public, runnable work — the code is the evidence. */
 export const projects: ProjectMeta[] = [
   {
-    slug: "admit-one",
-    title: "admit-one",
+    slug: "dresscircle",
+    title: "Dress Circle",
     summary:
-      "An event-ticketing checkout with timed holds, a typed step registry, idempotent payments and webhooks — plus a chaos panel that breaks it on purpose.",
+      "A ticket box office you can try and try to break: timed holds, a checkout driven by the URL, idempotent payments settled by webhook, and a chaos panel that makes them fail on purpose.",
     period: "2026",
     stack: [
       "Next.js 16",
@@ -35,11 +35,11 @@ export const projects: ProjectMeta[] = [
       "Storybook",
       "Postgres",
     ],
-    demoUrl: site.links.admitOneDemo,
-    sourceUrl: site.links.admitOneSource,
+    demoUrl: site.links.dressCircleDemo,
+    sourceUrl: site.links.dressCircleSource,
     highlight:
-      "An accessible seat map, a waiting room, UPI and all-in prices, an organisers’ dashboard, a catalogue of every state with screenshot tests, the same API on Postgres with races the database can’t lose, tickets that work offline with a door scanner, and seventeen failure scenarios, each one an end-to-end test",
-    tagline: "a ticketing checkout, done properly",
+      "An accessible seat map, a waiting room, UPI and all-in prices, an organisers’ dashboard, a catalogue of every state with screenshot tests, the same API on Postgres and Razorpay’s test mode, tickets that work offline with a door scanner, and sixteen failure scenarios, each one an end-to-end test",
+    tagline: "a ticket box office, done properly",
   },
 ];
 

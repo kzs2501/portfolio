@@ -18,7 +18,7 @@ export const work: WorkMeta[] = [
     org: "Benefi",
     period: "2025–26",
     summary:
-      "Cards, crypto, brokerage securities and donor-advised funds behind one config-driven checkout of 30+ stages — where adding a payment rail became a config change instead of a refactor.",
+      "Cards, crypto, brokerage securities and donor-advised funds behind one config-driven checkout of 30+ stages, where adding a payment rail became a config change instead of a refactor.",
     role: "Architected and built the giving flow",
     team: "Web team of ~5",
     stack: ["Next.js", "React 19", "TypeScript", "Zustand", "TanStack Query", "Stripe", "wagmi/viem"],
@@ -42,7 +42,7 @@ export const work: WorkMeta[] = [
     org: "Tekion",
     period: "2023–25",
     summary:
-      "A token-driven, config-built checkout that served Honda, GM’s brands and others from one codebase — and turned onboarding a new brand from a project into configuration.",
+      "A token-driven, config-built checkout that served Honda, GM’s brands and others from one codebase, and turned onboarding a new brand from a project into configuration.",
     role: "Built the checkout; designed the multi-brand architecture",
     team: "Product engineering team",
     stack: ["React", "Redux", "GraphQL", "Design tokens", "Compound components"],

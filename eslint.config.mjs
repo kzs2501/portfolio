@@ -31,6 +31,12 @@ const LAYER_RULES = [
   },
 ];
 
+/** Copy uses plain punctuation. Comments may keep their dashes; nobody reads them on the page. */
+const NO_EM_DASH = ["JSXText[value=/—/]", "Literal[value=/—/]", "TemplateElement[value.raw=/—/]"].map((selector) => ({
+  selector,
+  message: "Use plain punctuation (a comma, colon, full stop or brackets) instead of an em dash.",
+}));
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -79,6 +85,12 @@ const eslintConfig = defineConfig([
         },
       ],
     },
+  },
+  {
+    // What visitors read. Tests and tooling may quote an em dash to forbid it.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.{ts,tsx}"],
+    rules: { "no-restricted-syntax": ["error", ...NO_EM_DASH] },
   },
   {
     // Next.js routes and tool configs require default exports; so do lazily loaded modules.

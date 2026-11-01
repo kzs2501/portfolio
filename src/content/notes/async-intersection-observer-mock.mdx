@@ -1,10 +1,10 @@
-Infinite scroll, lazy images, "load the demo when it's nearly on screen" — modern UI leans
+Infinite scroll, lazy images, "load the demo when it's nearly on screen": modern UI leans
 on `IntersectionObserver`. Then you try to test it, and jsdom throws:
 `IntersectionObserver is not defined`.
 
 That's not an oversight. jsdom implements the DOM, not a layout engine. There are no
 boxes, no scroll positions and no paint, so there's nothing an intersection ratio could
-be computed from. You have to supply a fake — and the way you fake it decides whether
+be computed from. You have to supply a fake, and the way you fake it decides whether
 your tests mean anything.
 
 ## The tempting fake
@@ -23,7 +23,7 @@ export function triggerIntersect(el: Element) {
 It works, and that's the problem. A real browser **never** calls the observer's callback
 synchronously. Entries are queued and delivered later, after the current task. A
 synchronous fake lets code pass that depends on the callback running _inside_ the same
-tick — for example, code that reads state it expects the callback to have already set.
+tick: for example, code that reads state it expects the callback to have already set.
 Your test suite is then green against timing that production never produces.
 
 ## Deliver asynchronously
@@ -53,8 +53,8 @@ await act(async () => {
 ```
 
 That re-check matters. Components disconnect their observers in effect cleanups, and a
-real browser won't deliver to an observer that's gone. The fake shouldn't either —
-otherwise a test can pass while the component leaks an observer that keeps firing after
+real browser won't deliver to an observer that's gone. The fake shouldn't either.
+Otherwise a test can pass while the component leaks an observer that keeps firing after
 unmount.
 
 ## Make the fake inspectable

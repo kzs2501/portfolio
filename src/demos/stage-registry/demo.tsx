@@ -62,7 +62,7 @@ export default function StageRegistryDemo() {
   return (
     <DemoShell
       title="Stage registry"
-      intro="One registry of stages, each with a rule for when it applies. Switch the payment rail or check out as a guest — the flow rebuilds itself, and you keep your place."
+      intro="One registry of stages, each with a rule for when it applies. Switch the payment rail or check out as a guest: the flow rebuilds itself, and you keep your place."
     >
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <Segmented<Rail>

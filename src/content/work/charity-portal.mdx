@@ -3,7 +3,7 @@
 Nonprofits on Benefi needed somewhere to manage themselves: prove who they are, claim
 their organization, keep their public profile current, invite their team, connect a
 bank account, and withdraw the money donors had given them. None of that existed. The
-portal had to be built from an empty repository — and because it handles identity
+portal had to be built from an empty repository, and because it handles identity
 verification and moves real money to real bank accounts, it had to be trustworthy from
 the first release.
 
@@ -31,7 +31,7 @@ migrate, so the second engineer to join inherited conventions rather than a deba
 
 The portal keeps users signed in with short-lived access tokens and a refresh token.
 A dashboard page fires several API requests at once. When the access token has expired,
-_all of them_ come back 401 within a few milliseconds — and the obvious implementation
+_all of them_ come back 401 within a few milliseconds, and the obvious implementation
 starts a refresh for each one.
 
 That's wasteful, and with refresh-token rotation it's worse than wasteful. Each refresh
@@ -44,14 +44,14 @@ promise; every 401 that arrives while it's in flight awaits that same promise, t
 retries with the new token. However many requests fail, the refresh endpoint is called
 once.
 
-<Figure caption="Five requests, one expired token. Built from scratch for this page — compare a refresh per 401 with a single shared refresh, and watch what token rotation does to the naive version.">
+<Figure caption="Five requests, one expired token. Built from scratch for this page: compare a refresh per 401 with a single shared refresh, and watch what token rotation does to the naive version.">
   <Demo name="single-flight" title="Single-flight token refresh" minHeight={600} />
 </Figure>
 
 ## Other frontend decisions
 
 **Identity verification as a staged flow.** Onboarding runs through Plaid-backed KYC and
-identity checks, with explicit verification statuses — pending, needs action, verified —
+identity checks, with explicit verification statuses (pending, needs action, verified),
 each with its own screen, rather than one form that either works or doesn't.
 
 **Organizations as a scope.** A user can belong to several organizations, claim new ones
@@ -59,8 +59,8 @@ and switch between them. Switching changes which organization every request and 
 cached query belongs to, so stale data from the previous organization can never appear
 under the new one.
 
-**Drafts that only send what changed.** Organization profiles — programs, social links,
-media — are edited as drafts and published deliberately. When a draft is saved, the
+**Drafts that only send what changed.** Organization profiles (programs, social links,
+media) are edited as drafts and published deliberately. When a draft is saved, the
 client sends only the fields that actually changed, not the whole profile object. Smaller
 requests, clearer audit trails on the server, and no silently overwriting a teammate's
 edit to a field you never touched.
@@ -76,7 +76,7 @@ before they leave it, and the app ships with Content Security Policy headers.
 
 **Stripe Connect's embedded components over a custom banking UI.** Building our own
 would have given us full control of the look and feel. Using Stripe's components put
-compliance and edge cases — account verification, payout schedules — on the people who
+compliance and edge cases (account verification, payout schedules) on the people who
 specialize in them. For a small team handling real money, that was the right trade.
 
 **Tests from the start, even when it felt slow.** Early on, writing tests alongside
@@ -89,7 +89,7 @@ There was no test culture to inherit, so I built one:
 
 - Vitest and React Testing Library from the first weeks, with lint rules for the tests
   themselves.
-- MSW-backed integration tests for the essential flows — sign-in, verification, banking —
+- MSW-backed integration tests for the essential flows (sign-in, verification, banking),
   so the tests exercise real request and response handling, not mocked functions.
 - Lighthouse CI on every pull request, with budgets for performance, Largest Contentful
   Paint, layout shift and total page weight.
@@ -99,7 +99,7 @@ There was no test culture to inherit, so I built one:
 
 The portal went from an empty repository to production in under six months, and shipped
 with Lighthouse scores of 90 or above and a coverage gate in CI. By the end it had a
-test file for most of its source files — a codebase where someone new could change
+test file for most of its source files: a codebase where someone new could change
 payments code without fear.
 
 ## What I'd do next

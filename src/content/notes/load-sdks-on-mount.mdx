@@ -1,5 +1,5 @@
 A payments SDK is a large third-party script that, on a typical product, is needed on two
-or three screens. On the product I worked on, it was being loaded on every page — so a
+or three screens. On the product I worked on, it was being loaded on every page, so a
 visitor browsing charities downloaded and parsed a payments library they might never use.
 
 The fix is to load the SDK when the first component that needs it mounts. It's a small
@@ -26,8 +26,8 @@ and the bundler puts it in its own chunk.
 
 ## Trap 1: loading it twice
 
-Two payment components mounting at the same time — say, a saved-cards list and an
-add-card form — can each kick off a load if the guard is a boolean set _after_ the load
+Two payment components mounting at the same time (say, a saved-cards list and an
+add-card form) can each kick off a load if the guard is a boolean set _after_ the load
 finishes. Storing the **promise**, not the result, closes that window: the second caller
 arrives while the first load is in flight and simply awaits it. It's the same
 single-flight idea that makes token refresh safe.
@@ -49,7 +49,7 @@ itself.
 
 Deferring the load means the user may wait for it on the payment screen itself. Two cheap
 mitigations: add a `preconnect` hint for the SDK's origin so the connection is warm, and
-start the load one step early — when the user reaches the step _before_ payment — rather
+start the load one step early, when the user reaches the step _before_ payment, rather
 than on the payment step itself.
 
 ## The rule

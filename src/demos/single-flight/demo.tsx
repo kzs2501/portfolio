@@ -95,7 +95,7 @@ export default function SingleFlightDemo() {
             <dd
               className={`num mt-0.5 text-lg ${player.isDone ? (summary.isSessionRevoked && k !== "Refresh calls" ? "text-accent" : "text-ink") : "text-ink-3"}`}
             >
-              {player.isDone ? v : "—"}
+              {player.isDone ? v : "…"}
             </dd>
           </div>
         ))}

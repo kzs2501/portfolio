@@ -1,14 +1,14 @@
 ## The problem
 
-Tekion builds software for car dealers and the manufacturers behind them. Each brand —
-Honda, Cadillac, Chevrolet, Buick, GMC, Mercedes, BMW — wants an online checkout and
+Tekion builds software for car dealers and the manufacturers behind them. Each brand
+(Honda, Cadillac, Chevrolet, Buick, GMC, Mercedes, BMW) wants an online checkout and
 pre-checkout experience that looks and feels like _its_ brand, with its own mix of
 features: trade-in valuations for some, financing estimates for others, protection plans
 for a few.
 
 The default way to serve them is to fork: copy the last brand's checkout and change it.
 That works for the second brand. By the fourth you have four implementations of the same
-trade-in module drifting apart, and every bug is fixed four times — or once, in the brand
+trade-in module drifting apart, and every bug is fixed four times, or once, in the brand
 that reported it.
 
 ## Context
@@ -30,23 +30,23 @@ set.
 
 A brand is a configuration object with two halves:
 
-- **Tokens for how it looks** — colours, type, corner radius, button style. Components
+- **Tokens for how it looks:** colours, type, corner radius, button style. Components
   never reference a brand's actual values; they read semantic tokens like _accent_ and
   _surface_.
-- **Flags and composition for what it offers** — which modules appear, in what order,
+- **Flags and composition for what it offers:** which modules appear, in what order,
   with which options.
 
 The checkout components never branch on a brand's name. Onboarding a new brand means
 writing a new configuration, not changing component code.
 
-<Figure caption="Three fictional brands, one component — built from scratch for this page. The card on the left is rendered entirely from the config on the right.">
+<Figure caption="Three fictional brands, one component, built from scratch for this page. The card on the left is rendered entirely from the config on the right.">
   <Demo name="brand-tokens" title="One checkout, many brands" minHeight={520} />
 </Figure>
 
 ## How the components were built
 
-**Compound components.** A module like trade-in is a family of parts — a valuation
-form, a summary, an edit affordance — that share state through context and can be
+**Compound components.** A module like trade-in is a family of parts (a valuation
+form, a summary, an edit affordance) that share state through context and can be
 arranged differently per brand without reaching into each other's internals.
 
 **Provider and Builder patterns.** A provider supplies the brand's tokens and
@@ -56,8 +56,8 @@ serve five brands from one implementation.
 
 **A config-driven page builder.** On the concierge product, pages such as the guest page
 and subscriptions were assembled by a configuration-driven builder rather than
-hand-written per brand. That turned trade-in, header and footer — previously four forked
-implementations — into one configurable set.
+hand-written per brand. That turned trade-in, header and footer (previously four forked
+implementations) into one configurable set.
 
 **Mobile-first by default.** Most car shoppers start on a phone, so components were
 designed for the small screen first and enhanced upwards.
@@ -66,7 +66,7 @@ designed for the small screen first and enhanced upwards.
 
 **Configuration has a cost too.** Every flag doubles the number of combinations that can
 exist, and the temptation is to let configuration grow into its own programming language.
-Configs stayed declarative — _what_, never _how_ — and genuinely one-off brand behaviour
+Configs stayed declarative (_what_, never _how_), and genuinely one-off brand behaviour
 went into explicit extension slots instead of yet another flag.
 
 **Tokens constrain designers.** A brand that wants something the token set can't

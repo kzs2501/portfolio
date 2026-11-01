@@ -37,7 +37,7 @@ const mono = Martian_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: { default: site.title, template: `%s — ${site.name}` },
+  title: { default: site.title, template: `%s · ${site.name}` },
   description: site.description,
   authors: [{ name: site.name, url: site.url }],
   openGraph: { type: "website", siteName: site.name, locale: "en_GB" },
