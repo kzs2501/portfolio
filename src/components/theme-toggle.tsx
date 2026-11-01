@@ -18,7 +18,7 @@ export function ThemeToggle() {
       }}
       aria-label="Dark theme"
       aria-pressed={theme === null ? undefined : theme === "dark"}
-      className="grid size-9 press place-items-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink"
+      className="grid size-9 press place-items-center rounded-sm text-ink-2 hover:bg-surface-2 hover:text-ink"
     >
       {/* Both icons render; CSS shows the right one, so nothing flashes. */}
       <svg

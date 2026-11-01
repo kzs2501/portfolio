@@ -40,7 +40,7 @@ export default function About() {
   return (
     <PageTransition>
       <div className="mx-auto max-w-2xl px-5 pt-20 sm:px-8">
-        <h1 className="font-serif text-5xl tracking-tight">About</h1>
+        <h1 className="font-sans text-5xl font-extrabold tracking-[-0.025em]">About</h1>
         <div className="prose-ledger mt-8 text-ink-2">
           <p>
             I&rsquo;m a frontend engineer based in India, with three years of shipping React into products that move
@@ -57,7 +57,7 @@ export default function About() {
           <div className="mt-6 space-y-8">
             {principles.map((p) => (
               <div key={p.title}>
-                <h3 className="font-serif text-2xl tracking-tight">{p.title}</h3>
+                <h3 className="font-sans text-xl font-bold tracking-tight">{p.title}</h3>
                 <p className="mt-2 text-ink-2">{p.body}</p>
               </div>
             ))}

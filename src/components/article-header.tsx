@@ -19,8 +19,11 @@ export function ArticleHeader({
   titleTransitionName?: string;
   children?: ReactNode;
 }) {
+  // A long word ("IntersectionObserver") is wider than a phone in this face: it may break.
   const heading = (
-    <h1 className="mt-4 font-serif text-[2.4rem] leading-[1.05] tracking-tight text-balance sm:text-5xl">{title}</h1>
+    <h1 className="mt-4 font-sans text-[2rem] leading-[1.08] font-extrabold tracking-[-0.025em] text-balance wrap-break-word sm:text-5xl">
+      {title}
+    </h1>
   );
   return (
     <header className="mt-10">

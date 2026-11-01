@@ -15,7 +15,7 @@ export default function NotesIndex() {
   return (
     <PageTransition>
       <div className="mx-auto max-w-2xl px-5 pt-20 sm:px-8">
-        <h1 className="font-serif text-5xl tracking-tight">Notes</h1>
+        <h1 className="font-sans text-5xl font-extrabold tracking-[-0.025em]">Notes</h1>
         <p className="mt-4 text-lg text-ink-2">
           Short write-ups of things I learned the hard way: async UI, performance, and testing.
         </p>
@@ -24,7 +24,7 @@ export default function NotesIndex() {
             <li key={n.slug} className="border-b border-rule">
               <Link href={routes.note(n.slug)} transitionTypes={["nav-forward"]} className="group block py-7">
                 <span className="num text-xs text-ink-3">{formatDate(n.date)}</span>
-                <span className="mt-1 block font-serif text-2xl tracking-tight transition-colors group-hover:text-accent">
+                <span className="mt-1 block font-sans text-xl font-bold tracking-tight transition-colors group-hover:text-accent">
                   {n.title}
                 </span>
                 <span className="mt-2 block text-pretty text-ink-2">{n.summary}</span>

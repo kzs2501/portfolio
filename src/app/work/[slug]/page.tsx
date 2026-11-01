@@ -76,7 +76,7 @@ export default async function CaseStudy({ params }: PageProps<"/work/[slug]">) {
               <Link
                 href={routes.work(next.slug)}
                 transitionTypes={["nav-forward"]}
-                className="mt-2 block font-serif text-2xl tracking-tight hover:text-accent"
+                className="mt-2 block font-sans text-xl font-bold tracking-tight hover:text-accent"
               >
                 {next.title} →
               </Link>

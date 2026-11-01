@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Martian_Mono, Newsreader, Schibsted_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { site } from "@/content/site";
 import { SiteHeader } from "@/components/site-header";
@@ -9,19 +9,28 @@ import "./globals.css";
 import { PAPER, THEME_STORAGE_KEY } from "@/lib/design-tokens";
 import { scriptLiteral } from "@/lib/script-literal";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const serif = Instrument_Serif({
+// Headings, the name and the controls. The home page's heading is its largest paint.
+const grotesk = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-schibsted-grotesk", display: "swap" });
+// Reading text. Its optical-size axis would double the file, and it never sets a
+// heading, so it goes without.
+const newsreader = Newsreader({ subsets: ["latin"], variable: "--font-newsreader", display: "swap" });
+// Its italic, for emphasis and quotes in articles, which are seldom in the first screen.
+// Not preloaded, so it doesn't share the first round trips with the heading's font; and
+// optional, so text never reflows when it arrives (layout shift): a first view that misses
+// it sets emphasis in the fallback serif, sized to Newsreader's metrics, and the next page
+// has the italic from the cache.
+const newsreaderItalic = Newsreader({
   subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-  variable: "--font-instrument-serif",
-  display: "swap",
+  style: "italic",
+  variable: "--font-newsreader-italic",
+  display: "optional",
+  preload: false,
 });
-// Not preloaded: only small labels use it, and preloading it competed with the
-// hero's serif for bandwidth on slow mobile connections (LCP).
-const mono = JetBrains_Mono({
+// Not preloaded: only small labels use it, and preloading it would compete with the
+// heading's font for bandwidth on slow mobile connections (LCP).
+const mono = Martian_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  variable: "--font-martian-mono",
   display: "swap",
   preload: false,
 });
@@ -60,7 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // opens at the top instead of smooth-scrolling up from the old position.
       data-scroll-behavior="smooth"
       suppressHydrationWarning
-      className={`${inter.variable} ${serif.variable} ${mono.variable} antialiased`}
+      className={`${grotesk.variable} ${newsreader.variable} ${newsreaderItalic.variable} ${mono.variable} antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

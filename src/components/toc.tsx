@@ -20,7 +20,7 @@ function TocList({ items }: { items: TocItem[] }) {
 export function TocSidebar({ items }: { items: TocItem[] }) {
   return (
     <nav aria-label="Contents" className="sticky top-24">
-      <p className="num mb-3 text-[11px] tracking-[0.18em] text-ink-3 uppercase">Contents</p>
+      <p className="num mb-3 text-[11px] tracking-[0.1em] text-ink-3 uppercase">Contents</p>
       <TocList items={items} />
       <TocActive ids={items.map((i) => i.id)} />
     </nav>

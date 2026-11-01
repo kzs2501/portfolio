@@ -4,47 +4,47 @@
    Light is the base palette. Dark redefines the same tokens, applied either by
    an explicit choice (data-theme="dark") or by the OS when no choice was made. */
 :root {
-  --paper: oklch(0.985 0.006 85);
-  --surface: oklch(0.965 0.008 85);
-  --surface-2: oklch(0.935 0.01 85);
-  --ink: oklch(0.22 0.012 60);
-  --ink-2: oklch(0.42 0.012 60);
-  --ink-3: oklch(0.5 0.01 60);
-  --rule: oklch(0.86 0.012 70);
-  --accent: oklch(0.5 0.17 30); /* ledger red: text-safe on paper */
-  --accent-soft: oklch(0.93 0.035 30);
+  --paper: oklch(0.988 0.003 255);
+  --surface: oklch(0.967 0.005 255);
+  --surface-2: oklch(0.94 0.007 255);
+  --ink: oklch(0.23 0.012 262);
+  --ink-2: oklch(0.43 0.012 262);
+  --ink-3: oklch(0.52 0.01 262);
+  --rule: oklch(0.88 0.008 255);
+  --accent: oklch(0.46 0.2 266); /* ultramarine: text-safe on paper */
+  --accent-soft: oklch(0.94 0.028 266);
   --ok: oklch(0.5 0.12 150);
-  --warn: oklch(0.55 0.13 75);
+  --warn: oklch(0.54 0.112 72);
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --paper: oklch(0.17 0.008 60);
-  --surface: oklch(0.205 0.009 60);
-  --surface-2: oklch(0.25 0.01 60);
-  --ink: oklch(0.93 0.008 80);
-  --ink-2: oklch(0.76 0.01 75);
-  --ink-3: oklch(0.66 0.01 70);
-  --rule: oklch(0.32 0.01 60);
-  --accent: oklch(0.74 0.14 32);
-  --accent-soft: oklch(0.3 0.06 30);
-  --ok: oklch(0.75 0.12 150);
+  --paper: oklch(0.17 0.01 262);
+  --surface: oklch(0.205 0.012 262);
+  --surface-2: oklch(0.25 0.014 262);
+  --ink: oklch(0.93 0.006 255);
+  --ink-2: oklch(0.86 0.01 255);
+  --ink-3: oklch(0.78 0.012 258);
+  --rule: oklch(0.32 0.012 262);
+  --accent: oklch(0.79 0.105 266);
+  --accent-soft: oklch(0.3 0.07 266);
+  --ok: oklch(0.77 0.12 150);
   --warn: oklch(0.8 0.12 80);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: oklch(0.17 0.008 60);
-    --surface: oklch(0.205 0.009 60);
-    --surface-2: oklch(0.25 0.01 60);
-    --ink: oklch(0.93 0.008 80);
-    --ink-2: oklch(0.76 0.01 75);
-    --ink-3: oklch(0.66 0.01 70);
-    --rule: oklch(0.32 0.01 60);
-    --accent: oklch(0.74 0.14 32);
-    --accent-soft: oklch(0.3 0.06 30);
-    --ok: oklch(0.75 0.12 150);
+    --paper: oklch(0.17 0.01 262);
+    --surface: oklch(0.205 0.012 262);
+    --surface-2: oklch(0.25 0.014 262);
+    --ink: oklch(0.93 0.006 255);
+    --ink-2: oklch(0.86 0.01 255);
+    --ink-3: oklch(0.78 0.012 258);
+    --rule: oklch(0.32 0.012 262);
+    --accent: oklch(0.79 0.105 266);
+    --accent-soft: oklch(0.3 0.07 266);
+    --ok: oklch(0.77 0.12 150);
     --warn: oklch(0.8 0.12 80);
     color-scheme: dark;
   }
@@ -63,9 +63,18 @@
   --color-ok: var(--ok);
   --color-warn: var(--warn);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, Menlo, monospace;
+  /* Drafting: a grotesque for headings and controls, a serif to read, a mono for labels. */
+  --font-sans: var(--font-schibsted-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+  --font-mono: var(--font-martian-mono), ui-monospace, Menlo, monospace;
+
+  /* Square corners, as on a drawing: just enough softening not to look unfinished.
+     Pills (rounded-full) stay round. */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
 
   /* Motion: ease-out for anything entering or leaving, ease-in-out for things
      moving on screen, never ease-in on UI. Everything stays under 300ms. */
@@ -104,9 +113,17 @@ label {
 
 body {
   background: var(--paper);
-  font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
+  font-family: var(--font-serif);
   text-rendering: optimizeLegibility;
+}
+
+/* Controls speak in the grotesque; what's there to be read stays in the serif. */
+button,
+input,
+select,
+textarea,
+kbd {
+  font-family: var(--font-sans);
 }
 
 ::selection {
@@ -153,6 +170,33 @@ body {
   transform: translateY(-0.3em);
 }
 
+/* ── Drafting ────────────────────────────────────────────────────────── */
+
+/* The faint grid of a drawing board behind the opening, fading out before the work
+   starts. Decoration only: it goes when the system draws its own colours. */
+.blueprint {
+  position: relative;
+  isolation: isolate;
+}
+.blueprint::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  --grid: color-mix(in oklch, var(--accent) 9%, transparent);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: center top;
+  mask-image: linear-gradient(to bottom, transparent, black 12%, black 55%, transparent);
+}
+@media (forced-colors: active) {
+  .blueprint::before {
+    display: none;
+  }
+}
+
 /* ── Prose (case studies + notes) ─────────────────────────────────────── */
 .prose-ledger {
   font-size: 1.0625rem;
@@ -167,11 +211,12 @@ body {
   text-wrap: pretty;
 }
 .prose-ledger h2:not(.not-prose *) {
-  font-family: var(--font-serif);
-  font-size: 1.85rem;
-  line-height: 1.15;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1.2;
   margin-top: 2.6em;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 /* The anchor wrapper takes the heading's top margin, so spacing is unchanged. */
 .prose-ledger .anchored-heading:not(.not-prose *) {
@@ -181,7 +226,8 @@ body {
   margin-top: 0;
 }
 .prose-ledger h3:not(.not-prose *) {
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-weight: 700;
   font-size: 1.05rem;
   margin-top: 2em;
 }
@@ -216,6 +262,11 @@ body {
 .prose-ledger li + li:not(.not-prose *) {
   margin-top: 0.4em;
 }
+/* Emphasis and quotes take Newsreader's own italic, a separate file loaded only where an
+   article uses it (see layout.tsx). */
+.prose-ledger :is(em, i, blockquote):not(.not-prose *) {
+  font-family: var(--font-newsreader-italic), var(--font-serif);
+}
 .prose-ledger strong:not(.not-prose *) {
   font-weight: 600;
 }
@@ -246,7 +297,7 @@ body {
 
 /* ── Scroll-driven details (pure CSS, no JS, progressive) ─────────────────── */
 
-/* Reading progress: a 2px ledger-red rule under the header that fills as you
+/* Reading progress: a 2px ultramarine rule under the header that fills as you
    read. Scroll-linked feedback rather than autonomous motion, so it stays on
    under reduced motion. Hidden where scroll timelines aren't supported. */
 .reading-progress {

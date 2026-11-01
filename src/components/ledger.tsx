@@ -19,7 +19,7 @@ export function Ledger({ rows, caption }: { rows: { label: string; value: ReactN
 export function SectionLabel({ children, id }: { children: ReactNode; id?: string }) {
   return (
     <div className="flex items-center gap-4">
-      <h2 id={id} className="num shrink-0 text-xs tracking-[0.18em] text-ink-3 uppercase">
+      <h2 id={id} className="num shrink-0 text-xs tracking-[0.1em] text-ink-3 uppercase">
         {children}
       </h2>
       <span aria-hidden="true" className="h-px flex-1 bg-rule" />

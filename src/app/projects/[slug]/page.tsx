@@ -4,7 +4,7 @@ import { ArticleHeader } from "@/components/article-header";
 import { BackLink } from "@/components/back-link";
 import { FactsPanel } from "@/components/ledger";
 import { PageTransition } from "@/components/page-transition";
-import { PillLink } from "@/components/pill-link";
+import { ActionLink } from "@/components/action-link";
 import { ReadingProgress } from "@/components/reading-progress";
 import { routes } from "@/lib/routes";
 import { articleMetadata, toSlugParams } from "@/app/_lib/content-page";
@@ -32,12 +32,12 @@ export default async function Project({ params }: PageProps<"/projects/[slug]">)
         <BackLink href={routes.homeSection("projects")}>All projects</BackLink>
         <ArticleHeader eyebrow={`Project · ${meta.period}`} title={meta.title} summary={meta.summary}>
           <div className="mt-7 flex flex-wrap gap-3 text-sm">
-            <PillLink href={meta.demoUrl} isExternal>
+            <ActionLink href={meta.demoUrl} isExternal>
               Try the live demo
-            </PillLink>
-            <PillLink href={meta.sourceUrl} isExternal variant="secondary">
+            </ActionLink>
+            <ActionLink href={meta.sourceUrl} isExternal variant="secondary">
               Read the source
-            </PillLink>
+            </ActionLink>
           </div>
           <FactsPanel
             rows={[

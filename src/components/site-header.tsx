@@ -12,7 +12,7 @@ export function SiteHeader() {
   return (
     <header className="site-header z-30">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-4 px-5 sm:px-8">
-        <Link href="/" className="font-serif text-xl tracking-tight text-ink">
+        <Link href="/" className="font-sans text-lg font-bold tracking-tight text-ink">
           {site.name}
         </Link>
         <nav aria-label="Primary" className="ml-auto hidden sm:block">
