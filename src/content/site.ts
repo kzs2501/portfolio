@@ -6,9 +6,9 @@ export const site = {
   role: ROLE,
   title: `${NAME} · ${ROLE}`,
   /** How I work, in one line: the homepage heading's second half and the link-preview title. */
-  focus: "I build web apps that stay fast, accessible and correct under pressure.",
+  focus: "I build fast, accessible web apps that hold up in production.",
   description:
-    "Case studies, notes and live projects from a senior frontend engineer who builds web apps that stay fast, accessible and correct under pressure: design systems, long forms and flows, performance, and the tests behind them. React, Next.js, TypeScript.",
+    "Case studies, notes and live projects from a senior frontend engineer who builds fast, accessible web apps that hold up in production: design systems, long forms and flows, performance, and the tests behind them. React, Next.js, TypeScript.",
   location: "India · open to remote",
   email: "kshitizsonakiya2001@gmail.com",
   url: process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://kshitizsonakiya.vercel.app",

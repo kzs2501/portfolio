@@ -43,8 +43,9 @@ export default function About() {
         <h1 className="font-sans text-5xl font-extrabold tracking-[-0.025em]">About</h1>
         <div className="prose-ledger mt-8 text-ink-2">
           <p>
-            I&rsquo;m a frontend engineer based in India, with three years of shipping React into products that move
-            money: automotive checkouts at Tekion, then a multi-rail giving platform and a nonprofit portal at Benefi.
+            I&rsquo;m a frontend engineer based in India, with three and a half years of shipping React into products
+            that move money: automotive checkouts at Tekion, then a multi-rail giving platform and a nonprofit portal at
+            Benefi.
           </p>
           <p>
             I&rsquo;m happiest where the UI is the hard part: long, branching flows with real consequences when a state

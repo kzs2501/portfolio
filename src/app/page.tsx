@@ -39,8 +39,8 @@ export default function Home() {
             Senior frontend engineer. <span className="font-medium text-ink-2">{site.focus}</span>
           </h1>
           <p className="mt-7 max-w-xl text-lg leading-relaxed text-ink-2">
-            Three years of React, Next.js and TypeScript across fintech and nonprofit products: design systems, long
-            forms and flows, performance, and the tests behind them.
+            Three and a half years of React, Next.js and TypeScript across fintech and nonprofit products: design
+            systems, long forms and flows, performance, and the tests behind them.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 text-sm">
             <ActionLink href={routes.homeSection("work")}>See the work</ActionLink>
