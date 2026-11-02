@@ -83,14 +83,21 @@ describe("old addresses", () => {
   };
 
   it("sends the project's old address to its new one, permanently", () => {
-    for (const source of ["/projects/admit-one", "/projects/admit-one/", "/projects/admit-one/:path+"]) {
+    // The host adds the trailing slash first, so a deeper path (its link-preview image) arrives
+    // with one, and needs a rule of its own.
+    for (const source of [
+      "/projects/admit-one",
+      "/projects/admit-one/",
+      "/projects/admit-one/:path+",
+      "/projects/admit-one/:path+/",
+    ]) {
       expect(redirects.find((rule) => rule.source === source)).toMatchObject({ permanent: true });
     }
   });
 
   it("sends every old address to a page in the sitemap", () => {
     const pages = new Set(sitemap().map((entry) => new URL(entry.url).pathname));
-    const destinations = redirects.map(({ destination }) => destination.replace(/:path\+$/, ""));
+    const destinations = redirects.map(({ destination }) => destination.replace(/:path\+\/?$/, ""));
     expect(destinations.filter((destination) => !pages.has(destination))).toEqual([]);
   });
 });

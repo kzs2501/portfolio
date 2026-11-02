@@ -15,6 +15,11 @@
       "source": "/projects/admit-one/:path+",
       "destination": "/projects/dresscircle/:path+",
       "permanent": true
+    },
+    {
+      "source": "/projects/admit-one/:path+/",
+      "destination": "/projects/dresscircle/:path+/",
+      "permanent": true
     }
   ],
   "headers": [
