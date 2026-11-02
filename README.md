@@ -92,6 +92,7 @@ preview-only toolbar is blocked by it. After deploying, check with
 
 ## Licence
 
-The code is [MIT licensed](LICENSE). The writing, case studies, images and résumé are
-not: they are © Kshitiz Sonakiya, all rights reserved. To report a vulnerability, see
-[SECURITY.md](SECURITY.md).
+The code is [MIT licensed](LICENSE). The writing, case studies, images and résumé
+(everything under `src/content/` and `public/`) are not: they are © 2026 Kshitiz
+Sonakiya, all rights reserved, and the licence doesn't cover them. To report a
+vulnerability, see [SECURITY.md](SECURITY.md).
