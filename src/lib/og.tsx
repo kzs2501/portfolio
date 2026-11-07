@@ -3,8 +3,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { site } from "@/content/site";
 import { ACCENT, INK, INK_MUTED, INK_SOFT, PAPER, RULE } from "./design-tokens";
-
-export const ogSize = { width: 1200, height: 630 };
+import { ogSize } from "./preview-image";
 
 /** The page's faint drawing-board grid: the accent at 9%, as in globals.css. */
 const GRID = `rgba(${[1, 3, 5].map((at) => Number.parseInt(ACCENT.slice(at, at + 2), 16)).join(", ")}, 0.09)`;

@@ -7,7 +7,9 @@ import { SiteFooter } from "@/components/site-footer";
 import { CommandPalette } from "@/components/command-palette/palette";
 import "./globals.css";
 import { PAPER, THEME_STORAGE_KEY } from "@/lib/design-tokens";
+import { routes } from "@/lib/routes";
 import { scriptLiteral } from "@/lib/script-literal";
+import { previewImageFor } from "@/app/_lib/content-page";
 
 // Headings, the name and the controls. The home page's heading is its largest paint.
 const grotesk = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-schibsted-grotesk", display: "swap" });
@@ -40,7 +42,12 @@ export const metadata: Metadata = {
   title: { default: site.title, template: `%s · ${site.name}` },
   description: site.description,
   authors: [{ name: site.name, url: site.url }],
-  openGraph: { type: "website", siteName: site.name, locale: "en_GB" },
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    locale: "en_GB",
+    images: [previewImageFor(routes.home(), site.title)],
+  },
   twitter: { card: "summary_large_image" },
   // Pages add their canonical URL to this (`alternatesFor`); the 404 page has none.
   alternates: { types: { "application/rss+xml": "/notes/rss.xml" } },

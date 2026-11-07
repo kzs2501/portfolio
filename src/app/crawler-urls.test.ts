@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { site } from "@/content/site";
 import { pagePath } from "@/lib/routes";
+import { previewImageFor } from "./_lib/content-page";
 import { GET } from "./notes/rss.xml/route";
 import sitemap from "./sitemap";
 
@@ -36,7 +37,10 @@ describe("addresses for crawlers and feed readers", () => {
   });
 });
 
-/** Every route that generates an image (Open Graph cards, the Apple icon), as a sample URL path. */
+/**
+ * Every route that generates an image, as a sample URL path: Next's image files
+ * (`apple-icon.tsx`, served without an extension) and route handlers in a `*.png` folder.
+ */
 function imageRoutes(dir = "src/app", path = ""): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     if (entry.isDirectory()) {
@@ -44,26 +48,45 @@ function imageRoutes(dir = "src/app", path = ""): string[] {
       const segment = entry.name.startsWith("(") ? "" : `/${entry.name.replace(/^\[.*\]$/, "any")}`;
       return imageRoutes(join(dir, entry.name), path + segment);
     }
-    const route = /^(opengraph-image|apple-icon)\.tsx$/.exec(entry.name)?.[1];
-    return route ? [`${path}/${route}`] : [];
+    const route = /^(opengraph-image|twitter-image|apple-icon)\.tsx$/.exec(entry.name)?.[1];
+    if (route) return [`${path}/${route}`];
+    return entry.name === "route.ts" && path.endsWith(".png") ? [path] : [];
   });
 }
 
+const hasExtension = (path: string) => /\.\w+$/.test(path);
+
 describe("images for crawlers", () => {
-  // The static export writes these images without an extension, so the host can't tell
-  // they're PNGs; and LinkedIn, X and Slack show no preview for an image that isn't
-  // labelled as one. vercel.json labels them, at both addresses (with and without the
+  // The host redirects an address without an extension to its trailing-slash form, and
+  // a crawler fetching a link-preview card may not follow that. So every card is an
+  // `og.png` in its page's folder, never Next's extensionless `opengraph-image`.
+  it("serves each link-preview card at an address the host doesn't redirect", () => {
+    const routes = imageRoutes();
+    expect(routes).toEqual(
+      expect.arrayContaining(["/og.png", "/notes/any/og.png", "/work/any/og.png", "/projects/any/og.png"]),
+    );
+    expect(routes.filter((route) => /(opengraph|twitter)-image$/.test(route))).toEqual([]);
+    for (const [page, card] of [
+      ["/", "/og.png"],
+      ["/notes/x", "/notes/x/og.png"],
+      ["/projects/x/", "/projects/x/og.png"],
+    ] as const) {
+      expect(previewImageFor(page, "alt").url).toBe(card);
+    }
+  });
+
+  // The static export writes the rest without an extension, so the host can't tell
+  // they're PNGs. vercel.json labels them, at both addresses (with and without the
   // trailing slash the host redirects to).
-  it("labels every generated image a PNG, wherever the host serves it", () => {
+  it("labels every image served without an extension a PNG, wherever the host serves it", () => {
     const config = JSON.parse(readFileSync("vercel.json", "utf8")) as {
       headers: { source: string; headers: { key: string; value: string }[] }[];
     };
     const pngRules = config.headers
       .filter((rule) => rule.headers.some(({ key, value }) => key === "Content-Type" && value === "image/png"))
       .map((rule) => new RegExp(`^${rule.source.replaceAll("(.*)", ".*")}$`));
-    const routes = imageRoutes();
-    expect(routes).toContain("/opengraph-image");
-    expect(routes).toContain("/work/any/opengraph-image");
+    const routes = imageRoutes().filter((route) => !hasExtension(route));
+    expect(routes).toContain("/apple-icon");
     for (const route of routes) {
       for (const address of [route, `${route}/`]) {
         expect(

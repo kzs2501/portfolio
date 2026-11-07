@@ -1,4 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
+import { ROUTES } from "./site";
 
 /** Press Step until the demo reaches its end (Step disables itself there). */
 async function stepToEnd(demo: Locator) {
@@ -114,4 +115,19 @@ test("reduced motion: demos still fully usable", async ({ page }) => {
   await demo.scrollIntoViewIfNeeded();
   await stepToEnd(demo);
   await expect(demo).toContainText("5 / 5");
+});
+
+test("every page's link-preview card is a PNG at its own address, with no redirect", async ({ page, request }) => {
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  for (const route of ROUTES) {
+    await page.goto(route);
+    for (const tag of ['meta[property="og:image"]', 'meta[name="twitter:image"]']) {
+      // The tags carry the live site's address; fetch the same path from this server.
+      const { pathname } = new URL((await page.locator(tag).getAttribute("content")) ?? "");
+      const response = await request.get(pathname, { maxRedirects: 0 });
+      expect(response.status(), `${route} ${tag}`).toBe(200);
+      expect(response.headers()["content-type"], `${route} ${tag}`).toBe("image/png");
+      expect((await response.body()).subarray(0, 8).equals(png), `${route} ${tag}`).toBe(true);
+    }
+  }
 });
