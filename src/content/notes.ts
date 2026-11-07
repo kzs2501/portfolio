@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "a-payment-needs-a-second-way-in",
+    title: "A payment needs a second way in",
+    summary:
+      "My first real payment was fulfilled while every one of its webhooks was being refused. A server should hear about a payment more than one way, settle it once, and say loudly when it turns one away.",
+    date: "2026-11-07",
+  },
+  {
     slug: "an-offline-ticket-needs-a-signature-not-a-server",
     title: "An offline ticket needs a signature, not a server",
     summary:

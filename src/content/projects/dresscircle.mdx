@@ -42,7 +42,9 @@ usually made by someone else.
 waits for the payment provider's webhook, which is signed, checked and acted on once,
 however many times it arrives. Payments carry an idempotency key, so a retried request
 can't charge twice. Money that arrives after the tickets have gone is refunded, never
-kept. [The redirect races the webhook →](/notes/redirect-races-the-webhook/)
+kept. [The redirect races the webhook →](/notes/redirect-races-the-webhook/) With
+Razorpay, the server also asks the provider itself, so a refused webhook can't strand a
+payment. [Why a payment needs a second way in →](/notes/a-payment-needs-a-second-way-in/)
 
 **A hold expires by arithmetic, not by a job.** Availability counts only live holds, so
 an expired hold stops counting the moment its time is up. There's no window where a dead

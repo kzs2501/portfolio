@@ -1,0 +1,64 @@
+I connected [Dress Circle](/projects/dresscircle/), the ticketing checkout I build in
+public, to Razorpay's test mode, and paid for the first ticket by hand. The order was
+fulfilled. Then I looked at the database: none of Razorpay's webhooks had arrived. Every
+one had been refused, and nobody had been told.
+
+## What went wrong
+
+A webhook is signed. Razorpay sends an HMAC of the request body, made with a secret set
+in its dashboard, and the server checks it with its own copy of that secret. The two
+copies didn't match.
+
+With a bad signature, the server did the right thing and answered 400. It also did the
+wrong thing: it logged nothing. The only party that knew was Razorpay, which retries a
+failed webhook for a day, quietly.
+
+## Why the ticket arrived anyway
+
+Two of my earlier notes say the webhook decides whether a buyer paid, for
+[cards](/notes/redirect-races-the-webhook/) and for
+[UPI](/notes/upi-is-a-webhook-problem-too/). With a real provider I'd put it more
+carefully: the provider decides, and the webhook is one way of hearing it. Dress Circle
+has three:
+
+- **The webhook,** checked against its signature. Its event id is recorded in the same
+  transaction that acts on it, so a retry changes nothing.
+- **Checkout's signed result.** When the buyer finishes, Razorpay's Checkout hands the
+  browser the order and payment ids, signed with the account's secret key. The server
+  checks the signature, then asks Razorpay itself what was paid. The browser's word
+  alone settles nothing.
+- **The scheduler's sweep,** which asks Razorpay about checkouts that closed with no
+  payment reaching us, for a day afterwards.
+
+All three end in one function, so a payment is settled once, whichever arrives first.
+The first payment came in the second way. If the webhook had been the only way in, that
+buyer would have paid and been left waiting for tickets that weren't coming.
+
+The sweep alone would have been slow, too. It ran on GitHub's schedule: asked for every
+five minutes, it ran a median of six hours apart, and once ten. So it now runs every five
+minutes on a scheduler built for it, which retries a call that fails, and GitHub's stays
+as a second trigger. Two triggers are safe because settling happens once, whoever asks.
+
+## One rule for every way in
+
+However a payment arrives, the same rule decides what happens to the money:
+
+- **A capture for the order's open checkout, for the right amount,** becomes tickets.
+  Whether the hold still stood is judged by when the buyer paid, not when we heard.
+- **Any other capture goes back:** a checkout the buyer gave up on and then paid anyway,
+  an order that has moved on, the wrong amount.
+- **Settling never calls Razorpay.** It writes down what to ask for (a capture, a
+  refund) along with the change, and the request is sent after the commit. Each one
+  first asks Razorpay how the payment stands, so a refund whose reply was lost isn't
+  sent twice.
+
+## Making a refusal loud
+
+The fix was small. A refused webhook now logs one line saying why: no signature, a
+signature that doesn't match (asking whether the server's secret is the dashboard's), or
+a body that isn't Razorpay's. Never the body, and never a secret. Once the secret was
+pasted in again, the next payment's `payment.authorized` and `payment.captured` arrived
+and were recorded.
+
+> One way in is a single point of failure. A second one turned a silent outage into a
+> log line, instead of a buyer with no tickets.
