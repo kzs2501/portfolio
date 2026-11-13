@@ -1,6 +1,7 @@
 import { site } from "@/content/site";
 import { CopyEmail } from "./copy-email";
 import { LocalTime } from "./local-time";
+import { PageMeasured } from "./page-measured/page-measured";
 
 const links = [
   { href: site.links.github, label: "GitHub" },
@@ -31,7 +32,7 @@ export function SiteFooter() {
           ))}
         </ul>
       </div>
-      <p className="mx-auto max-w-5xl px-5 pb-10 text-xs text-ink-3 sm:px-8">
+      <p className="mx-auto max-w-5xl px-5 pb-2 text-xs text-ink-3 sm:px-8">
         Built with Next.js, static and dependency-light.{" "}
         <a
           href={site.links.source}
@@ -41,6 +42,7 @@ export function SiteFooter() {
         </a>
         .
       </p>
+      <PageMeasured />
     </footer>
   );
 }

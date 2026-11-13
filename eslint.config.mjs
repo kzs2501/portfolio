@@ -99,6 +99,7 @@ const eslintConfig = defineConfig([
       "*.config.{ts,mts,mjs}",
       "src/demos/*/demo.tsx",
       "src/components/command-palette/dialog.tsx",
+      "src/components/page-measured/readings.tsx",
     ],
     rules: { "import/no-default-export": "off" },
   },
