@@ -6,6 +6,7 @@ import {
   downloadedFrom,
   formatBytes,
   formatDuration,
+  formatResponse,
   formatShift,
   inpFrom,
   LAB_BUDGETS,
@@ -133,6 +134,12 @@ describe("formatting", () => {
     [1240, "1.24 s"],
   ])("writes %d ms as %s", (ms, text) => {
     expect(formatDuration(ms)).toBe(text);
+  });
+
+  it("writes a response quicker than the browser's 8 ms step as under one", () => {
+    expect(formatResponse(0)).toBe("under 8 ms");
+    expect(formatResponse(8)).toBe("8 ms");
+    expect(formatResponse(40)).toBe("40 ms");
   });
 
   it("writes shifts and sizes the way browsers' tools do", () => {

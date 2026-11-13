@@ -68,7 +68,10 @@ export function PageMeasured() {
     >
       <summary className="inline-flex min-h-8 cursor-pointer list-none items-center gap-2 text-ink-3 hover:text-ink [&::-webkit-details-marker]:hidden">
         This page, measured
-        <span aria-hidden="true" className="transition-transform duration-200 group-open:rotate-45">
+        <span
+          aria-hidden="true"
+          className="text-base leading-none transition-transform duration-200 group-open:rotate-45"
+        >
           +
         </span>
       </summary>

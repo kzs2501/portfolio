@@ -5,6 +5,7 @@ import { site } from "@/content/site";
 import {
   formatBytes,
   formatDuration,
+  formatResponse,
   formatShift,
   LAB_BUDGETS,
   pathKey,
@@ -141,7 +142,7 @@ export function ReadingsView({
           <Value
             metric="inp"
             value={measurements.inpMs}
-            format={formatDuration}
+            format={formatResponse}
             isSupported={support.hasInp}
             waiting="Click, tap or press a key to measure."
           />

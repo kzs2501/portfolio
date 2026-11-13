@@ -50,6 +50,11 @@ describe("this page, measured", () => {
     expect(said("Layout shift (CLS)")).toBe("0.12 Needs work");
   });
 
+  it("says a response quicker than the browser's step is under one, not instant", () => {
+    view({ ...CHROME, inpMs: 0 });
+    expect(said("Slowest response (INP)")).toBe("under 8 ms Good");
+  });
+
   it("says plainly what a browser doesn't report", () => {
     view(SAFARI);
     expect(said("Layout shift (CLS)")).toBe("Your browser doesn’t report layout shifts; Chromium-based browsers do.");

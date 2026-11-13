@@ -163,6 +163,12 @@ export function formatDuration(ms: number) {
   return rounded < 1000 ? `${rounded} ms` : `${(ms / 1000).toFixed(2)} s`;
 }
 
+/**
+ * A response time. Browsers time events in steps of 8 ms, so 0 means quicker than one
+ * step (Firefox reports a quick key press so), not instant.
+ */
+export const formatResponse = (ms: number) => (ms < 8 ? "under 8 ms" : formatDuration(ms));
+
 /** Layout shift has no unit; two places, as Google reports it. */
 export const formatShift = (value: number) => value.toFixed(2);
 

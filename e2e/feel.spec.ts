@@ -150,7 +150,7 @@ test.describe("this page, measured", () => {
   };
   /** What a row of the panel says, by its term. */
   const said = (page: Page, term: string) => footer(page).locator("dt", { hasText: term }).locator("+ dd");
-  const RATED = /^(\d+ ms|\d+\.\d\d s|\d\.\d\d) (Good|Needs work|Poor)$/u;
+  const RATED = /^((under )?\d+ ms|\d+\.\d\d s|\d\.\d\d) (Good|Needs work|Poor)$/u;
   // Only Chromium-based browsers report layout shifts and time soft navigations.
   const LAYOUT_SHIFT = {
     chromium: RATED,
