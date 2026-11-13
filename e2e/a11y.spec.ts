@@ -29,6 +29,15 @@ for (const scheme of ["light", "dark"] as const) {
     expect(await violationsOf(page)).toEqual([]);
   });
 
+  test(`no axe violations: the footer's measurements, open (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto("/");
+    const footer = page.getByRole("contentinfo");
+    await footer.getByText("This page, measured").click();
+    await expect(footer.getByText("How you got here")).toBeVisible();
+    expect(await violationsOf(page)).toEqual([]);
+  });
+
   for (const route of ROUTES) {
     test(`no axe violations: ${route} (${scheme})`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });

@@ -140,3 +140,68 @@ test.describe("personal touches", () => {
     });
   });
 });
+
+test.describe("this page, measured", () => {
+  const footer = (page: Page) => page.getByRole("contentinfo");
+  /** Opening it is the page's first input, which the browser times whenever the panel started watching. */
+  const open = async (page: Page) => {
+    await footer(page).getByText("This page, measured").click();
+    await expect(footer(page).getByText("How you got here")).toBeVisible();
+  };
+  /** What a row of the panel says, by its term. */
+  const said = (page: Page, term: string) => footer(page).locator("dt", { hasText: term }).locator("+ dd");
+  const RATED = /^(\d+ ms|\d+\.\d\d s|\d\.\d\d) (Good|Needs work|Poor)$/u;
+  // Only Chromium-based browsers report layout shifts and time soft navigations.
+  const LAYOUT_SHIFT = {
+    chromium: RATED,
+    firefox: "Your browser doesn’t report layout shifts; Chromium-based browsers do.",
+    webkit: "Your browser doesn’t report layout shifts; Chromium-based browsers do.",
+  };
+  const OPENED_IN_THE_APP = {
+    chromium: /^Opened in the app, without a full load: the new content painted \d+ ms after your click\.$/u,
+    firefox: "Opened in the app, without a full load. Your browser doesn’t time these; Chrome does.",
+    webkit: "Opened in the app, without a full load. Your browser doesn’t time these; Chrome does.",
+  };
+
+  test("measures a full load in the visitor's own browser, and sends nothing", async ({
+    page,
+    browserName,
+    baseURL,
+  }) => {
+    // Next's own prefetches read pages (GET, HEAD); anything else, or to anywhere else, would be sending.
+    const sent: string[] = [];
+    page.on("request", (request) => {
+      const isReading = ["GET", "HEAD"].includes(request.method());
+      if (!isReading || !request.url().startsWith(`${baseURL ?? ""}/`)) {
+        sent.push(`${request.method()} ${request.url()}`);
+      }
+    });
+    await page.goto("/");
+    await open(page);
+    await expect(said(page, "How you got here")).toHaveText("A full load.");
+    await expect(footer(page).getByText("This page’s load")).toBeVisible();
+    await expect(said(page, "Largest paint (LCP)")).toHaveText(RATED);
+    await expect(said(page, "First byte (TTFB)")).toHaveText(RATED);
+    await expect(said(page, "Layout shift (CLS)")).toHaveText(LAYOUT_SHIFT[browserName]);
+    await expect(said(page, "Slowest response (INP)")).toHaveText(RATED);
+    await expect(said(page, "Downloaded")).toHaveText(/^\d+ (B|KB|MB) in \d+ requests, \d+ (B|KB|MB) of it script/u);
+    expect(sent).toEqual([]);
+  });
+
+  test("says a reload was one", async ({ page }) => {
+    await page.goto("/about/");
+    await page.reload();
+    await open(page);
+    await expect(said(page, "How you got here")).toHaveText("Reloaded.");
+  });
+
+  test("times a page opened from a link inside the site, where the browser can", async ({ page, browserName }) => {
+    await page.goto("/");
+    await page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "About" }).click();
+    await expect(page).toHaveURL(/\/about\/$/u);
+    await open(page);
+    await expect(said(page, "How you got here")).toHaveText(OPENED_IN_THE_APP[browserName]);
+    // The load times are the first page's, and say so.
+    await expect(footer(page).getByText("The page you loaded first (/)")).toBeVisible();
+  });
+});
