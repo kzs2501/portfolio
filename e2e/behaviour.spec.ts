@@ -1,5 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
-import { ROUTES } from "./site";
+import { ROUTES, waitForHydration } from "./site";
 
 /** Press Step until the demo reaches its end (Step disables itself there). */
 async function stepToEnd(demo: Locator) {
@@ -27,6 +27,7 @@ test("a case study ships no demo code until its demo is approached", async ({ pa
 
 test("⌘K palette: open, filter, navigate by keyboard", async ({ page }) => {
   await page.goto("/");
+  await waitForHydration(page);
   await page.keyboard.press("ControlOrMeta+k");
   const input = page.getByRole("combobox", { name: "Search commands" });
   await expect(input).toBeFocused();

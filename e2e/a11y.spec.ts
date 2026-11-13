@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { loadDemos, NOT_FOUND, ROUTES } from "./site";
+import { loadDemos, NOT_FOUND, ROUTES, waitForHydration } from "./site";
 
 const WCAG_22_AA = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"];
 const violationsOf = async (page: Page) =>
@@ -20,6 +20,7 @@ for (const scheme of ["light", "dark"] as const) {
   test(`no axe violations: the ⌘K palette, open (${scheme})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: scheme });
     await page.goto("/");
+    await waitForHydration(page);
     await page.keyboard.press("ControlOrMeta+k");
     await expect(page.getByRole("dialog", { name: "Command palette" })).toBeVisible();
     // Every group has its heading for a name.

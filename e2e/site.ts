@@ -32,3 +32,13 @@ export async function loadDemos(page: Page) {
     await expect(demo.getByText("This demo couldn’t load")).toHaveCount(0);
   }
 }
+
+/**
+ * Wait until React has hydrated the page. `goto` resolves at the load event, and a listener
+ * React attaches can come a few milliseconds after it, so a key pressed at once (faster
+ * than any person) could go unheard. The footer's clock is drawn only in the browser, after
+ * hydration, so its time showing is the sign.
+ */
+export async function waitForHydration(page: Page) {
+  await expect(page.getByRole("contentinfo").locator("time")).toHaveText(/\d/u);
+}
