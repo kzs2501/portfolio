@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 // The measuring code downloads once the page has loaded and the browser is idle, so it
@@ -30,11 +30,18 @@ function whenLoadedAndIdle(run: () => void) {
  */
 export function PageMeasured() {
   const pathname = usePathname();
+  const details = useRef<HTMLDetailsElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   // The page the footer first rendered on; once the path changes, every page is opened in the app.
   const [landing, setLanding] = useState(pathname);
   const [hasNavigated, setHasNavigated] = useState(false);
   if (!hasNavigated && pathname !== landing) setHasNavigated(true);
+
+  // Opened before React had hydrated the page (a slow phone, a quick hand): the browser
+  // opened it, but the toggle came before anyone was listening. Catch up.
+  useEffect(() => {
+    if (details.current?.open) setIsOpen(true);
+  }, []);
 
   useEffect(
     () =>
@@ -61,6 +68,7 @@ export function PageMeasured() {
 
   return (
     <details
+      ref={details}
       className="group mx-auto max-w-5xl px-5 pb-10 text-xs sm:px-8"
       onToggle={(event) => {
         setIsOpen(event.currentTarget.open);

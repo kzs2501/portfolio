@@ -188,6 +188,20 @@ test.describe("this page, measured", () => {
     expect(sent).toEqual([]);
   });
 
+  test("fills in when opened before the page was interactive", async ({ page }) => {
+    // Hold the scripts back, so the click lands before React has hydrated the page, as on a slow phone.
+    const { promise: held, resolve: release } = Promise.withResolvers<undefined>();
+    await page.route("**/_next/static/chunks/*.js", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto("/", { waitUntil: "commit" });
+    await footer(page).getByText("This page, measured").click();
+    await expect(footer(page).locator("details")).toHaveAttribute("open", "");
+    release(undefined);
+    await expect(said(page, "How you got here")).toHaveText("A full load.");
+  });
+
   test("says a reload was one", async ({ page }) => {
     await page.goto("/about/");
     await page.reload();
