@@ -30,6 +30,18 @@ for (const scheme of ["light", "dark"] as const) {
     expect(await violationsOf(page)).toEqual([]);
   });
 
+  test(`no axe violations: the ⌘K palette, searching the writing (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto("/");
+    await waitForHydration(page);
+    await page.keyboard.press("ControlOrMeta+k");
+    await page.getByRole("combobox", { name: "Search commands" }).fill("stripe");
+    // Titles and the writing, with marked words, together.
+    await expect(page.getByRole("group", { name: "In the writing" }).locator("mark").first()).toBeVisible();
+    await expect(page.getByRole("group", { name: "Case studies" })).toBeVisible();
+    expect(await violationsOf(page)).toEqual([]);
+  });
+
   test(`no axe violations: the footer's measurements, open (${scheme})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: scheme });
     await page.goto("/");

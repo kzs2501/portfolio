@@ -1,4 +1,8 @@
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import { notes } from "../src/content/notes";
+import { projects } from "../src/content/projects";
+import { work } from "../src/content/work";
+import { pagePath } from "../src/lib/routes";
 import { ROUTES, waitForHydration } from "./site";
 
 /** Press Step until the demo reaches its end (Step disables itself there). */
@@ -36,6 +40,75 @@ test("⌘K palette: open, filter, navigate by keyboard", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/work\/charity-portal\/?$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/charity portal/i);
+});
+
+/** Open the palette from the keyboard and type a search. */
+async function searchFor(page: Page, query: string) {
+  await waitForHydration(page);
+  await page.keyboard.press("ControlOrMeta+k");
+  await page.getByRole("combobox", { name: "Search commands" }).fill(query);
+}
+
+test("⌘K palette: finds the writing from part of a word and through a typo, and opens the section", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await searchFor(page, "idemp");
+  const writing = page.getByRole("group", { name: "In the writing" });
+  const section = writing.getByRole("option", { name: /^The same idea on the way in: idempotency keys/u });
+  await expect(section).toBeVisible();
+
+  await page.getByRole("combobox", { name: "Search commands" }).fill("idempotncy");
+  await expect(section).toHaveAttribute("aria-selected", "true");
+  await expect(section.locator("mark").first()).toHaveText(/^idempotency$/iu);
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/notes\/redirect-races-the-webhook\/#the-same-idea-on-the-way-in-idempotency-keys$/u);
+  // Focus lands on the section, not the top of the page.
+  const heading = page.getByRole("heading", { level: 2, name: "The same idea on the way in: idempotency keys" });
+  await expect(heading).toBeFocused();
+  await expect(heading).toBeInViewport();
+});
+
+test("⌘K palette: opens a section of the page you're on", async ({ page }) => {
+  await page.goto("/notes/debounce-is-not-a-race-guard/");
+  await searchFor(page, "live setter");
+  await expect(page.getByRole("group", { name: "In the writing" }).getByRole("option").first()).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#why-the-obvious-check-doesnt-work$/u);
+  const heading = page.getByRole("heading", { level: 2, name: "Why the obvious check doesn’t work" });
+  await expect(heading).toBeFocused();
+  await expect(heading).toBeInViewport();
+});
+
+test("⌘K palette: the index of the writing loads only once the palette is approached", async ({ page }) => {
+  const fetched: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().endsWith("/search-index.json")) fetched.push(request.url());
+  });
+  await page.goto("/");
+  await waitForHydration(page);
+  expect(fetched).toEqual([]);
+  const indexRequest = page.waitForRequest((request) => request.url().endsWith("/search-index.json"));
+  await page.getByRole("button", { name: "Open command palette" }).hover();
+  await indexRequest;
+});
+
+test("every result in the index of the writing opens a section that's there", async ({ request }) => {
+  const entries = (await (await request.get("/search-index.json")).json()) as { href: string }[];
+  // A page's introduction links to the page, its sections to their headings on it.
+  const byPage = Map.groupBy(entries, ({ href }) => pagePath(href.split("#")[0] ?? ""));
+  expect(byPage.size).toBe(work.length + projects.length + notes.length);
+  for (const [path, onPage] of byPage) {
+    const html = await (await request.get(path)).text();
+    const ids = onPage.flatMap(({ href }) => href.split("#").slice(1));
+    expect(
+      ids.filter((id) => !html.includes(`id="${id}"`)),
+      path,
+    ).toEqual([]);
+  }
 });
 
 test("⌘K palette: Escape closes it, and focus goes back to what opened it", async ({ page }) => {
