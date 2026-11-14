@@ -13,6 +13,15 @@ export type HomeSection = "work" | "projects" | "notes";
  */
 export const pagePath = (path: string) => (path.endsWith("/") ? path : `${path}/`);
 
+/**
+ * A link to one of this site's pages, rather than to another site, to a file it publishes
+ * (the résumé, the feed) or to a place on the page it's on.
+ */
+export function isSitePage(href: string) {
+  const path = href.split("#")[0] ?? "";
+  return path.startsWith("/") && !path.startsWith("//") && !/\.\w+$/u.test(path);
+}
+
 export const routes = {
   home: (): Route => "/",
   homeSection: (section: HomeSection) => `/#${section}` as Route,
@@ -22,6 +31,8 @@ export const routes = {
   work: (slug: string) => `/work/${slug}` as Route,
   note: (slug: string) => `/notes/${slug}` as Route,
   project: (slug: string) => `/projects/${slug}` as Route,
+  /** A link to one of the site's pages written in the content; `content-links.test.ts` checks each is real. */
+  inContent: (href: string) => href as Route,
   /** A section of a page, by its heading's id. */
   section: (page: Route, id: string) => `${pagePath(page)}#${id}` as Route,
 };
