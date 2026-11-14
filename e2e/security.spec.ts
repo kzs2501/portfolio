@@ -52,8 +52,13 @@ declare global {
  */
 async function asTheHostServesIt(page: Page) {
   await page.route("**/*", async (route) => {
-    const response = await route.fetch();
-    await route.fulfill({ response, headers: { ...response.headers(), ...HOST_HEADERS } });
+    try {
+      const response = await route.fetch();
+      await route.fulfill({ response, headers: { ...response.headers(), ...HOST_HEADERS } });
+    } catch {
+      // The page gave up on the request (Next's prefetch, cut off by the next navigation):
+      // there's no one left to answer, and nothing for the policy to check.
+    }
   });
   const violations: string[] = [];
   await page.exposeFunction("reportCspViolation", (violation: string) => {
