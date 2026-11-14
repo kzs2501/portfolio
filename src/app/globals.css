@@ -139,6 +139,12 @@ kbd {
   border-radius: 3px;
 }
 
+/* A place focus is moved to, not a control (main after the skip link, a section's heading
+   after the palette opens it): no ring around the whole of it. */
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
 /* Press feedback: a small, fast scale on :active so every button answers the
    finger or click immediately. Transition (not keyframes), so it's interruptible. */
 @utility press {

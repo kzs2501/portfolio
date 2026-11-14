@@ -4,11 +4,15 @@ import { lazy, Suspense, useEffect, useState } from "react";
 
 export const OPEN_EVENT = "palette:open";
 
-// The dialog's code downloads on first use (or on hover/focus of the trigger),
-// so a visitor who never opens the palette never pays for it.
+// The dialog's code, and the index of the writing it searches, download on first use (or
+// on hover/focus of the trigger), so a visitor who never opens the palette never pays for them.
 const load = () => import("./dialog");
 const Dialog = lazy(load);
-export const preloadPalette = () => void load();
+export const preloadPalette = () => {
+  void load().then(({ preloadSearch }) => {
+    preloadSearch();
+  });
+};
 
 export function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);

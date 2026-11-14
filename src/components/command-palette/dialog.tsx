@@ -3,10 +3,51 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { site } from "@/content/site";
+import { pagePath } from "@/lib/routes";
 import { toggleTheme } from "@/lib/theme";
 import { filterCommands, type Command } from "./commands";
+import { loadSearch, MIN_QUERY_LENGTH, searchWriting, type WritingHit, type WritingIndex } from "./search";
 
 const slugOf = (group: string) => group.toLowerCase().replaceAll(" ", "-");
+
+/** Starts fetching the index of the writing, for the trigger to call on approach. */
+export const preloadSearch = () => {
+  loadSearch().catch(() => undefined);
+};
+
+const asCommand = (hit: WritingHit): Command => ({
+  id: `writing-${hit.id}`,
+  group: "In the writing",
+  label: hit.section ?? hit.page,
+  hint: hit.section ? hit.page : hit.kind,
+  excerpt: hit.excerpt,
+  action: { type: "navigate", href: hit.href },
+});
+
+/**
+ * Once a section has opened, move focus to its heading, as the skip link does for
+ * <main>: keyboard and screen-reader users land where they asked, not at the top. The
+ * new page can take a moment, so look each frame for up to two seconds, and only once
+ * the address is the new page's (the old one may have a heading with the same id).
+ */
+function focusOnArrival(href: string) {
+  const [path = "", id] = href.split("#");
+  if (!id) return;
+  const until = performance.now() + 2000;
+  const look = () => {
+    const isThere = pagePath(location.pathname) === pagePath(path);
+    const heading = isThere ? document.getElementById(decodeURIComponent(id)) : null;
+    if (heading) {
+      heading.setAttribute("tabindex", "-1");
+      heading.focus();
+      return;
+    }
+    if (performance.now() < until) requestAnimationFrame(look);
+  };
+  requestAnimationFrame(look);
+}
+
+type Writing = { status: "loading" } | { status: "ready"; index: WritingIndex } | { status: "failed" };
 
 /**
  * Native <dialog> + showModal() gives us, for free: a focus trap, an inert page
@@ -23,8 +64,16 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [status, setStatus] = useState("");
+  const [writing, setWriting] = useState<Writing>({ status: "loading" });
 
-  const results = useMemo(() => filterCommands(query), [query]);
+  const results = useMemo(
+    () => [
+      ...filterCommands(query),
+      ...(writing.status === "ready" ? searchWriting(writing.index, query).map(asCommand) : []),
+    ],
+    [query, writing],
+  );
+  const isSearchingWriting = query.trim().length >= MIN_QUERY_LENGTH;
   const optionId = (i: number) => `${listId}-opt-${i}`;
 
   // Keep the native dialog in sync with the `isOpen` prop.
@@ -41,6 +90,25 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
     } else if (!isOpen && dialog.open) {
       dialog.close();
     }
+  }, [isOpen]);
+
+  // The index of the writing, fetched on first open (or sooner, on approach); after a
+  // failure, each open tries again, and says "titles only" until it works.
+  useEffect(() => {
+    if (!isOpen || writing.status === "ready") return;
+    let isCurrent = true;
+    loadSearch().then(
+      (index) => {
+        if (isCurrent) setWriting({ status: "ready", index });
+      },
+      () => {
+        if (isCurrent) setWriting({ status: "failed" });
+      },
+    );
+    return () => {
+      isCurrent = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Keep the highlighted option visible while arrowing through a long list.
@@ -61,6 +129,7 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
       case "navigate":
         close();
         router.push(action.href);
+        focusOnArrival(action.href);
         return;
       case "external":
         close();
@@ -141,7 +210,7 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
             setActive(0);
           }}
           onKeyDown={onKeyDown}
-          placeholder="Search pages, case studies, notes…"
+          placeholder="Search pages and the writing…"
           role="combobox"
           aria-expanded="true"
           aria-controls={listId}
@@ -174,23 +243,61 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
                 id={optionId(index)}
                 role="option"
                 aria-selected={index === active}
+                // A result from the writing is named by its title and page; its lines describe it.
+                aria-labelledby={command.excerpt ? `${optionId(index)}-label ${optionId(index)}-hint` : undefined}
+                aria-describedby={command.excerpt ? `${optionId(index)}-excerpt` : undefined}
                 onPointerMove={() => setActive(index)}
                 onClick={() => void run(command)}
-                className={`flex press cursor-pointer items-center justify-between gap-4 rounded-md px-3 py-2.5 text-sm ${
+                className={`press cursor-pointer rounded-md px-3 py-2.5 text-sm ${
                   index === active ? "bg-surface-2 text-ink" : "text-ink-2"
                 }`}
               >
-                <span className="truncate">{command.label}</span>
-                {command.hint && <span className="shrink-0 text-xs text-ink-3">{command.hint}</span>}
+                {/* A result from the writing puts its page under its title on a phone, so neither is cut short. */}
+                <div
+                  className={
+                    command.excerpt
+                      ? "flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                      : "flex items-center justify-between gap-4"
+                  }
+                >
+                  <span id={`${optionId(index)}-label`} className="truncate">
+                    {command.label}
+                  </span>
+                  {command.hint && (
+                    <span id={`${optionId(index)}-hint`} className="truncate text-xs text-ink-3 sm:shrink-0">
+                      {command.hint}
+                    </span>
+                  )}
+                </div>
+                {command.excerpt && (
+                  <p id={`${optionId(index)}-excerpt`} className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-3">
+                    {command.excerpt.map((segment, at) =>
+                      segment.isMatch ? (
+                        <mark key={at} className="rounded-sm bg-accent-soft text-ink">
+                          {segment.text}
+                        </mark>
+                      ) : (
+                        segment.text
+                      ),
+                    )}
+                  </p>
+                )}
               </div>
             ))}
           </div>
         ))}
-        {results.length === 0 && <p className="px-3 py-8 text-center text-sm text-ink-3">Nothing matches “{query}”.</p>}
+        {results.length === 0 && !(isSearchingWriting && writing.status === "loading") && (
+          <p className="px-3 py-8 text-center text-sm text-ink-3">Nothing matches “{query}”.</p>
+        )}
       </div>
 
       <div role="status" aria-live="polite" className="border-t border-rule px-4 py-2 text-xs text-ink-3">
-        {status || `${results.length} result${results.length === 1 ? "" : "s"} · ↑↓ to move · ↵ to open`}
+        {status ||
+          (isSearchingWriting && writing.status === "loading"
+            ? "Searching the writing…"
+            : isSearchingWriting && writing.status === "failed"
+              ? "Titles only: the search of the writing couldn’t load."
+              : `${results.length} result${results.length === 1 ? "" : "s"} · ↑↓ to move · ↵ to open`)}
       </div>
     </dialog>
   );

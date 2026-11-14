@@ -3,6 +3,7 @@ import { work } from "@/content/work";
 import { notes } from "@/content/notes";
 import { projects } from "@/content/projects";
 import type { Route } from "next";
+import type { Segment } from "@/lib/excerpt";
 import { routes } from "@/lib/routes";
 
 export type CommandAction =
@@ -10,10 +11,12 @@ export type CommandAction =
 
 export interface Command {
   id: string;
-  group: "Pages" | "Case studies" | "Projects" | "Notes" | "Actions";
+  group: "Pages" | "Case studies" | "Projects" | "Notes" | "Actions" | "In the writing";
   label: string;
   hint?: string;
   keywords?: string;
+  /** A search result's lines from the writing, its matched words marked. */
+  excerpt?: readonly Segment[];
   action: CommandAction;
 }
 
