@@ -22,4 +22,6 @@ export const routes = {
   work: (slug: string) => `/work/${slug}` as Route,
   note: (slug: string) => `/notes/${slug}` as Route,
   project: (slug: string) => `/projects/${slug}` as Route,
+  /** A section of a page, by its heading's id. */
+  section: (page: Route, id: string) => `${pagePath(page)}#${id}` as Route,
 };
