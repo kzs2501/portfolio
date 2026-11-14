@@ -17,28 +17,39 @@ const plain = (md: string) =>
 /** The curly quotes remark-smartypants will render, for display in the contents. */
 const smart = (s: string) => s.replace(/(\w)'(\w)/g, "$1’$2").replace(/'/g, "’");
 
-/**
- * Build the table of contents from MDX source at build time. Uses the same slugger
- * as rehype-slug, fed with every heading level in document order, so duplicate
- * titles get the same "-1" suffixes and the ids always match the rendered page.
- * Only level-2 headings are listed; fenced code is skipped.
- */
-export function extractToc(source: string): TocItem[] {
-  const slugger = new GithubSlugger();
-  const items: TocItem[] = [];
-  let isInFence = false;
+/** A line of MDX source, read as the page will render it. */
+export type SourceLine =
+  | { kind: "heading"; level: number; id: string; title: string }
+  | { kind: "fence" }
+  | { kind: "code"; text: string }
+  | { kind: "text"; text: string };
 
-  for (const line of source.split("\n")) {
+/**
+ * Every line of MDX source, with each heading's id. Uses the same slugger as
+ * rehype-slug, fed with every heading level in document order, so duplicate titles
+ * get the same "-1" suffixes and the ids always match the rendered page. Lines inside
+ * fenced code are code, never headings. Shared by the contents and the site's search.
+ */
+export function readSource(source: string): SourceLine[] {
+  const slugger = new GithubSlugger();
+  let isInFence = false;
+  return source.split("\n").map((line): SourceLine => {
     if (/^\s*(```|~~~)/.test(line)) {
       isInFence = !isInFence;
-      continue;
+      return { kind: "fence" };
     }
-    if (isInFence) continue;
+    if (isInFence) return { kind: "code", text: line };
     const [, hashes, rawTitle] = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line) ?? [];
-    if (!hashes || !rawTitle) continue;
+    if (!hashes || !rawTitle) return { kind: "text", text: line };
     const text = plain(rawTitle);
-    const id = slugger.slug(text); // every heading takes a slug, so later ids match the page
-    if (hashes.length === 2) items.push({ id, title: smart(text) });
-  }
-  return items;
+    // Every heading takes a slug, so later ids match the page.
+    return { kind: "heading", level: hashes.length, id: slugger.slug(text), title: smart(text) };
+  });
+}
+
+/** The table of contents, built from MDX source at build time: the level-2 headings. */
+export function extractToc(source: string): TocItem[] {
+  return readSource(source).flatMap((line) =>
+    line.kind === "heading" && line.level === 2 ? [{ id: line.id, title: line.title }] : [],
+  );
 }
