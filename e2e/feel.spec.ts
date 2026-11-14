@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { PAPER } from "../src/lib/design-tokens";
 import { clipboardReader } from "./clipboard";
+import { waitForHydration } from "./site";
 
 const CASE = "/work/four-rails-one-checkout/";
 
@@ -217,5 +218,59 @@ test.describe("this page, measured", () => {
     await expect(said(page, "How you got here")).toHaveText(OPENED_IN_THE_APP[browserName]);
     // The load times are the first page's, and say so.
     await expect(footer(page).getByText("The page you loaded first (/)")).toBeVisible();
+  });
+});
+
+test.describe("links in the writing", () => {
+  /** A mark on this document: a full page load would start a new one, without it. */
+  const markDocument = (page: Page) => page.evaluate(() => Reflect.set(window, "isSameDocument", true));
+  const isSameDocument = (page: Page) => page.evaluate(() => Reflect.get(window, "isSameDocument") === true);
+
+  test("a link to another of the site's pages is fetched ahead, and opens and goes back without a reload", async ({
+    page,
+  }) => {
+    const fetchedAhead: string[] = [];
+    const documents: string[] = [];
+    page.on("request", (request) => {
+      if (request.resourceType() === "document") documents.push(request.url());
+      else if (request.url().includes("/projects/dresscircle/")) fetchedAhead.push(request.url());
+    });
+    await page.goto("/notes/the-database-is-the-lock/");
+    await waitForHydration(page);
+    const link = page.locator("article").getByRole("link", { name: "Dress Circle" }).first();
+    await expect(link).toHaveAttribute("href", "/projects/dresscircle/");
+    // Next fetches the page while its link is on screen.
+    await expect.poll(() => fetchedAhead.length).toBeGreaterThan(0);
+
+    await markDocument(page);
+    documents.length = 0;
+    await link.click();
+    await expect(page).toHaveURL(/\/projects\/dresscircle\/$/u);
+    await expect(page.getByRole("heading", { level: 1, name: "Dress Circle" })).toBeVisible();
+    expect(documents).toEqual([]);
+    expect(await isSameDocument(page)).toBe(true);
+
+    // The footer's measurements tell the visitor so.
+    const footer = page.getByRole("contentinfo");
+    await footer.getByText("This page, measured").click();
+    await expect(footer.locator("dt", { hasText: "How you got here" }).locator("+ dd")).toHaveText(
+      /^Opened in the app, without a full load/u,
+    );
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/notes\/the-database-is-the-lock\/$/u);
+    expect(documents).toEqual([]);
+    expect(await isSameDocument(page)).toBe(true);
+  });
+
+  test("a link to another site still leaves the site as a plain link does", async ({ page }) => {
+    await page.route("https://dresscircle.vercel.app/**", (route) =>
+      route.fulfill({ contentType: "text/html", body: "<title>The sandbox</title>" }),
+    );
+    await page.goto("/projects/dresscircle/");
+    await waitForHydration(page);
+    await page.locator("article").getByRole("link", { name: "sandbox", exact: true }).click();
+    await expect(page).toHaveURL("https://dresscircle.vercel.app/");
+    await expect(page).toHaveTitle("The sandbox");
   });
 });
