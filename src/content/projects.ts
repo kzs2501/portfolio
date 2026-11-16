@@ -34,11 +34,12 @@ export const projects: ProjectMeta[] = [
       "Playwright",
       "Storybook",
       "Postgres",
+      "Groq",
     ],
     demoUrl: site.links.dressCircleDemo,
     sourceUrl: site.links.dressCircleSource,
     highlight:
-      "An accessible seat map, a waiting room, UPI and all-in prices, an organisers’ dashboard, a catalogue of every state with screenshot tests, the same API on Postgres and Razorpay’s test mode, tickets that work offline with a door scanner, and sixteen failure scenarios, each one an end-to-end test",
+      "An accessible seat map, a waiting room, UPI and all-in prices, an organisers’ dashboard with an assistant on free AI that can’t make up numbers, a catalogue of every state with screenshot tests, the same API on Postgres and Razorpay’s test mode, tickets that work offline with a door scanner, and sixteen failure scenarios, each one an end-to-end test",
     tagline: "a ticket box office, done properly",
   },
 ];

@@ -69,6 +69,13 @@ signature, so the door checks it with a public key and no network. Refunds reach
 door as a list it downloads while it's online.
 [Why a signature, not a server →](/notes/an-offline-ticket-needs-a-signature-not-a-server/)
 
+**The AI fills in a form, and the code answers.** Search in your own words and the
+organisers' assistant run on free AI: Chrome's built-in model where it's installed, an
+open model on Groq's free tier, or plain rules alone. The model only chooses from a form
+whose options come from the catalogue. The numbers come from the API, and a refund waits
+for an owner to confirm it.
+[An assistant that can't make up numbers →](/notes/an-assistant-that-cant-make-up-numbers/)
+
 ## Sixteen ways to break it
 
 The chaos panel switches the sandbox into a scenario: a declined card, 3-D Secure, a
@@ -94,6 +101,11 @@ checks both what you see and what the server recorded.
 - **An organisers' dashboard:** live sales, about 11,000 orders in a virtualised table
   that's still a table to a screen reader, and refunds, with access checked on the
   server. [Why the table is still a table →](/notes/a-virtualised-table-should-still-be-a-table/)
+- **Search in your own words:** "stand-up in Delhi" becomes the filters it means, said
+  back as "Understood as…", with anything it couldn't use named rather than dropped.
+- **An organisers' assistant:** questions about sales, ticket types, payments and orders,
+  answered from the dashboard's own numbers; and a request to refund becomes a review an
+  owner confirms, typing the number for 20 orders or more.
 - **A first page that's a working box office:** search and filters kept in the URL, a
   live strip of what's being held and sold, and one click to each hard part.
 
@@ -114,17 +126,20 @@ checks both what you see and what the server recorded.
 
 ## Quality
 
-- **709 unit, component and HTTP tests**, and **93 against real Postgres**: concurrent
+- **883 unit, component and HTTP tests**, and **93 against real Postgres**: concurrent
   holds and payments, signed webhooks, deliveries that fail and are retried, with
   coverage floors per layer.
-- **100 browser tests:** every chaos scenario, tickets offline, the door scanner with a
-  fake camera, the dashboard, UPI, the waiting room, a keyboard-only seat purchase, and
-  accessibility in light and dark. 32 also run against the Postgres server, and 4 pay
-  through Razorpay's Checkout against a stand-in.
-- **113 stories,** each a browser test with accessibility checks, and **273 screenshots**
+- **117 browser tests:** every chaos scenario, tickets offline, the door scanner with a
+  fake camera, the dashboard and its assistant, refunds an owner confirms, UPI, the
+  waiting room, a keyboard-only seat purchase, and accessibility in light and dark. 36
+  also run against the Postgres server, and 4 pay through Razorpay's Checkout against a
+  stand-in.
+- **142 stories,** each a browser test with accessibility checks, and **332 screenshots**
   compared on every change.
 - **Colour contrast is a test,** in both themes, by WCAG's ratio and APCA's.
-- **Lighthouse 100** in every category on desktop, on every page a buyer sees, and 93 to
+- **Evals for the AI:** 71 written requests, scored field by field. The rules alone read
+  62 exactly right, and with the free model 69; CI holds the rules to a floor.
+- **Lighthouse 100** in every category on desktop, on every page a buyer sees, and 91 to
   95 for performance on a simulated phone in CI.
 
 ## Result
