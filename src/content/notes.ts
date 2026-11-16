@@ -8,6 +8,13 @@ export interface NoteMeta {
 /** Newest first. */
 export const notes: NoteMeta[] = [
   {
+    slug: "an-assistant-that-cant-make-up-numbers",
+    title: "An assistant that can’t make up numbers",
+    summary:
+      "Dress Circle’s search and its organisers’ assistant run on free AI that never writes an answer: the model fills in a form, the site’s own code finds the numbers, and nothing happens to money until a person confirms it.",
+    date: "2026-11-17",
+  },
+  {
     slug: "a-payment-needs-a-second-way-in",
     title: "A payment needs a second way in",
     summary:

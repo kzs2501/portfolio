@@ -1,0 +1,60 @@
+An organiser asks [Dress Circle](/projects/dresscircle/), the box office I build in
+public, "did anyone ask for their money back this week?" A language model could write
+the answer. It could also write a wrong one, just as confidently, and nothing on the page
+would show the difference. So in Dress Circle the model never writes the answer. It fills
+in a form.
+
+## The AI fills in a form
+
+Each kind of request has a small form. For an organiser's question: what kind of answer
+it wants (sales over time, ticket types, how buyers paid, orders to find) and the event,
+period, order statuses, payment method and buyer it's about. The choices come from the
+catalogue, so the model can only pick an event that exists. Its reply must pass a schema
+twice: while it writes, as strict structured output, and again in the browser.
+
+Then the site's own code does the rest. It asks the organisers' API, the same one the
+dashboard uses, with the account's own permissions, and fills a sentence from what comes
+back. The model never sees a sales figure, so it has none to get wrong. Each answer opens
+with "Understood as…", so a wrong reading is out in the open, one click from undone.
+
+## Rules first
+
+Most requests never reach a model. Plain rules read dates ("last week", "in October"),
+statuses, payment methods, emails and the names of events. Only a request with words they
+can't place goes further, and where the rules found something exact, their reading wins.
+That rule came from a test: the free model took "this week" to mean the last seven days.
+
+## Free, and allowed to be missing
+
+A project like this shouldn't need a paid API, so there are three engines, tried in order:
+
+- **Chrome's built-in model,** on the device, and only if it's already installed.
+- **An open model on Groq's free tier,** through a route on my server that builds the
+  prompt itself and lets each visitor ask 10 times a minute.
+- **None.** When the free tier runs out (it allows about a thousand requests a day), or
+  an answer is slow, the rules' reading stands and the page says "Without AI".
+
+## Measured, not hoped
+
+A set of written requests runs in CI, each with the answer a person would expect, scored
+field by field. The rules alone read 34 of 38 organisers' questions exactly right, and
+with the free model 37. For search, 28 of 33, and 32. Some of the cases came from real
+misses: a model adding a month nobody asked for to "a night of live jazz in Goa", and
+"should I refund the ceramics workshop?" being read as a request to refund.
+
+## Acting is a different job
+
+The same form can carry a request: "refund every order for Night Market Jazz, the show
+was cancelled". The model still only fills it in. The page finds the orders and says how
+many and how much before anything happens. An owner reviews the exact list, which stops
+changing the moment the review opens, and from 20 orders must type the number. The
+refunds then go through the same endpoint as a single refund, four at a time, each with
+its own idempotency key, so a retry can't refund an order twice.
+
+The decisions are written down in the repository:
+[the form](https://github.com/kzs2501/dresscircle/blob/main/docs/decisions/025-the-ai-fills-in-a-form.md),
+[the assistant](https://github.com/kzs2501/dresscircle/blob/main/docs/decisions/026-an-assistant-that-never-sees-the-data.md)
+and [the refunds](https://github.com/kzs2501/dresscircle/blob/main/docs/decisions/027-actions-the-organiser-confirms.md).
+
+> The model reads the question. The code finds the numbers. A person decides what
+> happens to the money.
