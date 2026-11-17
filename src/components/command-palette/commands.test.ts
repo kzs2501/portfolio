@@ -59,3 +59,36 @@ describe("titles and the writing, in one list (PF-01)", () => {
     expect(orderResults("  ", [])).toHaveLength(COMMANDS.length);
   });
 });
+
+describe("a page listed once, by its title or its introduction (PF-05)", () => {
+  const TITLE_ID = "note-load-sdks-on-mount";
+  const title = COMMANDS.find((command) => command.id === TITLE_ID);
+  if (!title) throw new Error(`${TITLE_ID} is a command`);
+  const intro: Command = {
+    id: "writing-notes/load-sdks-on-mount",
+    group: "In the writing",
+    label: title.label,
+    hint: "Note",
+    excerpt: [{ text: "…the SDK loads when the component that needs it mounts…", isMatch: false }],
+    action: title.action,
+  };
+  const section: Command = {
+    id: "writing-notes/load-sdks-on-mount#the-race",
+    group: "In the writing",
+    label: "The race",
+    hint: title.label,
+    action: { type: "navigate", href: "/notes/load-sdks-on-mount/#the-race" as never },
+  };
+  const ofThePage = (results: readonly Command[]) =>
+    results
+      .filter((command) => command.id === TITLE_ID || command.id.startsWith("writing-"))
+      .map((command) => command.id);
+
+  it("drops the introduction when the title already matches, and keeps its sections", () => {
+    expect(ofThePage(orderResults("third-party", [intro, section]))).toEqual([TITLE_ID, section.id]);
+  });
+
+  it("keeps the introduction, in place of a title that only matches letter by letter", () => {
+    expect(ofThePage(orderResults("idem", [intro]))).toEqual([intro.id]);
+  });
+});

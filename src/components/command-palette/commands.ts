@@ -4,7 +4,7 @@ import { notes } from "@/content/notes";
 import { projects } from "@/content/projects";
 import type { Route } from "next";
 import type { Segment } from "@/lib/excerpt";
-import { routes } from "@/lib/routes";
+import { pagePath, routes } from "@/lib/routes";
 
 export type CommandAction =
   { type: "navigate"; href: Route } | { type: "external"; href: string } | { type: "theme" } | { type: "copy-email" };
@@ -144,17 +144,33 @@ export function filterCommands(query: string, list: readonly Command[] = COMMAND
  */
 const STRONG_MATCH = 500;
 
+/** The page a command opens, if it opens a whole page rather than a place on one. */
+const pageOf = ({ action }: Command) =>
+  action.type === "navigate" && !action.href.includes("#") ? pagePath(action.href) : null;
+
+/** Leaves out commands that open a page already in `listed`. */
+const notIn = (listed: readonly Command[]) => {
+  const pages = new Set(listed.map(pageOf));
+  return (command: Command) => {
+    const page = pageOf(command);
+    return page === null || !pages.has(page);
+  };
+};
+
 /**
  * The palette's list: titles that really match, then the writing, then titles that only
  * match letter by letter, so Enter on "idem" opens the section on idempotency keys rather
- * than an unrelated note (PF-01).
+ * than an unrelated note (PF-01). A page is listed once (PF-05): by its title when that
+ * really matches, otherwise by its introduction, which says why it matched.
  */
 export function orderResults(query: string, writing: readonly Command[], list: readonly Command[] = COMMANDS) {
   if (!query.trim()) return [...list];
   const titles = ranked(query, list);
-  return [
-    ...titles.filter(({ rank }) => rank >= STRONG_MATCH).map(({ command }) => command),
-    ...writing,
-    ...titles.filter(({ rank }) => rank < STRONG_MATCH).map(({ command }) => command),
-  ];
+  const strong = titles.filter(({ rank }) => rank >= STRONG_MATCH).map(({ command }) => command);
+  const inWriting = writing.filter(notIn(strong));
+  const weak = titles
+    .filter(({ rank }) => rank < STRONG_MATCH)
+    .map(({ command }) => command)
+    .filter(notIn(inWriting));
+  return [...strong, ...inWriting, ...weak];
 }
