@@ -18,7 +18,8 @@ export const pagePath = (path: string) => (path.endsWith("/") ? path : `${path}/
  * (the résumé, the feed) or to a place on the page it's on.
  */
 export function isSitePage(href: string) {
-  const path = href.split("#")[0] ?? "";
+  // The path alone: a dot in the query or the fragment isn't a file's extension (PF-04).
+  const path = href.split(/[?#]/u)[0] ?? "";
   return path.startsWith("/") && !path.startsWith("//") && !/\.\w+$/u.test(path);
 }
 
