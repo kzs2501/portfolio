@@ -48,22 +48,57 @@ const isEntry = (value: unknown): value is SearchEntry =>
   typeof Reflect.get(value, "href") === "string" &&
   typeof Reflect.get(value, "text") === "string";
 
+export type WritingState =
+  { status: "idle" } | { status: "loading" } | { status: "ready"; index: WritingIndex } | { status: "failed" };
+
+const IDLE: WritingState = { status: "idle" };
+const LOADING: WritingState = { status: "loading" };
+const FAILED: WritingState = { status: "failed" };
+
 let loading: Promise<WritingIndex> | null = null;
+let state: WritingState = IDLE;
+const listeners = new Set<() => void>();
+
+function setState(next: WritingState) {
+  state = next;
+  for (const listener of listeners) listener();
+}
+
+/**
+ * Where the index has got to, for `useSyncExternalStore`: kept here, beside the fetch, so
+ * every open of the palette, and a retry after a failure, sees the same answer (PF-06).
+ */
+export const writingStore = {
+  subscribe: (listener: () => void) => {
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
+  },
+  getSnapshot: (): WritingState => state,
+  getServerSnapshot: (): WritingState => IDLE,
+};
 
 /** The index, fetched and built once; a failure can be tried again on the next open. */
 export function loadSearch(): Promise<WritingIndex> {
-  loading ??= fetch("/search-index.json")
-    .then(async (response) => {
-      if (!response.ok) throw new Error(`The search index answered ${String(response.status)}`);
-      const entries: unknown = await response.json();
-      if (!Array.isArray(entries) || !entries.every(isEntry))
-        throw new Error("The search index isn’t a list of entries");
-      return buildIndex(entries);
-    })
-    .catch((error: unknown) => {
-      loading = null;
-      throw error;
-    });
+  if (loading === null) {
+    setState(LOADING);
+    loading = fetch("/search-index.json")
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`The search index answered ${String(response.status)}`);
+        const entries: unknown = await response.json();
+        if (!Array.isArray(entries) || !entries.every(isEntry))
+          throw new Error("The search index isn’t a list of entries");
+        const index = buildIndex(entries);
+        setState({ status: "ready", index });
+        return index;
+      })
+      .catch((error: unknown) => {
+        loading = null;
+        setState(FAILED);
+        throw error;
+      });
+  }
   return loading;
 }
 

@@ -110,6 +110,38 @@ test("⌘K palette: the index of the writing loads only once the palette is appr
   await indexRequest;
 });
 
+test("⌘K palette: after the index failed, opening again says it's searching until the retry works (PF-06)", async ({
+  page,
+}) => {
+  let isFirst = true;
+  await page.route("**/search-index.json", async (route) => {
+    if (isFirst) {
+      isFirst = false;
+      await route.fulfill({ status: 404, body: "no" });
+      return;
+    }
+    // The retry takes a moment, long enough to see what the palette says meanwhile.
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    await route.continue();
+  });
+  await page.goto("/");
+  await waitForHydration(page);
+  const dialog = page.getByRole("dialog", { name: "Command palette" });
+  const status = dialog.getByRole("status");
+  const box = dialog.getByRole("combobox", { name: "Search commands" });
+
+  await page.keyboard.press("ControlOrMeta+k");
+  await box.fill("idempotency");
+  await expect(status).toHaveText("Titles only: the search of the writing couldn’t load.");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+
+  await page.keyboard.press("ControlOrMeta+k");
+  await box.fill("idempotency");
+  await expect(status).toHaveText("Searching the writing…");
+  await expect(dialog.getByRole("group", { name: "In the writing" }).getByRole("option").first()).toBeVisible();
+});
+
 test("every result in the index of the writing opens a section that's there", async ({ request }) => {
   const entries = (await (await request.get("/search-index.json")).json()) as { href: string }[];
   // A page's introduction links to the page, its sections to their headings on it.
@@ -137,6 +169,23 @@ test("⌘K palette: Escape closes it, and focus goes back to what opened it", as
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "Command palette" })).toBeHidden();
   await expect(trigger).toBeFocused();
+});
+
+test("⌘K palette: pressed straight after Escape, it opens again (PF-10)", async ({ page }) => {
+  await page.goto("/");
+  await waitForHydration(page);
+  const dialog = page.getByRole("dialog", { name: "Command palette" });
+  for (let round = 0; round < 10; round++) {
+    await page.keyboard.press("ControlOrMeta+k");
+    await expect(dialog).toBeVisible();
+    // Escape closes the dialog at once, but tells the page so a moment later: ⌘K in
+    // between must still open it, not toggle a state that hasn't caught up.
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("ControlOrMeta+k");
+    await expect(dialog, `round ${String(round)}`).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  }
 });
 
 test("theme toggle switches and persists across reloads", async ({ page }) => {

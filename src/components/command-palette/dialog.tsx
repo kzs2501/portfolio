@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { site } from "@/content/site";
 import { pagePath } from "@/lib/routes";
 import { toggleTheme } from "@/lib/theme";
 import { orderResults, type Command } from "./commands";
-import { loadSearch, MIN_QUERY_LENGTH, searchWriting, type WritingHit, type WritingIndex } from "./search";
+import { loadSearch, MIN_QUERY_LENGTH, searchWriting, writingStore, type WritingHit } from "./search";
 
 const slugOf = (group: string) => group.toLowerCase().replaceAll(" ", "-");
 
@@ -47,8 +47,6 @@ function focusOnArrival(href: string) {
   requestAnimationFrame(look);
 }
 
-type Writing = { status: "loading" } | { status: "ready"; index: WritingIndex } | { status: "failed" };
-
 /**
  * Native <dialog> + showModal() gives us, for free: a focus trap, an inert page
  * behind it, Escape-to-close, and the top layer (no z-index wars). Inside, the
@@ -64,7 +62,13 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [status, setStatus] = useState("");
-  const [writing, setWriting] = useState<Writing>({ status: "loading" });
+  const writing = useSyncExternalStore(
+    writingStore.subscribe,
+    writingStore.getSnapshot,
+    writingStore.getServerSnapshot,
+  );
+  // Before the first fetch has started, it's as good as loading.
+  const isLoadingWriting = writing.status === "loading" || writing.status === "idle";
 
   const results = useMemo(
     () => orderResults(query, writing.status === "ready" ? searchWriting(writing.index, query).map(asCommand) : []),
@@ -90,22 +94,10 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
   }, [isOpen]);
 
   // The index of the writing, fetched on first open (or sooner, on approach); after a
-  // failure, each open tries again, and says "titles only" until it works.
+  // failure, each open tries again, saying it's searching until the retry settles, and
+  // "titles only" if that fails too. Its state lives with the fetch (`writingStore`).
   useEffect(() => {
-    if (!isOpen || writing.status === "ready") return;
-    let isCurrent = true;
-    loadSearch().then(
-      (index) => {
-        if (isCurrent) setWriting({ status: "ready", index });
-      },
-      () => {
-        if (isCurrent) setWriting({ status: "failed" });
-      },
-    );
-    return () => {
-      isCurrent = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOpen) loadSearch().catch(() => undefined);
   }, [isOpen]);
 
   // Keep the highlighted option visible while arrowing through a long list.
@@ -177,7 +169,14 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
     <dialog
       ref={dialogRef}
       aria-label="Command palette"
-      onClose={close}
+      // Escape closes the dialog at once but fires `close` a task later, after a ⌘K pressed
+      // straight away, which would toggle an `isOpen` that hadn't caught up (PF-10). So
+      // Escape is taken from `cancel`, which comes at once, and a late `close` for a dialog
+      // that's open again is ignored.
+      onCancel={close}
+      onClose={() => {
+        if (!dialogRef.current?.open) close();
+      }}
       onClick={(e) => {
         // A click on the backdrop lands on the <dialog> itself.
         if (e.target === dialogRef.current) close();
@@ -283,14 +282,14 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
             ))}
           </div>
         ))}
-        {results.length === 0 && !(isSearchingWriting && writing.status === "loading") && (
+        {results.length === 0 && !(isSearchingWriting && isLoadingWriting) && (
           <p className="px-3 py-8 text-center text-sm text-ink-3">Nothing matches “{query}”.</p>
         )}
       </div>
 
       <div role="status" aria-live="polite" className="border-t border-rule px-4 py-2 text-xs text-ink-3">
         {status ||
-          (isSearchingWriting && writing.status === "loading"
+          (isSearchingWriting && isLoadingWriting
             ? "Searching the writing…"
             : isSearchingWriting && writing.status === "failed"
               ? "Titles only: the search of the writing couldn’t load."
