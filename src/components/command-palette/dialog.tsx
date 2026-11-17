@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { site } from "@/content/site";
 import { pagePath } from "@/lib/routes";
 import { toggleTheme } from "@/lib/theme";
-import { filterCommands, type Command } from "./commands";
+import { orderResults, type Command } from "./commands";
 import { loadSearch, MIN_QUERY_LENGTH, searchWriting, type WritingHit, type WritingIndex } from "./search";
 
 const slugOf = (group: string) => group.toLowerCase().replaceAll(" ", "-");
@@ -67,10 +67,7 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
   const [writing, setWriting] = useState<Writing>({ status: "loading" });
 
   const results = useMemo(
-    () => [
-      ...filterCommands(query),
-      ...(writing.status === "ready" ? searchWriting(writing.index, query).map(asCommand) : []),
-    ],
+    () => orderResults(query, writing.status === "ready" ? searchWriting(writing.index, query).map(asCommand) : []),
     [query, writing],
   );
   const isSearchingWriting = query.trim().length >= MIN_QUERY_LENGTH;

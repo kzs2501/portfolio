@@ -119,8 +119,7 @@ export function score(query: string, text: string): number | null {
 /** Keyword and hint matches rank below label matches of the same quality. */
 const KEYWORD_MATCH_PENALTY = 200;
 
-export function filterCommands(query: string, list: readonly Command[] = COMMANDS): Command[] {
-  if (!query.trim()) return [...list];
+function ranked(query: string, list: readonly Command[]) {
   return list
     .map((command) => {
       const rank = Math.max(
@@ -130,6 +129,32 @@ export function filterCommands(query: string, list: readonly Command[] = COMMAND
       return { command, rank };
     })
     .filter(({ rank }) => rank > 0)
-    .sort((first, second) => second.rank - first.rank)
-    .map(({ command }) => command);
+    .sort((first, second) => second.rank - first.rank);
+}
+
+export function filterCommands(query: string, list: readonly Command[] = COMMANDS): Command[] {
+  if (!query.trim()) return [...list];
+  return ranked(query, list).map(({ command }) => command);
+}
+
+/**
+ * A match is strong when the query appears in one piece, in a title or its keywords;
+ * letters merely scattered through a title ("idem" in "Load third-party SDKs when they
+ * mount") score below this.
+ */
+const STRONG_MATCH = 500;
+
+/**
+ * The palette's list: titles that really match, then the writing, then titles that only
+ * match letter by letter, so Enter on "idem" opens the section on idempotency keys rather
+ * than an unrelated note (PF-01).
+ */
+export function orderResults(query: string, writing: readonly Command[], list: readonly Command[] = COMMANDS) {
+  if (!query.trim()) return [...list];
+  const titles = ranked(query, list);
+  return [
+    ...titles.filter(({ rank }) => rank >= STRONG_MATCH).map(({ command }) => command),
+    ...writing,
+    ...titles.filter(({ rank }) => rank < STRONG_MATCH).map(({ command }) => command),
+  ];
 }

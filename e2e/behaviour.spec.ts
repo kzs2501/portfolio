@@ -69,6 +69,20 @@ test("⌘K palette: finds the writing from part of a word and through a typo, an
   await expect(heading).toBeInViewport();
 });
 
+test("⌘K palette: a few letters of a word open the writing about it, not a title they're scattered through (PF-01)", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await searchFor(page, "idem");
+  await expect(page.getByRole("group", { name: "In the writing" }).getByRole("option").first()).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#[\w-]*idempotency[\w-]*$/u);
+  await expect(page.getByRole("heading", { level: 2, name: /idempotency/iu })).toBeFocused();
+});
+
 test("⌘K palette: opens a section of the page you're on", async ({ page }) => {
   await page.goto("/notes/debounce-is-not-a-race-guard/");
   await searchFor(page, "live setter");
