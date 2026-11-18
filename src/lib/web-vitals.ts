@@ -34,32 +34,38 @@ export interface Shift {
   isAfterInput: boolean;
 }
 
-/**
- * Cumulative Layout Shift, as Chrome reports it: shifts gather into session windows, and a
- * window closes after a second with no shift or once it spans five seconds. The page's CLS
- * is its worst window. A shift just after an input was expected by the visitor, so it
- * doesn't count.
- */
-export function clsFrom(shifts: readonly Shift[]): number {
-  let worst = 0;
-  let windowValue = 0;
-  let windowStart: number | null = null;
-  let previous = 0;
-  for (const shift of shifts) {
-    if (shift.isAfterInput) continue;
-    const isSameWindow =
-      windowStart !== null && shift.startTime - previous < 1000 && shift.startTime - windowStart < 5000;
-    if (isSameWindow) {
-      windowValue += shift.value;
-    } else {
-      windowValue = shift.value;
-      windowStart = shift.startTime;
-    }
-    previous = shift.startTime;
-    worst = Math.max(worst, windowValue);
-  }
-  return worst;
+/** CLS as the visit goes: the worst window so far, and the one shifts are adding to. */
+export interface ClsState {
+  worst: number;
+  windowValue: number;
+  windowStart: number | null;
+  previous: number;
 }
+
+export const CLS_START: ClsState = { worst: 0, windowValue: 0, windowStart: null, previous: 0 };
+
+/**
+ * Cumulative Layout Shift, as Chrome reports it, one shift at a time: shifts gather into
+ * session windows, and a window closes after a second with no shift or once it spans five
+ * seconds. The page's CLS is its worst window. A shift just after an input was expected by
+ * the visitor, so it doesn't count.
+ */
+export function withShift(state: ClsState, shift: Shift): ClsState {
+  if (shift.isAfterInput) return state;
+  const { windowStart } = state;
+  const isSameWindow =
+    windowStart !== null && shift.startTime - state.previous < 1000 && shift.startTime - windowStart < 5000;
+  const windowValue = isSameWindow ? state.windowValue + shift.value : shift.value;
+  return {
+    worst: Math.max(state.worst, windowValue),
+    windowValue,
+    windowStart: isSameWindow ? windowStart : shift.startTime,
+    previous: shift.startTime,
+  };
+}
+
+/** CLS of a whole run of shifts, in the order they happened. */
+export const clsFrom = (shifts: readonly Shift[]): number => shifts.reduce(withShift, CLS_START).worst;
 
 export interface InteractionEvent {
   /** 0 for events that aren't part of an interaction (a scroll, a hover). */
@@ -80,6 +86,42 @@ export function inpFrom(events: readonly InteractionEvent[]): number | null {
   }
   const slowestFirst = [...longest.values()].sort((a, b) => b - a);
   return slowestFirst[Math.min(slowestFirst.length - 1, Math.floor(slowestFirst.length / 50))] ?? null;
+}
+
+/** The most interactions INP keeps: its 98th percentile needs no more below 500 of them. */
+export const INP_KEPT = 10;
+
+/** INP as the visit goes: the slowest interactions, how many there have been, and the newest's id. */
+export interface InpState {
+  slowest: readonly { id: number; ms: number }[];
+  count: number;
+  lastId: number;
+}
+
+export const INP_START: InpState = { slowest: [], count: 0, lastId: 0 };
+
+/**
+ * One more event towards INP, keeping no more than INP needs (PF-08). Browsers number
+ * interactions upwards, so a higher id than any so far is a new one. Exactly `inpFrom`
+ * below 500 interactions; past that, an estimate from the slowest `INP_KEPT`.
+ */
+export function withInteraction(state: InpState, { interactionId, duration }: InteractionEvent): InpState {
+  if (interactionId <= 0) return state;
+  const known = state.slowest.find(({ id }) => id === interactionId);
+  const merged = known
+    ? state.slowest.map((kept) => (kept === known ? { id: kept.id, ms: Math.max(kept.ms, duration) } : kept))
+    : [...state.slowest, { id: interactionId, ms: duration }];
+  const isNew = interactionId > state.lastId;
+  return {
+    slowest: merged.sort((a, b) => b.ms - a.ms).slice(0, INP_KEPT),
+    count: state.count + (isNew ? 1 : 0),
+    lastId: Math.max(state.lastId, interactionId),
+  };
+}
+
+export function inpOf({ slowest, count }: InpState): number | null {
+  if (count === 0) return null;
+  return slowest[Math.min(slowest.length - 1, Math.floor(count / 50))]?.ms ?? null;
 }
 
 /** A prerendered page is measured from when it was shown, not from when it was fetched. */
@@ -121,21 +163,24 @@ export interface Downloaded {
 
 const SCRIPT = /\.m?js(?:[?#]|$)/u;
 
+export const NOTHING_DOWNLOADED: Downloaded = { bytes: 0, requests: 0, scriptBytes: 0, fromCache: 0 };
+
 /**
- * What the visit has downloaded: the page and every file it asked for. A file the
- * browser's cache answered has a transfer size of 0 but a body, and is counted as cached.
+ * One more file towards what the visit has downloaded. A file the browser's cache answered
+ * has a transfer size of 0 but a body, and is counted as cached.
  */
-export function downloadedFrom(entries: readonly Fetched[]): Downloaded {
-  let bytes = 0;
-  let scriptBytes = 0;
-  let fromCache = 0;
-  for (const { name, transferSize, encodedBodySize } of entries) {
-    bytes += transferSize;
-    if (SCRIPT.test(name)) scriptBytes += transferSize;
-    if (transferSize === 0 && encodedBodySize > 0) fromCache += 1;
-  }
-  return { bytes, requests: entries.length, scriptBytes, fromCache };
+export function withFetched(total: Downloaded, { name, transferSize, encodedBodySize }: Fetched): Downloaded {
+  return {
+    bytes: total.bytes + transferSize,
+    requests: total.requests + 1,
+    scriptBytes: total.scriptBytes + (SCRIPT.test(name) ? transferSize : 0),
+    fromCache: total.fromCache + (transferSize === 0 && encodedBodySize > 0 ? 1 : 0),
+  };
 }
+
+/** What the visit has downloaded: the page and every file it asked for. */
+export const downloadedFrom = (entries: readonly Fetched[]): Downloaded =>
+  entries.reduce(withFetched, NOTHING_DOWNLOADED);
 
 /** A route's path without its trailing slash, so `/about/` and `/about` are one page. */
 export const pathKey = (path: string) => (path.length > 1 ? path.replace(/\/+$/u, "") : path);
@@ -146,7 +191,14 @@ export interface Measurements {
   firstPath: string;
   arrival: Arrival;
   /** Which entries this browser reports at all. */
-  support: { hasLcp: boolean; hasCls: boolean; hasInp: boolean; hasSoftNavigations: boolean };
+  support: {
+    hasLcp: boolean;
+    hasCls: boolean;
+    hasInp: boolean;
+    hasSoftNavigations: boolean;
+    /** Whether the browser times the page and its files at all: first byte and downloads. */
+    hasTimings: boolean;
+  };
   /** Null until the browser has reported one. */
   lcpMs: number | null;
   ttfbMs: number | null;

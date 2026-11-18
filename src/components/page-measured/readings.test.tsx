@@ -6,7 +6,7 @@ import { ReadingsView } from "./readings";
 const CHROME: Measurements = {
   firstPath: "/",
   arrival: "navigate",
-  support: { hasLcp: true, hasCls: true, hasInp: true, hasSoftNavigations: true },
+  support: { hasLcp: true, hasCls: true, hasInp: true, hasSoftNavigations: true, hasTimings: true },
   lcpMs: 412,
   ttfbMs: 38,
   inpMs: 24,
@@ -17,7 +17,7 @@ const CHROME: Measurements = {
 /** Safari and Firefox: no layout shifts, no soft navigations. */
 const SAFARI: Measurements = {
   ...CHROME,
-  support: { hasLcp: true, hasCls: false, hasInp: true, hasSoftNavigations: false },
+  support: { hasLcp: true, hasCls: false, hasInp: true, hasSoftNavigations: false, hasTimings: true },
 };
 
 function view(measurements: Measurements | null, { pathname = "/", hasNavigated = false } = {}) {
@@ -59,6 +59,18 @@ describe("this page, measured", () => {
     view(SAFARI);
     expect(said("Layout shift (CLS)")).toBe("Your browser doesn’t report layout shifts; Chromium-based browsers do.");
     expect(said("Largest paint (LCP)")).toBe("412 ms Good");
+  });
+
+  it("says a browser that times nothing doesn't report it, rather than 0 B (PF-07)", () => {
+    view({
+      ...CHROME,
+      support: { hasLcp: false, hasCls: false, hasInp: false, hasSoftNavigations: false, hasTimings: false },
+      lcpMs: null,
+      ttfbMs: null,
+      downloaded: { bytes: 0, requests: 0, scriptBytes: 0, fromCache: 0 },
+    });
+    expect(said("First byte (TTFB)")).toBe("Your browser doesn’t report this.");
+    expect(said("Downloaded")).toBe("Your browser doesn’t report this.");
   });
 
   it("waits for what hasn't happened yet", () => {

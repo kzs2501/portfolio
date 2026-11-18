@@ -1,29 +1,33 @@
 import {
   arrivalOf,
-  clsFrom,
-  downloadedFrom,
-  inpFrom,
+  CLS_START,
+  INP_START,
+  inpOf,
+  NOTHING_DOWNLOADED,
   pathKey,
   sinceActivation,
+  withFetched,
+  withInteraction,
+  withShift,
   type Fetched,
-  type InteractionEvent,
   type Measurements,
-  type Shift,
 } from "@/lib/web-vitals";
 
 /**
  * The visit, as the browser's performance timeline records it: one observer per kind of
  * entry, each asking for what was recorded before it started (`buffered`), so starting
- * once the page is idle still sees the load. A small store hands the view a new snapshot
- * when something changed, at most once a frame.
+ * once the page is idle still sees the load. What they report is kept as running totals,
+ * not lists, so a long visit costs nothing more (PF-08). A small store hands the view a
+ * new snapshot when something changed, at most once a frame, and only while the view is
+ * open. A browser with no observers is read from its timeline instead (PF-07).
  */
 
 let navigation: PerformanceNavigationTiming | undefined;
 let lcp: number | null = null;
 let wasRestored = false;
-const shifts: Shift[] = [];
-const events: InteractionEvent[] = [];
-const fetched: Fetched[] = [];
+let cls = CLS_START;
+let inp = INP_START;
+let downloads = NOTHING_DOWNLOADED;
 const softNavigations: Record<string, number> = {};
 
 let snapshot: Measurements | null = null;
@@ -31,13 +35,30 @@ const listeners = new Set<() => void>();
 let isScheduled = false;
 let isStarted = false;
 
-const supports = (type: string) =>
-  typeof PerformanceObserver !== "undefined" && PerformanceObserver.supportedEntryTypes.includes(type);
+const hasObservers = () => typeof PerformanceObserver !== "undefined";
+const hasTimeline = () => typeof performance !== "undefined" && typeof performance.getEntriesByType === "function";
+
+const supports = (type: string) => hasObservers() && PerformanceObserver.supportedEntryTypes.includes(type);
 
 /** A field some engines add to an entry and TypeScript's DOM types don't know yet. */
 function numberIn(entry: object, field: string) {
   const value: unknown = Reflect.get(entry, field);
   return typeof value === "number" ? value : 0;
+}
+
+const fetchedOf = (entry: PerformanceEntry): Fetched => ({
+  name: entry.name,
+  transferSize: numberIn(entry, "transferSize"),
+  encodedBodySize: numberIn(entry, "encodedBodySize"),
+});
+
+/** With no observers to tell us, the timeline as it stands: read at the start, and each time the view opens. */
+function readTimeline() {
+  if (hasObservers() || !hasTimeline()) return;
+  const [entry] = performance.getEntriesByType("navigation");
+  // A navigation entry: the page's own timing, with the fields `measure` reads.
+  if (entry) navigation = entry as PerformanceNavigationTiming;
+  downloads = performance.getEntriesByType("resource").map(fetchedOf).reduce(withFetched, NOTHING_DOWNLOADED);
 }
 
 function measure(): Measurements {
@@ -50,18 +71,20 @@ function measure(): Measurements {
       hasCls: supports("layout-shift"),
       hasInp: supports("event"),
       hasSoftNavigations: supports("soft-navigation"),
+      hasTimings: supports("navigation") || hasTimeline(),
     },
     lcpMs: lcp === null ? null : sinceActivation(lcp, activationStart),
     ttfbMs: navigation ? sinceActivation(navigation.responseStart, activationStart) : null,
-    inpMs: inpFrom(events),
-    cls: clsFrom(shifts),
+    inpMs: inpOf(inp),
+    cls: cls.worst,
     softNavigations: { ...softNavigations },
-    downloaded: downloadedFrom(navigation ? [navigation, ...fetched] : fetched),
+    downloaded: navigation ? withFetched(downloads, fetchedOf(navigation)) : downloads,
   };
 }
 
+/** Something changed: measure again before the next frame, if anyone is looking. */
 function changed() {
-  if (isScheduled) return;
+  if (isScheduled || listeners.size === 0) return;
   isScheduled = true;
   requestAnimationFrame(() => {
     isScheduled = false;
@@ -82,7 +105,7 @@ function observe(type: string, take: (entry: PerformanceEntry) => void, options:
 }
 
 const takeEvent = (entry: PerformanceEntry) => {
-  events.push({ interactionId: numberIn(entry, "interactionId"), duration: entry.duration });
+  inp = withInteraction(inp, { interactionId: numberIn(entry, "interactionId"), duration: entry.duration });
 };
 
 /** Starts watching; safe to call again. */
@@ -97,7 +120,7 @@ export function startObserving() {
     lcp = entry.startTime;
   });
   observe("layout-shift", (entry) => {
-    shifts.push({
+    cls = withShift(cls, {
       value: numberIn(entry, "value"),
       startTime: entry.startTime,
       isAfterInput: Reflect.get(entry, "hadRecentInput") === true,
@@ -107,9 +130,7 @@ export function startObserving() {
   observe("event", takeEvent, { durationThreshold: 16 });
   observe("first-input", takeEvent);
   observe("resource", (entry) => {
-    if (entry instanceof PerformanceResourceTiming) {
-      fetched.push({ name: entry.name, transferSize: entry.transferSize, encodedBodySize: entry.encodedBodySize });
-    }
+    downloads = withFetched(downloads, fetchedOf(entry));
   });
   // Chrome's record of a page opened without a full load: from the click to its new content painted.
   observe("soft-navigation", (entry) => {
@@ -121,11 +142,15 @@ export function startObserving() {
       changed();
     }
   });
+  readTimeline();
   changed();
 }
 
 export function subscribe(listener: () => void) {
   listeners.add(listener);
+  // A fresh snapshot for whoever just started looking; without observers, read the timeline now.
+  readTimeline();
+  changed();
   return () => {
     listeners.delete(listener);
   };

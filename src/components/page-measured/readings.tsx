@@ -125,7 +125,7 @@ export function ReadingsView({
             metric="ttfb"
             value={measurements.ttfbMs}
             format={formatDuration}
-            isSupported
+            isSupported={support.hasTimings}
             waiting="Not reported yet."
           />
         </Row>
@@ -148,9 +148,16 @@ export function ReadingsView({
           />
         </Row>
         <Row term="Downloaded">
-          <span className="num text-ink">{formatBytes(downloaded.bytes)}</span> in {requests},{" "}
-          {formatBytes(downloaded.scriptBytes)} of it script
-          {downloaded.fromCache > 0 && `; ${downloaded.fromCache} from your browser’s cache`}.
+          {support.hasTimings ? (
+            <>
+              <span className="num text-ink">{formatBytes(downloaded.bytes)}</span> in {requests},{" "}
+              {formatBytes(downloaded.scriptBytes)} of it script
+              {downloaded.fromCache > 0 && `; ${downloaded.fromCache} from your browser’s cache`}.
+            </>
+          ) : (
+            // Not "0 B in 0 requests": nothing was measured, not nothing downloaded (PF-07).
+            "Your browser doesn’t report this."
+          )}
         </Row>
       </Group>
       <p className="text-ink-3">
