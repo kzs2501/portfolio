@@ -34,4 +34,22 @@ describe("an excerpt", () => {
   it("takes terms literally, not as patterns", () => {
     expect(marked(excerptOf("Use a.b here, not axb.", ["a.b"]))).toEqual(["a.b"]);
   });
+
+  it("with no terms, or only blank ones, shows the start and marks nothing (T-01)", () => {
+    for (const terms of [[], ["", "  "]]) {
+      const segments = excerptOf(LONG, terms, 40);
+      expect(joined(segments)).toBe("Payments fail in many ways. A card can…");
+      expect(marked(segments)).toEqual([]);
+    }
+  });
+
+  it("starts at the text's start when the match is near it, and ends at its end when it fits (T-01)", () => {
+    expect(joined(excerptOf(LONG, ["fail"], 60))).toMatch(/^Payments fail in many ways\./u);
+    expect(joined(excerptOf("Keys expire after a day.", ["day"], 400))).toBe("Keys expire after a day.");
+  });
+
+  it("marks only the matches inside the window (T-01)", () => {
+    const segments = excerptOf(LONG, ["payments", "expire"], 40);
+    expect(marked(segments)).toEqual(["Payments"]);
+  });
 });

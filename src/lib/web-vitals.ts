@@ -227,6 +227,7 @@ export const formatShift = (value: number) => value.toFixed(2);
 /** Decimal kilobytes, as browsers' network panels count them. */
 export function formatBytes(bytes: number) {
   if (bytes < 1000) return `${bytes} B`;
-  if (bytes < 1_000_000) return `${Math.round(bytes / 1000)} KB`;
+  // From 999,500 bytes, kilobytes round to 1000: that's a megabyte.
+  if (bytes < 999_500) return `${Math.round(bytes / 1000)} KB`;
   return `${(bytes / 1_000_000).toFixed(1)} MB`;
 }

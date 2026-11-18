@@ -156,3 +156,36 @@ describe("formatting", () => {
     expect(pathKey("/")).toBe("/");
   });
 });
+
+describe("the edges mutation testing found unpinned (T-01)", () => {
+  const at = (startTime: number, value = 0.1) => ({ value, startTime, isAfterInput: false });
+
+  it("finds the slowest interaction wherever it's listed", () => {
+    expect(
+      inpFrom([
+        { interactionId: 1, duration: 40 },
+        { interactionId: 2, duration: 200 },
+        { interactionId: 3, duration: 90 },
+      ]),
+    ).toBe(200);
+  });
+
+  it("starts a new layout-shift window at exactly a second's gap, not before", () => {
+    expect(clsFrom([at(0), at(999)])).toBeCloseTo(0.2);
+    expect(clsFrom([at(0), at(1000)])).toBeCloseTo(0.1);
+  });
+
+  it("closes a window at exactly five seconds, not before", () => {
+    const steady = [0, 900, 1800, 2700, 3600, 4500].map((time) => at(time));
+    expect(clsFrom([...steady, at(4999)])).toBeCloseTo(0.7);
+    expect(clsFrom([...steady, at(5000)])).toBeCloseTo(0.6);
+  });
+
+  it("writes sizes at each unit's edge as the bigger unit once rounding reaches it", () => {
+    expect(formatBytes(999)).toBe("999 B");
+    expect(formatBytes(1000)).toBe("1 KB");
+    expect(formatBytes(999_499)).toBe("999 KB");
+    expect(formatBytes(999_500)).toBe("1.0 MB");
+    expect(formatBytes(1_000_000)).toBe("1.0 MB");
+  });
+});

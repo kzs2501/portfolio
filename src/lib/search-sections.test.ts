@@ -69,6 +69,20 @@ describe("the text a reader sees", () => {
     expect(plainText('- one\n2. two\n> I\'d say "never"...')).toBe("one two I’d say “never”…");
   });
 
+  it("keeps a markdown image's alt text (T-01)", () => {
+    expect(plainText("Before ![The chaos panel, open](/a.webp) after.")).toBe("Before The chaos panel, open after.");
+  });
+
+  it("curls a quote mark at the very start of the text (T-01)", () => {
+    expect(plainText(`"Never" twice, and 'single' too.`)).toBe("“Never” twice, and ‘single’ too.");
+  });
+
+  it("drops list and quote markers however they're spaced (T-01)", () => {
+    expect(plainText("  -   indented item\n10.  tenth\n>no space\n  >  spaced")).toBe(
+      "indented item tenth no space spaced",
+    );
+  });
+
   it("leaves no markup in the real writing", () => {
     for (const source of everyMdx) {
       for (const { text } of sectionsOf(source)) {
