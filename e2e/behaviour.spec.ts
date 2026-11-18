@@ -171,6 +171,50 @@ test("⌘K palette: Escape closes it, and focus goes back to what opened it", as
   await expect(trigger).toBeFocused();
 });
 
+/** ⌘K again if the palette isn't open: for a page whose first press came before its script ran. */
+async function pressAgainIfClosed(page: Page, box: Locator) {
+  if (!(await box.isVisible())) await page.keyboard.press("ControlOrMeta+k");
+}
+
+test("⌘K palette: opens every time, pressed as the next page opens (PF-03)", async ({ page }) => {
+  // React's onCancel and onClose missed an Escape that landed while the next page's view
+  // transition waited for its update, leaving the palette "open" though closed, so the
+  // next ⌘K closed it. The bug hunt's loop, which caught it about once in 20 rounds.
+  test.setTimeout(120_000);
+  await page.goto("/");
+  await waitForHydration(page);
+  const dialog = page.getByRole("dialog", { name: "Command palette" });
+  const box = dialog.getByRole("combobox", { name: "Search commands" });
+  const links = page.getByRole("navigation", { name: "Primary" }).getByRole("link");
+  const isOpened = () =>
+    box.waitFor({ state: "visible", timeout: 3_000 }).then(
+      () => true,
+      () => false,
+    );
+  for (let round = 0; round < 40; round++) {
+    await waitForHydration(page);
+    // Marks this document: an Escape while a page is still loading can make the browser
+    // load the next one in full, and a ⌘K before its script runs reaches no handler at
+    // all. That's the browser's doing, not this bug, so it's told apart.
+    await page.evaluate(() => Reflect.set(window, "isSameDocument", true));
+    await links.nth(round % 3).click();
+    await page.keyboard.press("ControlOrMeta+k");
+    const isFirstPressHeard = await isOpened();
+    const isSameDocument = await page.evaluate(() => Reflect.get(window, "isSameDocument") === true);
+    expect(isFirstPressHeard || !isSameDocument, `round ${String(round)}: ⌘K lost on the same page`).toBe(true);
+    // After a full load, the new page hears ⌘K once it's ready.
+    await waitForHydration(page);
+    await pressAgainIfClosed(page, box);
+    await expect(box).toBeVisible();
+    await box.fill(["idempotency", "stripe", "focus", "webhook"][round % 4] ?? "");
+    // The timing is the bug: Escape comes about as the next page's transition starts.
+    // eslint-disable-next-line playwright/no-wait-for-timeout
+    await page.waitForTimeout(150);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  }
+});
+
 test("⌘K palette: pressed straight after Escape, it opens again (PF-10)", async ({ page }) => {
   await page.goto("/");
   await waitForHydration(page);

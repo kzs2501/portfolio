@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useEffectEvent, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { site } from "@/content/site";
 import { pagePath } from "@/lib/routes";
@@ -112,6 +112,29 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
     if (returnFocus.current instanceof HTMLElement) returnFocus.current.focus();
   };
 
+  // The browser closing the dialog itself (Escape), heard on the element, not through
+  // React's onCancel and onClose: those are dropped while a page's view transition runs,
+  // which left `isOpen` true for a closed dialog, so the next ⌘K closed it (PF-03).
+  // Escape is taken from `cancel`, which comes at once: `close` comes a task later, after
+  // a ⌘K pressed straight away (PF-10), so a late one for a dialog open again is ignored.
+  const onDismissed = useEffectEvent(close);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const onCancel = () => {
+      onDismissed();
+    };
+    const onNativeClose = () => {
+      if (!dialog.open) onDismissed();
+    };
+    dialog.addEventListener("cancel", onCancel);
+    dialog.addEventListener("close", onNativeClose);
+    return () => {
+      dialog.removeEventListener("cancel", onCancel);
+      dialog.removeEventListener("close", onNativeClose);
+    };
+  }, []);
+
   const run = async (command: Command) => {
     const { action } = command;
     switch (action.type) {
@@ -169,14 +192,6 @@ export default function PaletteDialog({ isOpen, onClose }: { isOpen: boolean; on
     <dialog
       ref={dialogRef}
       aria-label="Command palette"
-      // Escape closes the dialog at once but fires `close` a task later, after a ⌘K pressed
-      // straight away, which would toggle an `isOpen` that hadn't caught up (PF-10). So
-      // Escape is taken from `cancel`, which comes at once, and a late `close` for a dialog
-      // that's open again is ignored.
-      onCancel={close}
-      onClose={() => {
-        if (!dialogRef.current?.open) close();
-      }}
       onClick={(e) => {
         // A click on the backdrop lands on the <dialog> itself.
         if (e.target === dialogRef.current) close();
